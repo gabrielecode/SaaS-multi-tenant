@@ -483,6 +483,7 @@ export default function App() {
                 clients={clients}
                 campaigns={campaigns}
                 onUpdateCampaigns={setCampaigns}
+                onNavigateToSettings={() => setOwnerSection('settings')}
               />
             )}
             {ownerSection === 'settings' && (
@@ -500,27 +501,22 @@ export default function App() {
       ) : (
         /* ================== CLIENT PWA PORTAL ================== */
         <div className="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-6" id="client-portal">
-          <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 font-extrabold text-sm shadow-sm">
-                PWA
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Portale Cliente & Web App Installabile</p>
-                <p className="text-[11px] text-slate-500">Prenota in autonomia, ricevi promemoria e rischedula senza perdite.</p>
-              </div>
+          <div className="flex items-center justify-between px-2">
+            <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Prenotazioni Online Aperte 24/7</span>
             </div>
 
             <div>
               {loggedClientUser ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                     <UserCheck className="w-4 h-4 text-emerald-600" />
                     {loggedClientUser.name}
                   </span>
                   <button
                     onClick={() => setLoggedClientUser(null)}
-                    className="text-[11px] font-semibold text-rose-600 hover:underline"
+                    className="text-[11px] font-bold text-rose-600 hover:underline"
                   >
                     Esci
                   </button>
@@ -528,10 +524,10 @@ export default function App() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition active:scale-95"
+                  className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-indigo-600 font-bold text-xs rounded-full border border-slate-200 shadow-xs flex items-center gap-1.5 transition active:scale-95"
                 >
-                  <Lock className="w-3.5 h-3.5" />
-                  Accedi / Registrati
+                  <Lock className="w-3.5 h-3.5 text-indigo-500" />
+                  Area Personale Cliente
                 </button>
               )}
             </div>

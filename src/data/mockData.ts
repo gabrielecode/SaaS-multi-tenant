@@ -56,6 +56,7 @@ export const INITIAL_BUSINESS_CONFIG: BusinessConfig = {
   stripeConnected: true,
   autoWaitlistNotify: true,
   cancellationPolicyHours: 24,
+  depositPolicy: 'OPTIONAL',
   supabaseUrl: 'https://xyz-noshowreducer.supabase.co',
   supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   metaWhatsappToken: 'EAAG...mock_meta_token',

@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, FormEvent } from 'react';
 import { Appointment, AppointmentStatus, Client, Service, WaitlistEntry } from '../types';
-import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus } from 'lucide-react';
+import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus, CreditCard } from 'lucide-react';
 
 interface AppointmentsProps {
   appointments: Appointment[];
@@ -59,6 +59,8 @@ export default function Appointments({
   const [newAppServiceId, setNewAppServiceId] = useState('');
   const [newAppTime, setNewAppTime] = useState('10:00');
   const [newAppNotes, setNewAppNotes] = useState('');
+  const [newAppHasDeposit, setNewAppHasDeposit] = useState(false);
+  const [newAppDepositPaid, setNewAppDepositPaid] = useState(0);
 
   // Form states for Waitlist entry
   const [waitlistClientName, setWaitlistClientName] = useState('');
@@ -148,15 +150,8 @@ export default function Appointments({
     const selectedService = services.find(s => s.id === newAppServiceId);
     if (!selectedService) return;
 
-    // Compute deposit amount
-    let deposit = 0;
-    if (selectedService.depositRequired) {
-      if (selectedService.depositType === 'FIXED') {
-        deposit = selectedService.depositValue;
-      } else {
-        deposit = Math.round((selectedService.price * selectedService.depositValue) / 100);
-      }
-    }
+    // Compute deposit amount (opzionale)
+    const deposit = newAppHasDeposit ? Number(newAppDepositPaid) : 0;
 
     const newApp: Appointment = {
       id: 'a_' + Date.now(),
@@ -169,6 +164,7 @@ export default function Appointments({
       time: newAppTime,
       price: selectedService.price,
       depositPaid: deposit,
+      paymentMethod: deposit > 0 ? 'STRIPE_DEPOSIT' : 'IN_SALON',
       status: AppointmentStatus.CONFIRMED, // Manually added by owner usually starts as confirmed/locked
       notes: newAppNotes,
       reminderSent: false,
@@ -184,6 +180,8 @@ export default function Appointments({
     setNewAppServiceId('');
     setNewAppTime('10:00');
     setNewAppNotes('');
+    setNewAppHasDeposit(false);
+    setNewAppDepositPaid(0);
     setShowAddForm(false);
   };
 
@@ -396,7 +394,11 @@ export default function Appointments({
 
                         <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
                           <p className="text-xs text-slate-500 font-medium">
-                            Caparra versata: <span className="font-bold text-slate-950">{app.depositPaid} €</span>
+                            {app.depositPaid > 0 ? (
+                              <>Caparra versata: <span className="font-bold text-emerald-700">{app.depositPaid} €</span></>
+                            ) : (
+                              <span className="text-slate-500 bg-slate-100 px-2 py-0.5 rounded text-[11px]">Nessun acconto • Saldo in salone</span>
+                            )}
                           </p>
 
                           {/* Quick Interactive Actions */}
@@ -644,6 +646,52 @@ export default function Appointments({
                     className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
                   />
                 </div>
+              </div>
+
+              {/* Caparra / Acconto Incassato (Opzionale) */}
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label htmlFor="modal-toggle-deposit" className="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
+                      <CreditCard className="w-3.5 h-3.5 text-indigo-600" />
+                      Registra Caparra / Acconto (Opzionale)
+                    </label>
+                    <p className="text-[10px] text-slate-500">Non obbligatorio. Spunta solo se il cliente ha già versato un acconto.</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    id="modal-toggle-deposit"
+                    checked={newAppHasDeposit}
+                    onChange={(e) => {
+                      setNewAppHasDeposit(e.target.checked);
+                      if (e.target.checked && newAppDepositPaid === 0 && newAppServiceId) {
+                        const svc = services.find(s => s.id === newAppServiceId);
+                        if (svc) {
+                          const def = svc.depositType === 'FIXED' ? svc.depositValue : Math.round((svc.price * svc.depositValue) / 100);
+                          setNewAppDepositPaid(def || 10);
+                        }
+                      }
+                    }}
+                    className="w-4 h-4 accent-indigo-600 cursor-pointer rounded"
+                  />
+                </div>
+
+                {newAppHasDeposit && (
+                  <div className="pt-2 border-t border-slate-200/60 flex items-center gap-2 animate-fade-in">
+                    <label className="text-[11px] font-semibold text-slate-700">Importo Acconto (€):</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={services.find(s => s.id === newAppServiceId)?.price || 500}
+                      value={newAppDepositPaid}
+                      onChange={(e) => setNewAppDepositPaid(Math.max(0, Number(e.target.value)))}
+                      className="w-24 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-lg p-2 focus:border-indigo-500 focus:outline-none"
+                    />
+                    <span className="text-[10px] text-slate-400">
+                      su {services.find(s => s.id === newAppServiceId)?.price || 0}€ totali
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Notes */}

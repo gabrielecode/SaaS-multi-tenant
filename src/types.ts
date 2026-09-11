@@ -48,6 +48,8 @@ export interface Service {
   depositType: 'FIXED' | 'PERCENTAGE';
   depositValue: number;
   isActive: boolean;
+  description?: string;
+  category?: string;
 }
 
 export interface Appointment {
@@ -62,6 +64,7 @@ export interface Appointment {
   time: string; // HH:MM
   price: number;
   depositPaid: number;
+  paymentMethod?: 'IN_SALON' | 'STRIPE_DEPOSIT' | 'CARD';
   status: AppointmentStatus;
   notes?: string;
   reminderSent: boolean;
@@ -93,10 +96,14 @@ export interface BusinessConfig {
   stripeConnected: boolean;
   autoWaitlistNotify: boolean;
   cancellationPolicyHours: number; // e.g. 24
+  depositPolicy?: 'OPTIONAL' | 'DISABLED' | 'MANDATORY';
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   metaWhatsappToken?: string;
   metaPhoneNumberId?: string;
+  metaWabaId?: string;
+  stripePublishableKey?: string;
+  stripeSecretKey?: string;
 }
 
 export interface WhatsAppCampaign {

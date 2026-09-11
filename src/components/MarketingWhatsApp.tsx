@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { BusinessConfig, Client, WhatsAppCampaign } from '../types';
 import { sendWhatsAppTemplateMessage, logSystemEvent } from '../lib/supabase';
-import { MessageSquare, Send, CheckCircle2, Sparkles, RefreshCw } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, Sparkles, RefreshCw, Key } from 'lucide-react';
 
 interface MarketingWhatsAppProps {
   config: BusinessConfig;
   clients: Client[];
   campaigns: WhatsAppCampaign[];
   onUpdateCampaigns: (campaigns: WhatsAppCampaign[]) => void;
+  onNavigateToSettings?: () => void;
 }
 
-export default function MarketingWhatsApp({ config, clients, campaigns, onUpdateCampaigns }: MarketingWhatsAppProps) {
+export default function MarketingWhatsApp({ config, clients, campaigns, onUpdateCampaigns, onNavigateToSettings }: MarketingWhatsAppProps) {
   const [title, setTitle] = useState('');
   const [templateName, setTemplateName] = useState('vip_discount_promo');
   const [targetAudience, setTargetAudience] = useState<'ALL' | 'VIP' | 'AT_RISK' | 'INACTIVE'>('VIP');
@@ -89,6 +90,15 @@ export default function MarketingWhatsApp({ config, clients, campaigns, onUpdate
             <span className={`w-2 h-2 rounded-full ${config.metaWhatsappToken ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
             {config.metaWhatsappToken ? 'API Meta Connessa' : 'Token da Configurare'}
           </span>
+          {onNavigateToSettings && (
+            <button
+              onClick={onNavigateToSettings}
+              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm"
+            >
+              <Key className="w-3.5 h-3.5" />
+              Configura Chiavi API
+            </button>
+          )}
         </div>
       </div>
 

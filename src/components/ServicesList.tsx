@@ -115,9 +115,9 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                   <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-start gap-2.5 text-xs text-slate-700">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-bold text-emerald-800">Caparra Attiva</p>
+                      <p className="font-bold text-emerald-800">Acconto Opzionale Attivo</p>
                       <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                        Richiesti <span className="font-bold text-emerald-700">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : '€'}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)}€` : `${service.depositValue}€`}) all'atto della prenotazione.
+                        Consigliati <span className="font-bold text-emerald-700">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : '€'}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)}€` : `${service.depositValue}€`}). Il cliente può versarli o pagare in sede.
                       </p>
                     </div>
                   </div>
@@ -125,9 +125,9 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                   <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl flex items-start gap-2.5 text-xs text-slate-500">
                     <ShieldAlert className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-bold text-slate-700">Nessuna Caparra</p>
+                      <p className="font-bold text-slate-700">Nessun Acconto Proposto</p>
                       <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
-                        I clienti possono prenotarsi gratuitamente. Maggior rischio di disdetta last-minute.
+                        I clienti prenotano direttamente pagando a fine servizio in salone.
                       </p>
                     </div>
                   </div>
@@ -139,7 +139,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                 <span>Stato: {service.isActive ? 'Attivo & Online' : 'Disattivato'}</span>
                 {service.depositRequired && (
                   <span className="text-[10px] uppercase font-bold text-emerald-700 flex items-center gap-1">
-                    <CreditCard className="w-3.5 h-3.5 text-emerald-600" /> Protetto da Stripe
+                    <CreditCard className="w-3.5 h-3.5 text-emerald-600" /> Acconto Opzionale
                   </span>
                 )}
               </div>
@@ -204,8 +204,8 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
               <div className="border border-slate-200 p-3 rounded-xl space-y-3 bg-slate-50/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="text-xs font-bold text-slate-800">Richiedi Caparra Online</label>
-                    <p className="text-[10px] text-slate-500">I clienti pagano una quota subito per bloccare l'orario.</p>
+                    <label className="text-xs font-bold text-slate-800">Abilita Opzione Acconto Online (Facoltativo)</label>
+                    <p className="text-[10px] text-slate-500">I clienti potranno scegliere se versare l'acconto subito o pagare direttamente in sede.</p>
                   </div>
                   <input
                     type="checkbox"
