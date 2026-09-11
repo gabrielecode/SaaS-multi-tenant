@@ -1,0 +1,6 @@
+{
+  "name": "NoShow Reducer",
+  "description": "Riduci le perdite di fatturato causate da disdette last-minute e mancate presentazioni con reminder intelligenti e depositi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
