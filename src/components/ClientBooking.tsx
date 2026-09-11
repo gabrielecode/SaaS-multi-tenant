@@ -1,5 +1,6 @@
 import React, { useState, useMemo, FormEvent } from 'react';
 import { Service, Appointment, Client, AppointmentStatus, BusinessConfig, Promotion, WhatsAppCampaign } from '../types';
+import { buildWhatsAppUrl, normalizePhoneForWhatsApp, SUPPORTED_COUNTRIES } from '../lib/phoneUtils';
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -19,7 +20,8 @@ import {
   Percent,
   X,
   UserCheck,
-  Search
+  Search,
+  Globe
 } from 'lucide-react';
 
 interface ClientBookingProps {
@@ -1024,17 +1026,20 @@ export default function ClientBooking({
                       Numero di Cellulare (per WhatsApp) *
                     </label>
                     <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                      <MessageCircle className="w-3 h-3" /> Riceverai la conferma qui
+                      <MessageCircle className="w-3 h-3" /> Riceverai la conferma qui (🇨🇭 +41)
                     </span>
                   </div>
                   <input
                     type="tel"
                     required
-                    placeholder="es. 333 1234567"
+                    placeholder="es. 079 123 45 67 o +41 79 123 45 67"
                     value={phone}
                     onChange={e => setPhone(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition font-medium"
                   />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Supporta numeri svizzeri (079, 078, 076...) e internazionali con prefisso.
+                  </p>
                 </div>
 
                 <div>
@@ -1129,7 +1134,11 @@ export default function ClientBooking({
                 </a>
 
                 <a
-                  href={`https://wa.me/39${config.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Ciao! Ho appena prenotato per ${selectedService.name} il ${selectedDate} alle ${selectedTime}.${appliedPromo ? ` Ho applicato il codice sconto ${appliedPromo.code}.` : ''}`)}`}
+                  href={buildWhatsAppUrl(
+                    config.phone,
+                    `Ciao! Ho appena prenotato per ${selectedService.name} il ${selectedDate} alle ${selectedTime}.${appliedPromo ? ` Ho applicato il codice sconto ${appliedPromo.code}.` : ''}`,
+                    config.country || 'CH'
+                  )}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full p-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition"

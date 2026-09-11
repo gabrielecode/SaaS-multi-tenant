@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, FormEvent } from 'react';
 import { Appointment, AppointmentStatus, Client, Service, WaitlistEntry } from '../types';
-import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus, CreditCard } from 'lucide-react';
+import { buildWhatsAppUrl, formatPhoneDisplay } from '../lib/phoneUtils';
+import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus, CreditCard, Send } from 'lucide-react';
 
 interface AppointmentsProps {
   appointments: Appointment[];
@@ -411,7 +412,22 @@ export default function Appointments({
                           </p>
 
                           {/* Quick Interactive Actions */}
-                          <div className="flex items-center gap-1.5 mt-2">
+                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                            {/* WhatsApp Direct Message Button */}
+                            <a
+                              href={buildWhatsAppUrl(
+                                app.clientPhone,
+                                `Ciao ${app.clientName}! Ti contattiamo dal salone per il tuo appuntamento di ${app.serviceName} alle ore ${app.time}.`,
+                                'CH'
+                              )}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition"
+                              title="Scrivi su WhatsApp al cliente (Prefisso Svizzera +41)"
+                            >
+                              <Send className="w-3 h-3 text-emerald-600" /> WhatsApp
+                            </a>
+
                             {app.status === AppointmentStatus.PENDING && (
                               <>
                                 <button

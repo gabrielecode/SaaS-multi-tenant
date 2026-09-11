@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Appointment, Client, AppointmentStatus } from '../types';
+import { buildWhatsAppUrl } from '../lib/phoneUtils';
 import { TrendingUp, AlertTriangle, ShieldCheck, Euro, Calendar, Users, Percent, HelpCircle, BarChart2, Sparkles, Send } from 'lucide-react';
 import { 
   BarChart, 
@@ -412,10 +413,16 @@ export default function Dashboard({ appointments, clients, onNavigateToSection }
           </button>
           <button 
             onClick={() => {
-              triggerToast("Sollecito WhatsApp copiato negli appunti! Invia il testo personalizzato al cliente.");
+              const davideApp = appointments.find(a => a.clientName.toLowerCase().includes('davide')) || appointments[0];
+              const phone = davideApp?.clientPhone || '+41 79 987 65 43';
+              const text = `Ciao Davide! Ti ricordiamo la conferma del tuo appuntamento per oggi alle 10:30. Rispondi con un tap a questo messaggio per confermare.`;
+              const url = buildWhatsAppUrl(phone, text, 'CH');
+              window.open(url, '_blank', 'noopener,noreferrer');
+              triggerToast(`Sollecito WhatsApp aperto con successo con prefisso Svizzera (+41) per ${davideApp?.clientName || 'Davide Neri'}!`);
             }}
-            className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs px-5 py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-5 py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex items-center gap-1.5"
           >
+            <Send className="w-3.5 h-3.5" />
             Invia Sollecito WhatsApp
           </button>
         </div>

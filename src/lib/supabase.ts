@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { BusinessConfig } from '../types';
+import { normalizePhoneForWhatsApp } from './phoneUtils';
 
 const metaEnv = (import.meta as any).env || {};
 
@@ -34,7 +35,7 @@ export async function sendWhatsAppTemplateMessage(
         },
         body: JSON.stringify({
           messaging_product: 'whatsapp',
-          to: recipientPhone.replace(/\D/g, ''),
+          to: normalizePhoneForWhatsApp(recipientPhone, 'CH'),
           type: 'template',
           template: {
             name: templateName,
@@ -55,13 +56,14 @@ export async function sendWhatsAppTemplateMessage(
     }
   }
 
+  const normalized = normalizePhoneForWhatsApp(recipientPhone, 'CH');
   await new Promise(resolve => setTimeout(resolve, 600));
   return {
     success: true,
     messageId: 'wamid_HBgLMzQ5OT...',
     response: {
       messaging_product: 'whatsapp',
-      contacts: [{ input: recipientPhone, wa_id: recipientPhone.replace(/\D/g, '') }],
+      contacts: [{ input: recipientPhone, wa_id: normalized }],
       messages: [{ id: 'wamid.gBEGkY... ' + Math.random().toString(36).substring(7) }]
     }
   };

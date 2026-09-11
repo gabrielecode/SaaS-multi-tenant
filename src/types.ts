@@ -89,7 +89,14 @@ export interface BusinessConfig {
   tenant_id?: string;
   name: string;
   category: string;
+  ownerName?: string;
+  email?: string;
   phone: string;
+  phonePrefix?: string; // e.g. '+41'
+  address?: string;
+  city?: string;
+  country?: string; // 'CH' | 'IT' | etc.
+  currency?: string; // 'CHF' | 'EUR'
   reminderTimingHours: number; // e.g. 24
   reminderChannel: 'SMS' | 'WHATSAPP' | 'EMAIL';
   reminderTemplate: string;

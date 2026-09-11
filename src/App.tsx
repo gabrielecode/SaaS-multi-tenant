@@ -133,15 +133,29 @@ export default function App() {
     if (savedCampaigns) setCampaigns(JSON.parse(savedCampaigns));
     else setCampaigns(INITIAL_CAMPAIGNS.filter(c => !c.tenant_id || c.tenant_id === currentTenantId));
 
-    if (savedConfig) setConfig(JSON.parse(savedConfig));
-    else {
+    if (savedConfig) {
+      const parsed = JSON.parse(savedConfig);
+      if (!parsed.country) parsed.country = 'CH';
+      if (!parsed.currency) parsed.currency = 'CHF';
+      if (!parsed.phonePrefix) parsed.phonePrefix = '+41';
+      // Se era rimasto il vecchio numero italiano di default, converti al salone svizzero
+      if (parsed.phone && (parsed.phone.includes('+39 345 678 9012') || parsed.phone.includes('+39'))) {
+        parsed.phone = '+41 79 345 67 89';
+        if (parsed.name === "Gentleman's Grooming Club") {
+          parsed.name = "Gentleman's Grooming Club Lugano";
+        }
+      }
+      setConfig(parsed);
+    } else {
       const tenant = tenants.find(t => t.id === currentTenantId);
       setConfig({
         ...INITIAL_BUSINESS_CONFIG,
         tenant_id: currentTenantId,
         name: tenant ? tenant.name : INITIAL_BUSINESS_CONFIG.name,
         category: tenant ? tenant.category : INITIAL_BUSINESS_CONFIG.category,
-        phone: tenant ? tenant.phone : INITIAL_BUSINESS_CONFIG.phone
+        phone: tenant ? tenant.phone : INITIAL_BUSINESS_CONFIG.phone,
+        ownerName: tenant ? tenant.ownerName : INITIAL_BUSINESS_CONFIG.ownerName,
+        email: tenant ? tenant.email : INITIAL_BUSINESS_CONFIG.email
       });
     }
   }, [currentTenantId]);
@@ -172,7 +186,23 @@ export default function App() {
   }, [campaigns, currentTenantId]);
 
   useEffect(() => {
-    if (config) localStorage.setItem(`ns_config_${currentTenantId}`, JSON.stringify(config));
+    if (config) {
+      localStorage.setItem(`ns_config_${currentTenantId}`, JSON.stringify(config));
+      // Mantieni sincronizzato il tenant attivo
+      setTenants(prev => prev.map(t => {
+        if (t.id === currentTenantId) {
+          return {
+            ...t,
+            name: config.name,
+            phone: config.phone,
+            category: config.category,
+            ownerName: config.ownerName || t.ownerName,
+            email: config.email || t.email
+          };
+        }
+        return t;
+      }));
+    }
   }, [config, currentTenantId]);
 
   // Compute today's active appointments count

@@ -19,9 +19,23 @@ import {
   Smartphone,
   CheckCircle,
   HelpCircle,
-  Zap
+  Zap,
+  Send,
+  Globe,
+  MapPin,
+  User,
+  Mail,
+  PhoneCall,
+  Check,
+  ArrowRight
 } from 'lucide-react';
-import { logSystemEvent } from '../lib/supabase';
+import { logSystemEvent, sendWhatsAppTemplateMessage } from '../lib/supabase';
+import { 
+  SUPPORTED_COUNTRIES, 
+  normalizePhoneForWhatsApp, 
+  buildWhatsAppUrl, 
+  formatPhoneDisplay 
+} from '../lib/phoneUtils';
 
 interface SettingsProps {
   config: BusinessConfig;
@@ -30,12 +44,28 @@ interface SettingsProps {
 
 export default function Settings({ config, onUpdateConfig }: SettingsProps) {
   // Navigation Tabs: 'api' | 'general'
-  const [activeTab, setActiveTab] = useState<'api' | 'general'>('api');
+  const [activeTab, setActiveTab] = useState<'api' | 'general'>('general');
 
-  // Business & Policy state
+  // Business & Owner Profile state (con focus Svizzera)
   const [name, setName] = useState(config.name);
+  const [ownerName, setOwnerName] = useState(config.ownerName || 'Gabriele Rossi');
+  const [email, setEmail] = useState(config.email || 'info@gentlemansclub.ch');
   const [category, setCategory] = useState(config.category);
-  const [phone, setPhone] = useState(config.phone);
+  const [country, setCountry] = useState(config.country || 'CH');
+  const [currency, setCurrency] = useState(config.currency || 'CHF');
+  const [city, setCity] = useState(config.city || 'Lugano');
+  const [address, setAddress] = useState(config.address || 'Via Nassa 22');
+  
+  // Gestione Telefono e Prefisso Svizzero
+  const [phonePrefix, setPhonePrefix] = useState(config.phonePrefix || '+41');
+  const [phone, setPhone] = useState(config.phone || '+41 79 345 67 89');
+  
+  // Test WhatsApp
+  const [testRecipient, setTestRecipient] = useState(config.phone || '+41 79 345 67 89');
+  const [testMessage, setTestMessage] = useState(`Ciao! Questo è un messaggio di test inviato dal salone ${config.name}. Prefisso WhatsApp Svizzera (+41) attivo.`);
+  const [whatsAppTestSuccess, setWhatsAppTestSuccess] = useState<string | null>(null);
+  const [isSendingWhatsAppApi, setIsSendingWhatsAppApi] = useState(false);
+
   const [reminderTimingHours, setReminderTimingHours] = useState(config.reminderTimingHours);
   const [reminderTemplate, setReminderTemplate] = useState(config.reminderTemplate);
   const [reminderChannel, setReminderChannel] = useState(config.reminderChannel);
@@ -70,7 +100,14 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
     const updated: BusinessConfig = {
       ...config,
       name,
+      ownerName,
+      email,
       category,
+      country,
+      currency,
+      city,
+      address,
+      phonePrefix,
       phone,
       reminderTimingHours,
       reminderTemplate,
@@ -90,9 +127,57 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
     };
 
     onUpdateConfig(updated);
-    logSystemEvent('INFO', 'SUPABASE', `Credenziali e impostazioni salvate per ${name}`, config.tenant_id);
+    logSystemEvent('INFO', 'SUPABASE', `Dati salone e credenziali aggiornati per ${name} (Svizzera ${phonePrefix})`, config.tenant_id);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3500);
+  };
+
+  // Converti rapidamente numero a formato svizzero
+  const handleConvertToSwiss = () => {
+    let clean = phone.replace(/^\+39\s?/, '').replace(/^0039\s?/, '').trim();
+    if (clean.startsWith('3') && clean.length === 10) {
+      // Se era un cellulare italiano tipo 345..., converti in esempio svizzero
+      clean = '79 ' + clean.substring(1, 4) + ' ' + clean.substring(4, 6) + ' ' + clean.substring(6);
+    }
+    const newPhone = `+41 ${clean}`;
+    setPhone(newPhone);
+    setPhonePrefix('+41');
+    setCountry('CH');
+    setCurrency('CHF');
+  };
+
+  // Apertura diretta WhatsApp con prefisso corretto
+  const handleOpenWhatsAppTest = () => {
+    const targetPhone = testRecipient || phone;
+    const url = buildWhatsAppUrl(targetPhone, testMessage, country);
+    const normalizedDigits = normalizePhoneForWhatsApp(targetPhone, country);
+    
+    window.open(url, '_blank', 'noopener,noreferrer');
+    setWhatsAppTestSuccess(`Chat WhatsApp aperta per il numero ${targetPhone} (Normalizzato WhatsApp: +${normalizedDigits}). Nessun prefisso italiano (+39) applicato.`);
+    logSystemEvent('INFO', 'META_WHATSAPP', `Test apertura link WhatsApp su numero ${targetPhone} con prefisso +${normalizedDigits.substring(0, 2)}`, config.tenant_id);
+    setTimeout(() => setWhatsAppTestSuccess(null), 8000);
+  };
+
+  // Invio test via Meta WhatsApp API
+  const handleSendMetaApiTest = async () => {
+    setIsSendingWhatsAppApi(true);
+    const targetPhone = testRecipient || phone;
+    try {
+      const res = await sendWhatsAppTemplateMessage(
+        metaPhoneNumberId || '105482390124892',
+        metaWhatsappToken || 'mock_token',
+        targetPhone,
+        'salone_test_svizzera',
+        { nome: ownerName || 'Cliente', salone: name }
+      );
+      const normalizedDigits = normalizePhoneForWhatsApp(targetPhone, country);
+      setWhatsAppTestSuccess(`Messaggio WhatsApp inviato con successo via Meta API a +${normalizedDigits}! (ID: ${res.messageId})`);
+      setTimeout(() => setWhatsAppTestSuccess(null), 8000);
+    } catch (err: any) {
+      setWhatsAppTestSuccess(`Errore durante invio Meta: ${err?.message || 'Verifica token o riprova'}`);
+    } finally {
+      setIsSendingWhatsAppApi(false);
+    }
   };
 
   const testMetaWhatsApp = async () => {
@@ -353,6 +438,44 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                 </div>
               </div>
 
+              {/* Quick WhatsApp Test Box */}
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5 text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                  <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                    <Send className="w-3.5 h-3.5 text-emerald-600" />
+                    Collaudo Messaggistica WhatsApp Svizzera (+41)
+                  </span>
+                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    Destinatario: +{normalizePhoneForWhatsApp(testRecipient, country)}
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={testRecipient}
+                    onChange={(e) => setTestRecipient(e.target.value)}
+                    placeholder="es. +41 79 123 45 67 o 079 123 45 67"
+                    className="flex-1 bg-white border border-slate-200 rounded-lg p-2 text-xs font-mono focus:border-emerald-500 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleOpenWhatsAppTest}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3.5 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Invia Messaggio WhatsApp (Web/App)
+                  </button>
+                </div>
+
+                {whatsAppTestSuccess && (
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-2.5 rounded-lg text-xs flex items-center gap-2 font-medium animate-fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{whatsAppTestSuccess}</span>
+                  </div>
+                )}
+              </div>
+
               <div className="pt-2 flex items-center justify-between border-t border-slate-100">
                 <button
                   type="button"
@@ -587,46 +710,287 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <div className="lg:col-span-2 space-y-6">
-              {/* General Business Card */}
-              <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <Settings2 className="w-4.5 h-4.5 text-slate-400" />
-                  Profilo Business
-                </h4>
+              {/* General Business & Owner Profile Card */}
+              <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2">
+                    <Settings2 className="w-4.5 h-4.5 text-indigo-600" />
+                    Profilo Salone Titolare & Recapito Svizzera
+                  </h4>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[11px] font-bold rounded-full border border-rose-200 flex items-center gap-1">
+                      <span>🇨🇭</span> Svizzera (+41)
+                    </span>
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200">
+                      Valuta {currency}
+                    </span>
+                  </div>
+                </div>
 
+                {/* Dati Salone e Titolare */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Nome del Salone / Attività</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <Settings2 className="w-3.5 h-3.5 text-slate-400" />
+                      Nome del Salone / Attività *
+                    </label>
                     <input
                       type="text"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      placeholder="es. Gentleman's Grooming Club Lugano"
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <User className="w-3.5 h-3.5 text-slate-400" />
+                      Nome e Cognome Titolare *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      placeholder="es. Gabriele Rossi"
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      Email Ufficiale Salone *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="es. info@salone.ch"
                       className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Categoria</label>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Categoria Attività *</label>
                     <input
                       type="text"
                       required
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
+                      placeholder="es. Barbiere & Parrucchiere / Centro Estetico"
                       className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Telefono per Assistenza Clienti</label>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <Globe className="w-3.5 h-3.5 text-slate-400" />
+                      Nazione Sede Operativa
+                    </label>
+                    <select
+                      value={country}
+                      onChange={(e) => {
+                        const newCountry = e.target.value;
+                        setCountry(newCountry);
+                        const matched = SUPPORTED_COUNTRIES.find(c => c.code === newCountry);
+                        if (matched) {
+                          setPhonePrefix(matched.prefix);
+                          if (newCountry === 'CH') setCurrency('CHF');
+                          else setCurrency('EUR');
+                        }
+                      }}
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                    >
+                      {SUPPORTED_COUNTRIES.map(c => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.name} ({c.prefix})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                      Valuta Predefinita
+                    </label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                    >
+                      <option value="CHF">CHF - Franco Svizzero (Svizzera)</option>
+                      <option value="EUR">EUR - Euro (€)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      Città Salone (Canton Ticino / Svizzera)
+                    </label>
                     <input
                       type="text"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="es. Lugano, Bellinzona, Chiasso, Zurigo"
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Indirizzo Sede</label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="es. Via Nassa 22"
+                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Sezione Speciale: Telefono & WhatsApp Salone */}
+                <div className="bg-slate-50/80 p-4 sm:p-5 rounded-xl border border-slate-200 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h5 className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                        <PhoneCall className="w-4 h-4 text-emerald-600" />
+                        Numero di Telefono & Canale WhatsApp Ufficiale Salone
+                      </h5>
+                      <p className="text-[11px] text-slate-500">
+                        I clienti utilizzeranno questo recapito per conferme, messaggi e supporto tramite WhatsApp.
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1 self-start sm:self-auto">
+                      <Check className="w-3 h-3 text-emerald-600" /> Prefisso Svizzero Supportato
+                    </span>
+                  </div>
+
+                  {/* Avviso automatico se è rimasto il prefisso italiano +39 */}
+                  {(phone.includes('+39') || phone.startsWith('39') || phone.replace(/\D/g, '').startsWith('39')) && (
+                    <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-900">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>
+                          <strong>Rilevato prefisso italiano (+39):</strong> Il salone è in Svizzera. Clicca per convertire immediatamente a prefisso svizzero (+41).
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleConvertToSwiss}
+                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shrink-0 transition"
+                      >
+                        Converti a Svizzera (+41)
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Prefisso Internazionale</label>
+                      <select
+                        value={phonePrefix}
+                        onChange={(e) => {
+                          const newP = e.target.value;
+                          setPhonePrefix(newP);
+                          // Aggiorna il telefono se contiene un vecchio prefisso
+                          const digitsOnly = phone.replace(/^\+\d+\s?/, '');
+                          setPhone(`${newP} ${digitsOnly}`.trim());
+                        }}
+                        className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:border-indigo-500 focus:outline-none"
+                      >
+                        {SUPPORTED_COUNTRIES.map(c => (
+                          <option key={c.code} value={c.prefix}>
+                            {c.flag} {c.prefix} ({c.name})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                        Numero di Telefono (Formato locale o internazionale) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={phone}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setPhone(val);
+                          setTestRecipient(val);
+                        }}
+                        placeholder="es. +41 79 345 67 89 o 079 345 67 89"
+                        className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 font-medium focus:border-indigo-500 focus:outline-none"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Formati validi svizzeri: <strong>+41 79 345 67 89</strong> oppure <strong>079 345 67 89</strong> (lo zero locale viene gestito in automatico).
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Diagnostica in tempo reale del numero WhatsApp */}
+                  <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-700">Anteprima Numero WhatsApp:</span>
+                        <span className="font-mono bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-bold">
+                          +{normalizePhoneForWhatsApp(phone, country)}
+                        </span>
+                      </div>
+                      <div className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
+                        <span>Prefisso applicato:</span>
+                        <strong className="text-emerald-600 font-mono font-bold">
+                          +{normalizePhoneForWhatsApp(phone, country).substring(0, 2) === '41' ? '41 (🇨🇭 Svizzera)' : normalizePhoneForWhatsApp(phone, country).substring(0, 2) + ' (Altro)'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1 font-mono break-all bg-slate-50 p-2 rounded border border-slate-100">
+                      <span className="text-slate-400">wa.me URL:</span>
+                      <span className="text-indigo-600 font-bold">{buildWhatsAppUrl(phone, '', country)}</span>
+                    </div>
+
+                    {/* Tasto Invia Messaggio WhatsApp di Prova */}
+                    <div className="pt-2 flex flex-wrap items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={handleOpenWhatsAppTest}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center gap-2 transition active:scale-95 shadow-sm"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        Invia Messaggio WhatsApp di Prova
+                      </button>
+
+                      {metaWhatsappToken && metaWhatsappToken.length > 15 && (
+                        <button
+                          type="button"
+                          onClick={handleSendMetaApiTest}
+                          disabled={isSendingWhatsAppApi}
+                          className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+                        >
+                          {isSendingWhatsAppApi ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                          Invia via Meta Cloud API
+                        </button>
+                      )}
+
+                      <span className="text-[11px] text-slate-400">
+                        Apre direttamente WhatsApp senza prefisso italiano +39.
+                      </span>
+                    </div>
+                  </div>
+
+                  {whatsAppTestSuccess && (
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2 animate-fade-in font-medium">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{whatsAppTestSuccess}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
