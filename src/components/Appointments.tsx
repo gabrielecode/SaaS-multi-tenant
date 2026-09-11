@@ -1,4 +1,4 @@
-import { useState, useMemo, FormEvent } from 'react';
+import { useState, useMemo, useEffect, FormEvent } from 'react';
 import { Appointment, AppointmentStatus, Client, Service, WaitlistEntry } from '../types';
 import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus } from 'lucide-react';
 
@@ -10,6 +10,9 @@ interface AppointmentsProps {
   onUpdateAppointments: (apps: Appointment[]) => void;
   onUpdateWaitlist: (wl: WaitlistEntry[]) => void;
   onUpdateClients: (cls: Client[]) => void;
+  autoOpenAdd?: boolean;
+  onResetAutoOpen?: () => void;
+  initialTab?: 'agenda' | 'waitlist';
 }
 
 export default function Appointments({
@@ -19,12 +22,28 @@ export default function Appointments({
   waitlist,
   onUpdateAppointments,
   onUpdateWaitlist,
-  onUpdateClients
+  onUpdateClients,
+  autoOpenAdd,
+  onResetAutoOpen,
+  initialTab
 }: AppointmentsProps) {
   const [selectedDate, setSelectedDate] = useState<string>('2026-06-24');
-  const [activeTab, setActiveTab] = useState<'agenda' | 'waitlist'>('agenda');
+  const [activeTab, setActiveTab] = useState<'agenda' | 'waitlist'>(initialTab || 'agenda');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddWaitlistForm, setShowAddWaitlistForm] = useState(false);
+
+  useEffect(() => {
+    if (autoOpenAdd) {
+      setShowAddForm(true);
+      if (onResetAutoOpen) onResetAutoOpen();
+    }
+  }, [autoOpenAdd, onResetAutoOpen]);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   // Custom Toast notification state
   const [toastMessage, setToastMessage] = useState<string | null>(null);

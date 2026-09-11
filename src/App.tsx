@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   Appointment, 
   Client, 
@@ -7,7 +7,8 @@ import {
   BusinessConfig,
   TenantSalon,
   WhatsAppCampaign,
-  ClientAuthUser
+  ClientAuthUser,
+  AppointmentStatus
 } from './types';
 import { 
   INITIAL_BUSINESS_CONFIG, 
@@ -31,6 +32,9 @@ import SuperAdminDashboard from './components/SuperAdminDashboard';
 import MarketingWhatsApp from './components/MarketingWhatsApp';
 import ClientAuthModal from './components/ClientAuthModal';
 import PwaInstallBanner from './components/PwaInstallBanner';
+import MobileNavDrawer from './components/MobileNavDrawer';
+import MobileBottomBar from './components/MobileBottomBar';
+import MobileQuickActionModal from './components/MobileQuickActionModal';
 
 // Icons
 import { 
@@ -43,13 +47,17 @@ import {
   Globe, 
   Store,
   ChevronRight,
+  ChevronDown,
   Menu,
-  X,
   HelpCircle,
   Building2,
   MessageSquare,
   Lock,
-  UserCheck
+  UserCheck,
+  Plus,
+  Smartphone,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 
 export default function App() {
@@ -77,8 +85,13 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loggedClientUser, setLoggedClientUser] = useState<ClientAuthUser | null>(null);
 
-  // Mobile drawer state
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Mobile drawer & quick action modal states
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
+
+  // Fast action triggers for appointments
+  const [autoOpenAddApp, setAutoOpenAddApp] = useState(false);
+  const [initialAppointmentsTab, setInitialAppointmentsTab] = useState<'agenda' | 'waitlist'>('agenda');
 
   // Initialize tenant-specific data on mount or tenant switch
   useEffect(() => {
@@ -146,6 +159,11 @@ export default function App() {
     if (config) localStorage.setItem(`ns_config_${currentTenantId}`, JSON.stringify(config));
   }, [config, currentTenantId]);
 
+  // Compute today's active appointments count
+  const todayAppointmentsCount = useMemo(() => {
+    return appointments.filter(a => a.date === '2026-06-24' && a.status !== AppointmentStatus.CANCELLED).length;
+  }, [appointments]);
+
   const handleAddAppointment = (newApp: Appointment) => {
     setAppointments(prev => [newApp, ...prev]);
   };
@@ -154,6 +172,26 @@ export default function App() {
     setCurrentTenantId(tenantId);
     setMode('owner');
     setOwnerSection('dashboard');
+  };
+
+  // Quick Action handler
+  const handleQuickAction = (actionId: string) => {
+    if (actionId === 'new_appointment') {
+      setMode('owner');
+      setOwnerSection('appointments');
+      setInitialAppointmentsTab('agenda');
+      setAutoOpenAddApp(true);
+    } else if (actionId === 'send_whatsapp') {
+      setMode('owner');
+      setOwnerSection('marketing');
+    } else if (actionId === 'add_client') {
+      setMode('owner');
+      setOwnerSection('clients');
+    } else if (actionId === 'open_waitlist') {
+      setMode('owner');
+      setOwnerSection('appointments');
+      setInitialAppointmentsTab('waitlist');
+    }
   };
 
   if (!config) {
@@ -169,80 +207,157 @@ export default function App() {
 
   const currentTenantInfo = tenants.find(t => t.id === currentTenantId);
 
+  const ownerNavItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'appointments', label: 'Agenda', icon: Calendar, badge: todayAppointmentsCount > 0 ? `${todayAppointmentsCount}` : null },
+    { id: 'clients', label: 'Clienti', icon: Users, badge: `${clients.length}` },
+    { id: 'services', label: 'Servizi', icon: NotebookTabs },
+    { id: 'marketing', label: 'WhatsApp', icon: MessageSquare, badge: 'Meta' },
+    { id: 'settings', label: 'Impostazioni', icon: Settings2 },
+    { id: 'instructions', label: 'Guida', icon: HelpCircle }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800" id="app-root">
-      <PwaInstallBanner />
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800 overflow-x-hidden" id="app-root">
       
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-slate-200/80 shadow-sm" id="global-header">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <ShieldAlert className="w-5 h-5 text-white stroke-[2.5]" />
+      {/* PWA Install Banner */}
+      <PwaInstallBanner />
+
+      {/* ========================================================================= */}
+      {/* HYPER-OPTIMIZED RESPONSIVE HEADER                                         */}
+      {/* ========================================================================= */}
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm" id="global-header">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+          
+          {/* Left: Brand Icon & App Title & Mobile Tenant Switcher */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20 flex-shrink-0">
+              <ShieldAlert className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-extrabold tracking-tight text-slate-900 leading-none">NoShow Reducer</h1>
-                <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded border border-indigo-200 uppercase">SaaS v2</span>
+            
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="text-xs sm:text-base font-extrabold tracking-tight text-slate-900 leading-none truncate">
+                  NoShow Reducer
+                </h1>
+                <span className="hidden sm:inline-block text-[10px] bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">
+                  SaaS v2.4
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium mt-0.5">Salone: <strong className="text-slate-800">{currentTenantInfo?.name || config.name}</strong></p>
+              
+              {/* Salon Switcher Trigger (Compact on mobile) */}
+              <button
+                onClick={() => setIsMobileDrawerOpen(true)}
+                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-indigo-600 font-medium mt-0.5 truncate text-left transition group"
+                title="Cambia Salone o Apri Menu"
+              >
+                <span className="truncate max-w-[130px] sm:max-w-[200px]">
+                  Salone: <strong className="text-slate-800 group-hover:text-indigo-600">{currentTenantInfo?.name || config.name}</strong>
+                </span>
+                <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-indigo-600 flex-shrink-0" />
+              </button>
             </div>
           </div>
 
-          {/* Mode Switcher Buttons */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+          {/* Desktop Navigation / Mode Switcher */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+              <button
+                onClick={() => setMode('super_admin')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  mode === 'super_admin' 
+                    ? 'bg-purple-600 text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="w-4 h-4" />
+                <span>Super Admin</span>
+              </button>
+
+              <button
+                onClick={() => setMode('owner')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  mode === 'owner' 
+                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Store className="w-4 h-4 text-indigo-500" />
+                <span>Titolare Salone</span>
+              </button>
+
+              <button
+                onClick={() => setMode('client')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                  mode === 'client' 
+                    ? 'bg-indigo-600 text-white shadow-sm' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                <span>Portale Cliente (PWA)</span>
+              </button>
+            </div>
+
+            {/* Quick Action Button on Desktop */}
+            {mode === 'owner' && (
+              <button
+                onClick={() => {
+                  setOwnerSection('appointments');
+                  setInitialAppointmentsTab('agenda');
+                  setAutoOpenAddApp(true);
+                }}
+                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Nuovo Appuntamento</span>
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Right Controls: Role Badge + Dedicated Hamburger Menu Button */}
+          <div className="flex md:hidden items-center gap-1.5">
+            {/* Quick Mode Toggle Pill */}
             <button
               onClick={() => {
-                setMode('super_admin');
-                setMobileMenuOpen(false);
+                setMode(prev => prev === 'owner' ? 'client' : 'owner');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                mode === 'super_admin' 
-                  ? 'bg-purple-600 text-white shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900'
+              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1 shadow-sm active:scale-95 ${
+                mode === 'owner'
+                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                  : mode === 'client'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-purple-50 text-purple-700 border-purple-200'
               }`}
+              title="Clicca per cambiare ruolo rapido"
             >
-              <Building2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Super Admin</span>
-              <span className="sm:hidden">Admin</span>
+              {mode === 'owner' && <Store className="w-3.5 h-3.5 text-indigo-600" />}
+              {mode === 'client' && <Globe className="w-3.5 h-3.5 text-emerald-600" />}
+              {mode === 'super_admin' && <Building2 className="w-3.5 h-3.5 text-purple-600" />}
+              <span className="truncate max-w-[62px]">
+                {mode === 'owner' ? 'Titolare' : mode === 'client' ? 'Cliente' : 'Admin'}
+              </span>
             </button>
 
+            {/* Accessible Hamburger Menu Button (Touch Target >= 44px) */}
             <button
-              onClick={() => {
-                setMode('owner');
-                setMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                mode === 'owner' 
-                  ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-800 transition active:scale-95 relative"
+              aria-label="Apri Menu di Navigazione"
             >
-              <Store className="w-4 h-4 text-indigo-500" />
-              <span className="hidden sm:inline">Titolare Salone</span>
-              <span className="sm:hidden">Titolare</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setMode('client');
-                setMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                mode === 'client' 
-                  ? 'bg-indigo-600 text-white shadow-sm' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Globe className="w-4 h-4" />
-              <span className="hidden sm:inline">Portale Cliente (PWA)</span>
-              <span className="sm:hidden">Cliente</span>
+              <Menu className="w-5 h-5 stroke-[2.2]" />
+              {todayAppointmentsCount > 0 && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white animate-pulse" />
+              )}
             </button>
           </div>
+
         </div>
       </header>
 
-      {/* Main Content Router */}
+      {/* ========================================================================= */}
+      {/* MAIN CONTENT ROUTER                                                       */}
+      {/* ========================================================================= */}
       {mode === 'super_admin' ? (
         <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
           <SuperAdminDashboard 
@@ -252,18 +367,18 @@ export default function App() {
           />
         </div>
       ) : mode === 'owner' ? (
-        <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row gap-6 p-4 sm:p-6 lg:p-8" id="owner-workspace">
+        <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row gap-6 p-3 sm:p-6 lg:p-8" id="owner-workspace">
           
-          {/* Sidebar Left Navigation (#1e293b dark gray requested) */}
+          {/* Desktop Sidebar Navigation (#1e293b dark gray with smooth shadow) */}
           <aside className="hidden md:block w-64 flex-shrink-0">
             <nav className="space-y-1.5 bg-[#1e293b] p-4 rounded-2xl border border-slate-800 shadow-md sticky top-24">
               <h3 className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold mb-4 px-2">Gestione Salone</h3>
               {[
                 { id: 'dashboard', label: 'Dashboard Finanziaria', icon: LayoutDashboard },
-                { id: 'appointments', label: 'Calendario Agenda', icon: Calendar },
-                { id: 'clients', label: 'Anagrafica Clienti', icon: Users },
+                { id: 'appointments', label: 'Calendario Agenda', icon: Calendar, badge: todayAppointmentsCount > 0 ? `${todayAppointmentsCount}` : null },
+                { id: 'clients', label: 'Anagrafica Clienti', icon: Users, badge: `${clients.length}` },
                 { id: 'services', label: 'Listino Servizi', icon: NotebookTabs },
-                { id: 'marketing', label: 'Marketing & WhatsApp', icon: MessageSquare },
+                { id: 'marketing', label: 'Marketing & WhatsApp', icon: MessageSquare, badge: 'API' },
                 { id: 'settings', label: 'Impostazioni & API', icon: Settings2 },
                 { id: 'instructions', label: 'Guida & Istruzioni', icon: HelpCircle }
               ].map(item => {
@@ -283,59 +398,51 @@ export default function App() {
                       <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                       <span>{item.label}</span>
                     </div>
-                    <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'rotate-90 text-white' : 'opacity-30 text-slate-500'}`} />
+                    {item.badge ? (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        isActive ? 'bg-white text-indigo-700' : 'bg-slate-800 text-indigo-300 border border-indigo-500/30'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    ) : (
+                      <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'rotate-90 text-white' : 'opacity-30 text-slate-500'}`} />
+                    )}
                   </button>
                 );
               })}
             </nav>
           </aside>
 
-          {/* Mobile Navigation Dropdown */}
-          <div className="md:hidden bg-[#1e293b] p-4 rounded-2xl border border-slate-800 flex items-center justify-between text-white shadow-sm">
-            <span className="text-xs font-bold text-slate-200">
-              Sezione: {ownerSection.toUpperCase()}
-            </span>
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition"
-            >
-              {mobileMenuOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
-            </button>
+          {/* Mobile Horizontal Quick Tab Bar (Swipeable & 1-Thumb Reachable) */}
+          <div className="md:hidden -mx-3 px-3 overflow-x-auto pb-1 flex items-center gap-2 no-scrollbar" id="mobile-quick-pills">
+            {ownerNavItems.map(item => {
+              const Icon = item.icon;
+              const isActive = ownerSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setOwnerSection(item.id)}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm active:scale-95 ${
+                    isActive
+                      ? 'bg-indigo-600 text-white shadow-indigo-600/20'
+                      : 'bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-indigo-600'}`} />
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive ? 'bg-white text-indigo-700' : 'bg-indigo-50 text-indigo-700'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {mobileMenuOpen && (
-            <div className="md:hidden bg-[#1e293b] border border-slate-800 rounded-2xl p-4 space-y-1.5 shadow-lg text-slate-200">
-              {[
-                { id: 'dashboard', label: 'Dashboard Finanziaria', icon: LayoutDashboard },
-                { id: 'appointments', label: 'Calendario Agenda', icon: Calendar },
-                { id: 'clients', label: 'Anagrafica Clienti', icon: Users },
-                { id: 'services', label: 'Listino Servizi', icon: NotebookTabs },
-                { id: 'marketing', label: 'Marketing & WhatsApp', icon: MessageSquare },
-                { id: 'settings', label: 'Impostazioni & API', icon: Settings2 },
-                { id: 'instructions', label: 'Guida & Istruzioni', icon: HelpCircle }
-              ].map(item => {
-                const Icon = item.icon;
-                const isActive = ownerSection === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setOwnerSection(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold ${
-                      isActive ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Owner Workspace Main Area */}
+          {/* Owner Workspace Main Content Area */}
           <main className="flex-1 min-w-0">
             {ownerSection === 'dashboard' && (
               <Dashboard 
@@ -353,18 +460,21 @@ export default function App() {
                 onUpdateAppointments={setAppointments}
                 onUpdateWaitlist={setWaitlist}
                 onUpdateClients={setClients}
+                autoOpenAdd={autoOpenAddApp}
+                onResetAutoOpen={() => setAutoOpenAddApp(false)}
+                initialTab={initialAppointmentsTab}
               />
             )}
             {ownerSection === 'clients' && (
               <ClientsList 
-                clients={clients}
-                onUpdateClients={setClients}
+                clients={clients} 
+                onUpdateClients={setClients} 
               />
             )}
             {ownerSection === 'services' && (
               <ServicesList 
-                services={services}
-                onUpdateServices={setServices}
+                services={services} 
+                onUpdateServices={setServices} 
               />
             )}
             {ownerSection === 'marketing' && (
@@ -377,8 +487,8 @@ export default function App() {
             )}
             {ownerSection === 'settings' && (
               <Settings 
-                config={config}
-                onUpdateConfig={setConfig}
+                config={config} 
+                onUpdateConfig={setConfig} 
               />
             )}
             {ownerSection === 'instructions' && (
@@ -389,15 +499,15 @@ export default function App() {
         </div>
       ) : (
         /* ================== CLIENT PWA PORTAL ================== */
-        <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6" id="client-portal">
-          <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm flex items-center justify-between">
+        <div className="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-6" id="client-portal">
+          <div className="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 font-bold">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100 font-extrabold text-sm shadow-sm">
                 PWA
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-900">Portale Cliente & Installazione PWA</p>
-                <p className="text-[11px] text-slate-500">Gestisci i tuoi appuntamenti, notifiche push e riprogrammazioni autonome.</p>
+                <p className="text-xs font-bold text-slate-900">Portale Cliente & Web App Installabile</p>
+                <p className="text-[11px] text-slate-500">Prenota in autonomia, ricevi promemoria e rischedula senza perdite.</p>
               </div>
             </div>
 
@@ -418,7 +528,7 @@ export default function App() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition"
+                  className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 transition active:scale-95"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   Accedi / Registrati
@@ -448,10 +558,105 @@ export default function App() {
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="mt-auto bg-white border-t border-slate-200 py-6 text-center text-[11px] text-slate-400">
-        <p>© 2026 NoShow Reducer SaaS • Supabase Multi-Tenant & Meta WhatsApp Cloud API Ready.</p>
+      {/* ========================================================================= */}
+      {/* MOBILE-OPTIMIZED RESPONSIVE FOOTER                                        */}
+      {/* ========================================================================= */}
+      <footer className="mt-auto bg-white border-t border-slate-200 py-8 px-4 sm:px-6 lg:px-8 pb-28 md:pb-8 text-xs text-slate-500" id="global-footer">
+        <div className="max-w-7xl mx-auto space-y-5">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-5 border-b border-slate-100 text-center md:text-left">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
+                <ShieldAlert className="w-4 h-4 stroke-[2.5]" />
+              </div>
+              <div>
+                <p className="font-extrabold text-slate-900 text-sm">NoShow Reducer • SaaS Multi-Tenant</p>
+                <p className="text-[11px] text-slate-400">Protezione fatturato e integrazione Meta WhatsApp Cloud API per saloni di bellezza.</p>
+              </div>
+            </div>
+
+            {/* Cloud & API Connectivity Status Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 text-[11px] font-semibold shadow-xs">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                Supabase DB Online
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 text-[11px] font-semibold shadow-xs">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                Meta WhatsApp API Ready
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 text-[11px] font-semibold shadow-xs">
+                <Smartphone className="w-3 h-3 text-indigo-600" />
+                PWA Installabile
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 text-center sm:text-left">
+            <p>© 2026 NoShow Reducer SaaS • Deploy Vercel Production Ready.</p>
+            <div className="flex items-center gap-4 font-medium text-slate-500">
+              <button onClick={() => { setMode('owner'); setOwnerSection('instructions'); }} className="hover:text-indigo-600 transition">Guida & Istruzioni</button>
+              <span>•</span>
+              <button onClick={() => { setMode('client'); }} className="hover:text-indigo-600 transition">Area Clienti PWA</button>
+              <span>•</span>
+              <button onClick={() => { setMode('super_admin'); }} className="hover:text-indigo-600 transition">Super Admin</button>
+            </div>
+          </div>
+        </div>
       </footer>
+
+      {/* ========================================================================= */}
+      {/* MOBILE FULL NAVIGATION DRAWER (HAMBURGER MENU)                            */}
+      {/* ========================================================================= */}
+      <MobileNavDrawer
+        isOpen={isMobileDrawerOpen}
+        onClose={() => setIsMobileDrawerOpen(false)}
+        mode={mode}
+        onSelectMode={setMode}
+        ownerSection={ownerSection}
+        onSelectOwnerSection={setOwnerSection}
+        tenants={tenants}
+        currentTenantId={currentTenantId}
+        onSelectTenant={handleSelectTenant}
+        config={config}
+        todayAppointmentsCount={todayAppointmentsCount}
+        totalClientsCount={clients.length}
+        loggedClientUser={loggedClientUser}
+        onOpenAuthModal={() => setShowAuthModal(true)}
+        onLogoutClient={() => setLoggedClientUser(null)}
+        onQuickNewAppointment={() => {
+          setMode('owner');
+          setOwnerSection('appointments');
+          setInitialAppointmentsTab('agenda');
+          setAutoOpenAddApp(true);
+        }}
+      />
+
+      {/* ========================================================================= */}
+      {/* MOBILE QUICK ACTION MODAL (SCORCIATOIE RAPIDE SHEET)                      */}
+      {/* ========================================================================= */}
+      <MobileQuickActionModal
+        isOpen={isQuickActionOpen}
+        onClose={() => setIsQuickActionOpen(false)}
+        onActionSelect={handleQuickAction}
+        tenants={tenants}
+        currentTenantId={currentTenantId}
+        onSelectTenant={handleSelectTenant}
+      />
+
+      {/* ========================================================================= */}
+      {/* MOBILE BOTTOM NAVIGATION DOCK (THUMB-FRIENDLY NATIVE APP BAR)            */}
+      {/* ========================================================================= */}
+      <MobileBottomBar
+        mode={mode}
+        ownerSection={ownerSection}
+        onSelectOwnerSection={setOwnerSection}
+        onOpenDrawer={() => setIsMobileDrawerOpen(true)}
+        onOpenQuickAction={() => setIsQuickActionOpen(true)}
+        todayAppointmentsCount={todayAppointmentsCount}
+        loggedClientUser={loggedClientUser}
+        onOpenAuthModal={() => setShowAuthModal(true)}
+        onSelectMode={setMode}
+      />
 
     </div>
   );

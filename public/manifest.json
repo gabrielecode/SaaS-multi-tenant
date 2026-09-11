@@ -1,0 +1,22 @@
+{
+  "short_name": "NoShow",
+  "name": "NoShow Reducer - SaaS Salon Protection",
+  "description": "Protezione no-show e promemoria WhatsApp Cloud per saloni di bellezza",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1e293b",
+  "theme_color": "#1e293b",
+  "display": "standalone",
+  "orientation": "portrait"
+}
