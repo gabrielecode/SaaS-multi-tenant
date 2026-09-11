@@ -35,6 +35,10 @@ import PwaInstallBanner from './components/PwaInstallBanner';
 import MobileNavDrawer from './components/MobileNavDrawer';
 import MobileBottomBar from './components/MobileBottomBar';
 import MobileQuickActionModal from './components/MobileQuickActionModal';
+import InviteClientModal from './components/InviteClientModal';
+import DedicatedRoleAuthModal from './components/DedicatedRoleAuthModal';
+import StaffAccessGateway from './components/StaffAccessGateway';
+import { anonymizeClientForSuperAdmin, anonymizeAppointmentForSuperAdmin } from './lib/privacyUtils';
 
 // Icons
 import { 
@@ -57,7 +61,11 @@ import {
   Plus,
   Smartphone,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Share2,
+  LogOut,
+  Eye,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function App() {
@@ -69,18 +77,89 @@ export default function App() {
 
   const [currentTenantId, setCurrentTenantId] = useState<string>('salon_default_1');
 
-  // Salon-specific data states
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
-  const [campaigns, setCampaigns] = useState<WhatsAppCampaign[]>([]);
-  const [config, setConfig] = useState<BusinessConfig | null>(null);
+  // Salon-specific data states with synchronous initializers
+  const [appointments, setAppointments] = useState<Appointment[]>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_appointments_${currentTenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_APPOINTMENTS.filter(a => !a.tenant_id || a.tenant_id === currentTenantId);
+  });
 
-  // SaaS Navigation Modes: 'super_admin' | 'owner' | 'client'
-  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client'>('owner');
+  const [clients, setClients] = useState<Client[]>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_clients_${currentTenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_CLIENTS.filter(c => !c.tenant_id || c.tenant_id === currentTenantId);
+  });
+
+  const [services, setServices] = useState<Service[]>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_services_${currentTenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_SERVICES.filter(s => !s.tenant_id || s.tenant_id === currentTenantId);
+  });
+
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_waitlist_${currentTenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_WAITLIST.filter(w => !w.tenant_id || w.tenant_id === currentTenantId);
+  });
+
+  const [campaigns, setCampaigns] = useState<WhatsAppCampaign[]>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_campaigns_${currentTenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_CAMPAIGNS.filter(c => !c.tenant_id || c.tenant_id === currentTenantId);
+  });
+
+  const [config, setConfig] = useState<BusinessConfig>(() => {
+    try {
+      const saved = localStorage.getItem(`ns_config_${currentTenantId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.country) parsed.country = 'CH';
+        if (!parsed.currency) parsed.currency = 'CHF';
+        if (!parsed.phonePrefix) parsed.phonePrefix = '+41';
+        return parsed;
+      }
+    } catch {}
+    return {
+      ...INITIAL_BUSINESS_CONFIG,
+      tenant_id: currentTenantId,
+      country: 'CH',
+      currency: 'CHF',
+      phonePrefix: '+41'
+    };
+  });
+
+  // SaaS Navigation Modes: 'super_admin' | 'owner' | 'client' | 'staff_gateway'
+  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client' | 'staff_gateway'>('staff_gateway');
   const [ownerSection, setOwnerSection] = useState<string>('dashboard');
   
+  // Dedicated Role Authentication states
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('ns_auth_owner') === 'true';
+  });
+  const [isSuperAdminAuthenticated, setIsSuperAdminAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('ns_auth_super_admin') === 'true';
+  });
+  const [showRoleAuthModal, setShowRoleAuthModal] = useState(false);
+  const [roleAuthTarget, setRoleAuthTarget] = useState<'super_admin' | 'owner'>('owner');
+
+  // Super Admin App Audit Mode (Browsing salon app with GDPR/LPD masked sensitive data)
+  const [isSuperAdminAuditActive, setIsSuperAdminAuditActive] = useState(false);
+
+  // Invite Client Modal states
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [invitePreselectedClient, setInvitePreselectedClient] = useState<Client | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   // Client auth modal & logged client
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loggedClientUser, setLoggedClientUser] = useState<ClientAuthUser | null>(() => {
@@ -210,6 +289,22 @@ export default function App() {
     return appointments.filter(a => a.date === '2026-06-24' && a.status !== AppointmentStatus.CANCELLED).length;
   }, [appointments]);
 
+  // Computed data projection: when Super Admin audits the app, personal sensitive data is masked
+  const isSuperAdminAuditing = mode === 'super_admin' && isSuperAdminAuditActive;
+  const activeClients = useMemo(() => {
+    if (isSuperAdminAuditing) {
+      return clients.map(anonymizeClientForSuperAdmin);
+    }
+    return clients;
+  }, [isSuperAdminAuditing, clients]);
+
+  const activeAppointments = useMemo(() => {
+    if (isSuperAdminAuditing) {
+      return appointments.map(anonymizeAppointmentForSuperAdmin);
+    }
+    return appointments;
+  }, [isSuperAdminAuditing, appointments]);
+
   // Synchronize or register client when a new appointment is booked
   const handleAddAppointment = (newApp: Appointment) => {
     setAppointments(prev => [newApp, ...prev]);
@@ -260,42 +355,107 @@ export default function App() {
     });
   };
 
+  // Dedicated role switch request (Protected RBAC)
+  const handleRequestRoleSwitch = (targetRole: 'super_admin' | 'owner' | 'client' | 'staff_gateway') => {
+    if (targetRole === 'staff_gateway') {
+      setMode('staff_gateway');
+      setIsSuperAdminAuditActive(false);
+      return;
+    }
+
+    if (targetRole === 'client') {
+      setMode('client');
+      setIsSuperAdminAuditActive(false);
+      return;
+    }
+
+    if (targetRole === 'owner') {
+      if (isOwnerAuthenticated) {
+        setMode('owner');
+        setIsSuperAdminAuditActive(false);
+      } else {
+        setRoleAuthTarget('owner');
+        setMode('staff_gateway');
+      }
+      return;
+    }
+
+    if (targetRole === 'super_admin') {
+      if (isSuperAdminAuthenticated) {
+        setMode('super_admin');
+        setIsSuperAdminAuditActive(false);
+      } else {
+        setRoleAuthTarget('super_admin');
+        setMode('staff_gateway');
+      }
+      return;
+    }
+  };
+
+  const handleRoleAuthenticated = (role: 'super_admin' | 'owner') => {
+    if (role === 'owner') {
+      setIsOwnerAuthenticated(true);
+      sessionStorage.setItem('ns_auth_owner', 'true');
+      setMode('owner');
+      setIsSuperAdminAuditActive(false);
+    } else {
+      setIsSuperAdminAuthenticated(true);
+      sessionStorage.setItem('ns_auth_super_admin', 'true');
+      setMode('super_admin');
+      setIsSuperAdminAuditActive(false);
+    }
+  };
+
+  const handleLogoutOwner = () => {
+    setIsOwnerAuthenticated(false);
+    sessionStorage.removeItem('ns_auth_owner');
+    setMode('staff_gateway');
+  };
+
+  const handleLogoutAdmin = () => {
+    setIsSuperAdminAuthenticated(false);
+    sessionStorage.removeItem('ns_auth_super_admin');
+    setIsSuperAdminAuditActive(false);
+    setMode('staff_gateway');
+  };
+
+  // Super Admin inspecting the whole app with sensitive data masked
+  const handleInspectSalonApp = (tenantId: string) => {
+    setCurrentTenantId(tenantId);
+    setIsSuperAdminAuditActive(true);
+    setOwnerSection('dashboard');
+  };
+
   const handleSelectTenant = (tenantId: string) => {
     setCurrentTenantId(tenantId);
-    setMode('owner');
-    setOwnerSection('dashboard');
+    if (mode === 'owner') {
+      setOwnerSection('dashboard');
+    }
   };
 
   // Quick Action handler
   const handleQuickAction = (actionId: string) => {
-    if (actionId === 'new_appointment') {
-      setMode('owner');
+    if (!isOwnerAuthenticated) {
+      setMode('staff_gateway');
+      return;
+    }
+    setMode('owner');
+    if (actionId === 'invite_client') {
+      setInvitePreselectedClient(null);
+      setIsInviteModalOpen(true);
+    } else if (actionId === 'new_appointment') {
       setOwnerSection('appointments');
       setInitialAppointmentsTab('agenda');
       setAutoOpenAddApp(true);
     } else if (actionId === 'send_whatsapp') {
-      setMode('owner');
       setOwnerSection('marketing');
     } else if (actionId === 'add_client') {
-      setMode('owner');
       setOwnerSection('clients');
     } else if (actionId === 'open_waitlist') {
-      setMode('owner');
       setOwnerSection('appointments');
       setInitialAppointmentsTab('waitlist');
     }
   };
-
-  if (!config) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#f8fafc] text-slate-800">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-sm font-semibold text-slate-500">Inizializzazione piattaforma SaaS Multi-Tenant...</p>
-        </div>
-      </div>
-    );
-  }
 
   const currentTenantInfo = tenants.find(t => t.id === currentTenantId);
 
@@ -351,94 +511,263 @@ export default function App() {
             </div>
           </div>
 
-          {/* Desktop Navigation / Mode Switcher */}
+          {/* Desktop Controls depending on Role */}
           <div className="hidden md:flex items-center gap-3">
-            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/80">
-              <button
-                onClick={() => setMode('super_admin')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  mode === 'super_admin' 
-                    ? 'bg-purple-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Building2 className="w-4 h-4" />
-                <span>Super Admin</span>
-              </button>
+            
+            {/* 1. Staff Gateway View Header */}
+            {mode === 'staff_gateway' && (
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-xl border border-amber-200 text-xs font-bold">
+                  <Lock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Gatekeeper Accessi Riservati</span>
+                </div>
 
-              <button
-                onClick={() => setMode('owner')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  mode === 'owner' 
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Store className="w-4 h-4 text-indigo-500" />
-                <span>Titolare Salone</span>
-              </button>
-
-              <button
-                onClick={() => setMode('client')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  mode === 'client' 
-                    ? 'bg-indigo-600 text-white shadow-sm' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Globe className="w-4 h-4" />
-                <span>Portale Cliente (PWA)</span>
-              </button>
-            </div>
-
-            {/* Quick Action Button on Desktop */}
-            {mode === 'owner' && (
-              <button
-                onClick={() => {
-                  setOwnerSection('appointments');
-                  setInitialAppointmentsTab('agenda');
-                  setAutoOpenAddApp(true);
-                }}
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>Nuovo Appuntamento</span>
-              </button>
+                <button
+                  onClick={() => setMode('client')}
+                  className="px-3.5 py-1.5 rounded-xl font-bold text-xs text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5"
+                >
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Area Prenotazioni Clienti</span>
+                </button>
+              </div>
             )}
+
+            {/* 2. Client View Header */}
+            {mode === 'client' && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="hidden lg:inline">Prenotazioni Online 24/7 Aperte</span>
+                  <span className="lg:hidden">Online 24/7</span>
+                </div>
+
+                {loggedClientUser ? (
+                  <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800">
+                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                    <span>{loggedClientUser.name}</span>
+                    <button
+                      onClick={() => setLoggedClientUser(null)}
+                      className="ml-1 text-[11px] text-rose-600 hover:underline"
+                    >
+                      Esci
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Accedi / Registrati</span>
+                  </button>
+                )}
+
+                {/* Quick Staff Jump Back or Staff Login */}
+                {isOwnerAuthenticated ? (
+                  <button
+                    onClick={() => setMode('owner')}
+                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                    title="Rientra nella sessione Titolare già attiva"
+                  >
+                    <Store className="w-3.5 h-3.5" />
+                    <span>Torna a Gestione Salone</span>
+                  </button>
+                ) : isSuperAdminAuthenticated ? (
+                  <button
+                    onClick={() => setMode('super_admin')}
+                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                    title="Rientra nella sessione Super Admin già attiva"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Torna a Super Admin</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setMode('staff_gateway')}
+                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95 border border-slate-700"
+                    title="Accesso riservato per Titolare del salone e Super Admin con PIN"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Area Staff & Admin</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* 3. Salon Owner View Header */}
+            {mode === 'owner' && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl border border-indigo-200 text-xs font-bold">
+                  <Store className="w-4 h-4 text-indigo-600" />
+                  <span>Titolare Salone</span>
+                </div>
+
+                {/* Primary Button: Invia Invito Web App (WhatsApp, Email, SMS) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInvitePreselectedClient(null);
+                    setIsInviteModalOpen(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                  title="Invia link invito Web App via WhatsApp (🇨🇭 +41), Email o SMS"
+                >
+                  <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Invita alla App</span>
+                </button>
+
+                {/* Quick Action Button: Nuovo Appuntamento */}
+                <button
+                  onClick={() => {
+                    setOwnerSection('appointments');
+                    setInitialAppointmentsTab('agenda');
+                    setAutoOpenAddApp(true);
+                  }}
+                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Nuovo Appuntamento</span>
+                </button>
+
+                {/* View as Client Preview */}
+                <button
+                  onClick={() => setMode('client')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                  title="Visualizza come appare il portale di prenotazione ai clienti"
+                >
+                  <Globe className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="hidden xl:inline">Anteprima</span> Clienti
+                </button>
+
+                {/* Logout Owner */}
+                <button
+                  onClick={handleLogoutOwner}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
+                  title="Disconnetti dalla sessione Titolare"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Esci</span>
+                </button>
+              </div>
+            )}
+
+            {/* 4. Super Admin View Header */}
+            {mode === 'super_admin' && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-800 rounded-xl border border-purple-200 text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-purple-600" />
+                  <span>Super Admin SaaS</span>
+                  <span className="text-[10px] bg-purple-200/70 text-purple-900 px-1.5 py-0.2 rounded font-mono">LPD Privacy</span>
+                </div>
+
+                {isSuperAdminAuditActive ? (
+                  <button
+                    onClick={() => setIsSuperAdminAuditActive(false)}
+                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>Torna a Console Admin</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setMode('client')}
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                    title="Visualizza l'app dal punto di vista cliente"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Vista Clienti</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleLogoutAdmin}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
+                  title="Disconnetti Super Admin"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Disconnetti Admin</span>
+                </button>
+              </div>
+            )}
+
           </div>
 
-          {/* Mobile Right Controls: Role Badge + Dedicated Hamburger Menu Button */}
+          {/* Mobile Right Controls: Context-aware with immediate access */}
           <div className="flex md:hidden items-center gap-1.5">
-            {/* Quick Mode Toggle Pill */}
-            <button
-              onClick={() => {
-                setMode(prev => prev === 'owner' ? 'client' : 'owner');
-              }}
-              className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold border transition flex items-center gap-1 shadow-sm active:scale-95 ${
-                mode === 'owner'
-                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                  : mode === 'client'
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-purple-50 text-purple-700 border-purple-200'
-              }`}
-              title="Clicca per cambiare ruolo rapido"
-            >
-              {mode === 'owner' && <Store className="w-3.5 h-3.5 text-indigo-600" />}
-              {mode === 'client' && <Globe className="w-3.5 h-3.5 text-emerald-600" />}
-              {mode === 'super_admin' && <Building2 className="w-3.5 h-3.5 text-purple-600" />}
-              <span className="truncate max-w-[62px]">
-                {mode === 'owner' ? 'Titolare' : mode === 'client' ? 'Cliente' : 'Admin'}
-              </span>
-            </button>
+            {/* Mobile Context-Aware Role Switcher Button */}
+            {mode === 'client' ? (
+              isOwnerAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => setMode('owner')}
+                  className="px-2.5 py-1.5 bg-indigo-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                >
+                  <Store className="w-3 h-3" />
+                  <span>Titolare</span>
+                </button>
+              ) : isSuperAdminAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() => setMode('super_admin')}
+                  className="px-2.5 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                >
+                  <Building2 className="w-3 h-3" />
+                  <span>Admin</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setMode('staff_gateway')}
+                  className="px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                  title="Accesso Staff & Super Admin"
+                >
+                  <Lock className="w-3 h-3 text-amber-300" />
+                  <span>Staff PIN</span>
+                </button>
+              )
+            ) : mode === 'staff_gateway' ? (
+              <button
+                type="button"
+                onClick={() => setMode('client')}
+                className="px-2.5 py-1.5 bg-emerald-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                title="Vai all'area clienti"
+              >
+                <Globe className="w-3 h-3" />
+                <span>Clienti</span>
+              </button>
+            ) : mode === 'super_admin' && isSuperAdminAuditActive ? (
+              <button
+                type="button"
+                onClick={() => setIsSuperAdminAuditActive(false)}
+                className="px-2.5 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+              >
+                <Building2 className="w-3 h-3" />
+                <span>Console</span>
+              </button>
+            ) : null}
 
-            {/* Accessible Hamburger Menu Button (Touch Target >= 44px) */}
+            {mode === 'owner' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setInvitePreselectedClient(null);
+                  setIsInviteModalOpen(true);
+                }}
+                className="p-2 rounded-xl bg-emerald-600 text-white shadow-sm flex items-center justify-center transition active:scale-95"
+                title="Invia link invito Web App"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Mobile Hamburger Menu Button (Touch Target >= 44px) */}
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
               className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-800 transition active:scale-95 relative"
               aria-label="Apri Menu di Navigazione"
             >
               <Menu className="w-5 h-5 stroke-[2.2]" />
-              {todayAppointmentsCount > 0 && (
+              {todayAppointmentsCount > 0 && mode === 'owner' && (
                 <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white animate-pulse" />
               )}
             </button>
@@ -450,15 +779,27 @@ export default function App() {
       {/* ========================================================================= */}
       {/* MAIN CONTENT ROUTER                                                       */}
       {/* ========================================================================= */}
-      {mode === 'super_admin' ? (
+      {mode === 'staff_gateway' || 
+       (mode === 'owner' && !isOwnerAuthenticated) || 
+       (mode === 'super_admin' && !isSuperAdminAuthenticated && !isSuperAdminAuditActive) ? (
+        <StaffAccessGateway
+          onAuthenticated={handleRoleAuthenticated}
+          onNavigateToClient={() => setMode('client')}
+          currentSalonName={currentTenantInfo?.name || config.name}
+          isOwnerLoggedIn={isOwnerAuthenticated}
+          isSuperAdminLoggedIn={isSuperAdminAuthenticated}
+        />
+      ) : mode === 'super_admin' && !isSuperAdminAuditActive ? (
         <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
           <SuperAdminDashboard 
             tenants={tenants} 
             onSelectTenant={handleSelectTenant} 
             currentTenantId={currentTenantId} 
+            onInspectApp={handleInspectSalonApp}
+            onLogoutAdmin={handleLogoutAdmin}
           />
         </div>
-      ) : mode === 'owner' ? (
+      ) : mode === 'owner' || (mode === 'super_admin' && isSuperAdminAuditActive) ? (
         <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row gap-6 p-3 sm:p-6 lg:p-8" id="owner-workspace">
           
           {/* Desktop Sidebar Navigation (#1e293b dark gray with smooth shadow) */}
@@ -468,7 +809,7 @@ export default function App() {
               {[
                 { id: 'dashboard', label: 'Dashboard Finanziaria', icon: LayoutDashboard },
                 { id: 'appointments', label: 'Calendario Agenda', icon: Calendar, badge: todayAppointmentsCount > 0 ? `${todayAppointmentsCount}` : null },
-                { id: 'clients', label: 'Anagrafica Clienti', icon: Users, badge: `${clients.length}` },
+                { id: 'clients', label: 'Anagrafica Clienti', icon: Users, badge: `${activeClients.length}` },
                 { id: 'services', label: 'Listino Servizi', icon: NotebookTabs },
                 { id: 'marketing', label: 'Marketing & WhatsApp', icon: MessageSquare, badge: 'API' },
                 { id: 'settings', label: 'Impostazioni & API', icon: Settings2 },
@@ -536,52 +877,88 @@ export default function App() {
 
           {/* Owner Workspace Main Content Area */}
           <main className="flex-1 min-w-0">
+            {/* Super Admin Audit Banner */}
+            {isSuperAdminAuditing && (
+              <div className="w-full bg-purple-900 text-white p-3.5 rounded-2xl mb-5 border border-purple-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
+                <div className="flex items-center gap-2.5 text-xs">
+                  <div className="p-2 bg-purple-800 rounded-xl text-purple-200 flex-shrink-0">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white flex items-center gap-1.5 text-sm">
+                      <span>Audit Super Admin Attivo</span>
+                      <span className="text-[10px] bg-purple-700 text-purple-200 px-2 py-0.5 rounded font-mono uppercase font-bold">LPD / GDPR Compliance</span>
+                    </p>
+                    <p className="text-purple-200 text-xs">
+                      Visione globale dell'app per <strong>{currentTenantInfo?.name || config.name}</strong>. Numeri di telefono, email private e note personali sono mascherati a tutela della privacy.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSuperAdminAuditActive(false)}
+                  className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs flex-shrink-0 active:scale-95"
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  <span>Torna a Dashboard Super Admin</span>
+                </button>
+              </div>
+            )}
+
             {ownerSection === 'dashboard' && (
               <Dashboard 
-                appointments={appointments} 
-                clients={clients} 
+                appointments={activeAppointments} 
+                clients={activeClients} 
                 onNavigateToSection={(sec) => setOwnerSection(sec)} 
+                onOpenInviteClient={(client) => {
+                  setInvitePreselectedClient(client || null);
+                  setIsInviteModalOpen(true);
+                }}
               />
             )}
             {ownerSection === 'appointments' && (
               <Appointments 
-                appointments={appointments}
-                clients={clients}
+                appointments={activeAppointments}
+                clients={activeClients}
                 services={services}
                 waitlist={waitlist}
-                onUpdateAppointments={setAppointments}
-                onUpdateWaitlist={setWaitlist}
-                onUpdateClients={setClients}
-                autoOpenAdd={autoOpenAddApp}
+                onUpdateAppointments={isSuperAdminAuditing ? () => {} : setAppointments}
+                onUpdateWaitlist={isSuperAdminAuditing ? () => {} : setWaitlist}
+                onUpdateClients={isSuperAdminAuditing ? () => {} : setClients}
+                autoOpenAdd={isSuperAdminAuditing ? false : autoOpenAddApp}
                 onResetAutoOpen={() => setAutoOpenAddApp(false)}
                 initialTab={initialAppointmentsTab}
               />
             )}
             {ownerSection === 'clients' && (
               <ClientsList 
-                clients={clients} 
-                onUpdateClients={setClients} 
+                clients={activeClients} 
+                onUpdateClients={isSuperAdminAuditing ? () => {} : setClients} 
+                onOpenInviteClient={(client) => {
+                  setInvitePreselectedClient(client || null);
+                  setIsInviteModalOpen(true);
+                }}
               />
             )}
             {ownerSection === 'services' && (
               <ServicesList 
                 services={services} 
-                onUpdateServices={setServices} 
+                onUpdateServices={isSuperAdminAuditing ? () => {} : setServices} 
               />
             )}
             {ownerSection === 'marketing' && (
               <MarketingWhatsApp 
                 config={config}
-                clients={clients}
+                clients={activeClients}
                 campaigns={campaigns}
-                onUpdateCampaigns={setCampaigns}
+                onUpdateCampaigns={isSuperAdminAuditing ? () => {} : setCampaigns}
                 onNavigateToSettings={() => setOwnerSection('settings')}
               />
             )}
             {ownerSection === 'settings' && (
               <Settings 
                 config={config} 
-                onUpdateConfig={setConfig} 
+                onUpdateConfig={isSuperAdminAuditing ? () => {} : setConfig} 
               />
             )}
             {ownerSection === 'instructions' && (
@@ -687,14 +1064,35 @@ export default function App() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 text-center sm:text-left">
-            <p>© 2026 NoShow Reducer SaaS • Deploy Vercel Production Ready.</p>
-            <div className="flex items-center gap-4 font-medium text-slate-500">
-              <button onClick={() => { setMode('owner'); setOwnerSection('instructions'); }} className="hover:text-indigo-600 transition">Guida & Istruzioni</button>
-              <span>•</span>
-              <button onClick={() => { setMode('client'); }} className="hover:text-indigo-600 transition">Area Clienti PWA</button>
-              <span>•</span>
-              <button onClick={() => { setMode('super_admin'); }} className="hover:text-indigo-600 transition">Super Admin</button>
-            </div>
+            <p>© 2026 NoShow Reducer SaaS • Protezione No-Show & Booking PWA.</p>
+            
+            {mode === 'client' ? (
+              <div className="flex items-center gap-3 font-medium text-slate-400">
+                <span>Accesso Pubblico Clienti</span>
+                <span>•</span>
+                <button 
+                  onClick={() => handleRequestRoleSwitch('owner')} 
+                  className="hover:text-indigo-600 transition flex items-center gap-1 font-semibold text-slate-500 hover:underline"
+                >
+                  <Lock className="w-3 h-3" />
+                  <span>Accesso Riservato Personale (PIN)</span>
+                </button>
+              </div>
+            ) : mode === 'owner' ? (
+              <div className="flex items-center gap-4 font-medium text-slate-500">
+                <button onClick={() => { setOwnerSection('instructions'); }} className="hover:text-indigo-600 transition">Guida Salone</button>
+                <span>•</span>
+                <button onClick={() => { setMode('client'); }} className="hover:text-indigo-600 transition">Anteprima Booking Clienti</button>
+                <span>•</span>
+                <button onClick={handleLogoutOwner} className="hover:text-rose-600 transition text-rose-600 font-semibold">Disconnetti Titolare</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 font-medium text-slate-500">
+                <button onClick={() => setIsSuperAdminAuditActive(false)} className="hover:text-purple-600 transition">Console Super Admin</button>
+                <span>•</span>
+                <button onClick={handleLogoutAdmin} className="hover:text-rose-600 transition text-rose-600 font-semibold">Disconnetti Super Admin</button>
+              </div>
+            )}
           </div>
         </div>
       </footer>
@@ -706,7 +1104,7 @@ export default function App() {
         isOpen={isMobileDrawerOpen}
         onClose={() => setIsMobileDrawerOpen(false)}
         mode={mode}
-        onSelectMode={setMode}
+        onSelectMode={handleRequestRoleSwitch}
         ownerSection={ownerSection}
         onSelectOwnerSection={setOwnerSection}
         tenants={tenants}
@@ -714,7 +1112,7 @@ export default function App() {
         onSelectTenant={handleSelectTenant}
         config={config}
         todayAppointmentsCount={todayAppointmentsCount}
-        totalClientsCount={clients.length}
+        totalClientsCount={activeClients.length}
         loggedClientUser={loggedClientUser}
         onOpenAuthModal={() => setShowAuthModal(true)}
         onLogoutClient={() => setLoggedClientUser(null)}
@@ -750,8 +1148,49 @@ export default function App() {
         todayAppointmentsCount={todayAppointmentsCount}
         loggedClientUser={loggedClientUser}
         onOpenAuthModal={() => setShowAuthModal(true)}
-        onSelectMode={setMode}
+        onSelectMode={handleRequestRoleSwitch}
+        isOwnerAuthenticated={isOwnerAuthenticated}
       />
+
+      {/* ========================================================================= */}
+      {/* INVITE CLIENT MODAL (WHATSAPP +41, EMAIL, SMS)                            */}
+      {/* ========================================================================= */}
+      <InviteClientModal
+        isOpen={isInviteModalOpen}
+        onClose={() => {
+          setIsInviteModalOpen(false);
+          setInvitePreselectedClient(null);
+        }}
+        config={config}
+        clients={clients}
+        preselectedClient={invitePreselectedClient}
+        onSuccessToast={(msg) => {
+          setToastMessage(msg);
+          setTimeout(() => setToastMessage(null), 4500);
+        }}
+      />
+
+      {/* ========================================================================= */}
+      {/* DEDICATED ROLE AUTH MODAL (PROTECTED RBAC GATEKEEPER)                     */}
+      {/* ========================================================================= */}
+      <DedicatedRoleAuthModal
+        isOpen={showRoleAuthModal}
+        targetRole={roleAuthTarget}
+        onAuthenticated={handleRoleAuthenticated}
+        onClose={() => setShowRoleAuthModal(false)}
+      />
+
+      {/* ========================================================================= */}
+      {/* FLOATING TOAST NOTIFICATION                                               */}
+      {/* ========================================================================= */}
+      {toastMessage && (
+        <div className="fixed bottom-20 md:bottom-8 right-4 sm:right-8 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 animate-fade-in text-xs font-semibold">
+          <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
     </div>
   );

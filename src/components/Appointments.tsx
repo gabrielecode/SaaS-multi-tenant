@@ -1,7 +1,27 @@
 import { useState, useMemo, useEffect, FormEvent } from 'react';
 import { Appointment, AppointmentStatus, Client, Service, WaitlistEntry } from '../types';
 import { buildWhatsAppUrl, formatPhoneDisplay } from '../lib/phoneUtils';
-import { Plus, Check, X, AlertTriangle, RefreshCw, Calendar, Mail, MessageSquare, PlusCircle, Bell, UserPlus, CreditCard, Send } from 'lucide-react';
+import { 
+  Plus, 
+  Check, 
+  X, 
+  AlertTriangle, 
+  RefreshCw, 
+  Calendar, 
+  Clock, 
+  Send, 
+  Bell, 
+  CreditCard, 
+  User, 
+  Phone, 
+  ChevronLeft, 
+  ChevronRight, 
+  CheckCircle2, 
+  UserPlus, 
+  Sparkles,
+  Search,
+  Filter
+} from 'lucide-react';
 
 interface AppointmentsProps {
   appointments: Appointment[];
@@ -28,11 +48,19 @@ export default function Appointments({
   onResetAutoOpen,
   initialTab
 }: AppointmentsProps) {
-  const [selectedDate, setSelectedDate] = useState<string>('2026-06-24');
+  // Determinazione data iniziale intelligente (usa la data del primo appuntamento o oggi)
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    if (appointments.length > 0) {
+      return appointments[0].date;
+    }
+    return new Date().toISOString().split('T')[0];
+  });
+
   const [activeTab, setActiveTab] = useState<'agenda' | 'waitlist'>(initialTab || 'agenda');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddWaitlistForm, setShowAddWaitlistForm] = useState(false);
 
+  // Apertura automatica da pulsanti esterni
   useEffect(() => {
     if (autoOpenAdd) {
       setShowAddForm(true);
@@ -46,50 +74,87 @@ export default function Appointments({
     }
   }, [initialTab]);
 
-  // Custom Toast notification state
+  // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  // Form states for manual Appointment
+  // Form states per Nuovo Appuntamento
   const [newAppClientId, setNewAppClientId] = useState('');
   const [newAppClientName, setNewAppClientName] = useState('');
   const [newAppClientPhone, setNewAppClientPhone] = useState('');
   const [newAppServiceId, setNewAppServiceId] = useState('');
+  const [newAppDate, setNewAppDate] = useState(selectedDate);
   const [newAppTime, setNewAppTime] = useState('10:00');
   const [newAppNotes, setNewAppNotes] = useState('');
   const [newAppHasDeposit, setNewAppHasDeposit] = useState(false);
-  const [newAppDepositPaid, setNewAppDepositPaid] = useState(0);
+  const [newAppDepositPaid, setNewAppDepositPaid] = useState<number>(0);
 
-  // Form states for Waitlist entry
+  // Aggiorna newAppDate quando cambia selectedDate se il form non è aperto
+  useEffect(() => {
+    if (!showAddForm) {
+      setNewAppDate(selectedDate);
+    }
+  }, [selectedDate, showAddForm]);
+
+  // Form states per Waitlist entry
   const [waitlistClientName, setWaitlistClientName] = useState('');
   const [waitlistClientPhone, setWaitlistClientPhone] = useState('');
   const [waitlistServiceId, setWaitlistServiceId] = useState('');
   const [waitlistTimePref, setWaitlistTimePref] = useState<'MORNING' | 'AFTERNOON' | 'ANYTIME'>('ANYTIME');
 
-  // Match waitlist status message
+  // Match waitlist alert message
   const [matchedNotification, setMatchedNotification] = useState<string | null>(null);
 
-  // Filter appointments for the selected date
+  // Navigazione data (+1 giorno, -1 giorno, oggi)
+  const handleShiftDate = (days: number) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + days);
+    setSelectedDate(d.toISOString().split('T')[0]);
+  };
+
+  const handleSetToday = () => {
+    setSelectedDate(new Date().toISOString().split('T')[0]);
+  };
+
+  // Appuntamenti filtrati per data selezionata
   const filteredAppointments = useMemo(() => {
     return appointments
       .filter(a => a.date === selectedDate)
       .sort((a, b) => a.time.localeCompare(b.time));
   }, [appointments, selectedDate]);
 
-  // Handle status changes
+  // Waitlist filtrata o globale
+  const filteredWaitlist = useMemo(() => {
+    return waitlist.filter(w => !w.date || w.date === selectedDate);
+  }, [waitlist, selectedDate]);
+
+  // Statistiche rapide giornaliere
+  const dayStats = useMemo(() => {
+    const total = filteredAppointments.length;
+    const confirmed = filteredAppointments.filter(a => a.status === AppointmentStatus.CONFIRMED).length;
+    const pending = filteredAppointments.filter(a => a.status === AppointmentStatus.PENDING).length;
+    const completed = filteredAppointments.filter(a => a.status === AppointmentStatus.COMPLETED).length;
+    const noShows = filteredAppointments.filter(a => a.status === AppointmentStatus.NO_SHOW).length;
+    const totalRevenue = filteredAppointments.reduce((sum, a) => sum + (a.price || 0), 0);
+    const depositsCollected = filteredAppointments.reduce((sum, a) => sum + (a.depositPaid || 0), 0);
+
+    return { total, confirmed, pending, completed, noShows, totalRevenue, depositsCollected };
+  }, [filteredAppointments]);
+
+  // Gestione cambio stato appuntamento
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
     const updated = appointments.map(app => {
       if (app.id === id) {
-        // If changing to NO_SHOW or COMPLETED, let's also update the client's metrics
+        // Se lo stato diventa NO_SHOW o COMPLETED, aggiorna metriche del cliente
         if (newStatus === AppointmentStatus.NO_SHOW || newStatus === AppointmentStatus.COMPLETED) {
           const clientIndex = clients.findIndex(c => c.id === app.clientId);
           if (clientIndex !== -1) {
             const updatedClients = [...clients];
-            const client = updatedClients[clientIndex];
-            
+            const client = { ...updatedClients[clientIndex] };
+
             if (newStatus === AppointmentStatus.NO_SHOW) {
               client.noShowCount += 1;
               client.riskLevel = 'HIGH';
@@ -97,13 +162,14 @@ export default function Appointments({
               client.completedCount += 1;
             }
 
-            // Recalculate reliability score
+            // Ricalcolo affidabilità
             const total = client.completedCount + client.noShowCount;
             client.reliabilityScore = total > 0 ? Math.round((client.completedCount / total) * 100) : 100;
             if (client.reliabilityScore >= 80) client.riskLevel = 'LOW';
             else if (client.reliabilityScore >= 60) client.riskLevel = 'MEDIUM';
             else client.riskLevel = 'HIGH';
 
+            updatedClients[clientIndex] = client;
             onUpdateClients(updatedClients);
           }
         }
@@ -111,10 +177,20 @@ export default function Appointments({
       }
       return app;
     });
+
     onUpdateAppointments(updated);
+
+    const labels: Record<AppointmentStatus, string> = {
+      [AppointmentStatus.CONFIRMED]: 'Appuntamento confermato',
+      [AppointmentStatus.COMPLETED]: 'Appuntamento segnato come completato',
+      [AppointmentStatus.NO_SHOW]: 'Registrato No-Show del cliente',
+      [AppointmentStatus.CANCELLED]: 'Appuntamento annullato',
+      [AppointmentStatus.PENDING]: 'Impostato in attesa'
+    };
+    showToast(labels[newStatus] || 'Stato aggiornato');
   };
 
-  // Submit manual booking form
+  // Submit creazione appuntamento manuale
   const handleAddAppointmentSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!newAppServiceId) return;
@@ -123,7 +199,7 @@ export default function Appointments({
     let finalClientName = newAppClientName;
     let finalClientPhone = newAppClientPhone;
 
-    // If existing client selected
+    // Se è stato scelto un cliente esistente
     if (newAppClientId) {
       const exist = clients.find(c => c.id === newAppClientId);
       if (exist) {
@@ -131,7 +207,7 @@ export default function Appointments({
         finalClientPhone = exist.phone;
       }
     } else {
-      // Check if phone already belongs to an existing client
+      // Verifica se il numero corrisponde già a un cliente
       if (!newAppClientName || !newAppClientPhone) return;
       const cleanInputPhone = newAppClientPhone.replace(/\D/g, '');
       const existingClientByPhone = clients.find(c => c.phone.replace(/\D/g, '') === cleanInputPhone);
@@ -160,7 +236,6 @@ export default function Appointments({
     const selectedService = services.find(s => s.id === newAppServiceId);
     if (!selectedService) return;
 
-    // Compute deposit amount (opzionale)
     const deposit = newAppHasDeposit ? Number(newAppDepositPaid) : 0;
 
     const newApp: Appointment = {
@@ -170,18 +245,19 @@ export default function Appointments({
       clientPhone: finalClientPhone,
       serviceId: selectedService.id,
       serviceName: selectedService.name,
-      date: selectedDate,
+      date: newAppDate || selectedDate,
       time: newAppTime,
       price: selectedService.price,
       depositPaid: deposit,
       paymentMethod: deposit > 0 ? 'STRIPE_DEPOSIT' : 'IN_SALON',
-      status: AppointmentStatus.CONFIRMED, // Manually added by owner usually starts as confirmed/locked
+      status: AppointmentStatus.CONFIRMED,
       notes: newAppNotes,
       reminderSent: false,
       isConfirmedByClient: true
     };
 
     onUpdateAppointments([...appointments, newApp]);
+    setSelectedDate(newApp.date);
 
     // Reset Form
     setNewAppClientId('');
@@ -193,9 +269,10 @@ export default function Appointments({
     setNewAppHasDeposit(false);
     setNewAppDepositPaid(0);
     setShowAddForm(false);
+    showToast(`Appuntamento per ${finalClientName} creato con successo!`);
   };
 
-  // Submit manual Waitlist form
+  // Submit creazione Waitlist entry
   const handleAddWaitlistSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!waitlistClientName || !waitlistClientPhone || !waitlistServiceId) return;
@@ -203,8 +280,8 @@ export default function Appointments({
     const newWl: WaitlistEntry = {
       id: 'w_' + Date.now(),
       clientId: 'c_' + Date.now(),
-      clientName: waitlistClientName,
-      clientPhone: waitlistClientPhone,
+      clientName: waitlistClientName.trim(),
+      clientPhone: waitlistClientPhone.trim(),
       serviceId: waitlistServiceId,
       date: selectedDate,
       timePreference: waitlistTimePref,
@@ -216,23 +293,23 @@ export default function Appointments({
     setWaitlistClientPhone('');
     setWaitlistServiceId('');
     setShowAddWaitlistForm(false);
+    showToast(`${newWl.clientName} inserito in lista d'attesa!`);
   };
 
-  // Trigger Notification to Waitlist on Cancellation/No-Show
+  // Trigger notifica automatica lista d'attesa su disdetta o no-show
   const handleNotifyWaitlist = (serviceId: string, time: string) => {
-    // Find waitlist entries for this date and service
-    const matching = waitlist.filter(w => w.date === selectedDate && w.serviceId === serviceId);
-    
+    const matching = waitlist.filter(w => (!w.date || w.date === selectedDate) && w.serviceId === serviceId);
+
     if (matching.length > 0) {
       const recipient = matching[0];
       setMatchedNotification(
-        `Notifica inviata a ${recipient.clientName} (${recipient.clientPhone}) via SMS: "Ciao! Uno slot per il servizio si è liberato oggi alle ${time}. Rispondi OK per prenotarlo all'istante!"`
+        `Notifica WhatsApp/SMS inviata a ${recipient.clientName} (${recipient.clientPhone}): "Ciao! Si è liberato uno slot oggi alle ${time}. Rispondi OK per bloccarlo all'istante!"`
       );
-      // Remove notified entry from waitlist
+      // Rimuove la voce notificata dalla waitlist
       onUpdateWaitlist(waitlist.filter(w => w.id !== recipient.id));
     } else {
       setMatchedNotification(
-        `Nessun cliente corrispondente in lista d'attesa per questo servizio in data ${selectedDate}.`
+        `Nessun cliente in lista d'attesa per questo servizio in data ${selectedDate}.`
       );
     }
 
@@ -241,9 +318,9 @@ export default function Appointments({
     }, 8000);
   };
 
-    return (
-    <div className="space-y-6 relative">
-      {/* Toast Notification */}
+  return (
+    <div className="space-y-6 relative" id="appointments-component">
+      {/* Toast Feedback */}
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 bg-indigo-600 border border-indigo-500 text-white font-bold text-xs py-3.5 px-5 rounded-2xl shadow-2xl animate-bounce flex items-center gap-2">
           <Check className="w-4 h-4 text-white" />
@@ -251,271 +328,467 @@ export default function Appointments({
         </div>
       )}
 
-      {/* Header */}
-      <div>
-        <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-600 stroke-[1.5]" />
-          Calendario Agenda
-        </h2>
-        <p className="text-xs text-slate-500 mt-1">
-          Monitora gli slot, gestisci gli appuntamenti della giornata e visualizza la lista d'attesa.
-        </p>
+      {/* Header & Titolo */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5 tracking-tight">
+            <Calendar className="w-6 h-6 text-indigo-600 stroke-[2]" />
+            <span>Gestione Agenda & Lista d'Attesa</span>
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Visualizza gli slot, conferma le prenotazioni, gestisci i No-Show e recupera fatturato con la lista d'attesa.
+          </p>
+        </div>
+
+        {/* Pulsanti Azione Principali */}
+        <div className="flex items-center gap-2">
+          {activeTab === 'agenda' ? (
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20 active:scale-95"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Nuovo Appuntamento</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAddWaitlistForm(true)}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20 active:scale-95"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Inserisci in Lista d'Attesa</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Tab Selector & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 border border-slate-200 rounded-lg self-start">
+      {/* Tab Switcher (Agenda vs Waitlist) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="inline-flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl">
           <button
             onClick={() => setActiveTab('agenda')}
-            className={`px-4 py-2 rounded-lg font-semibold text-xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${activeTab === 'agenda' ? 'bg-white text-indigo-700 border border-slate-200 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}
+            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all flex items-center gap-2 ${
+              activeTab === 'agenda'
+                ? 'bg-white text-indigo-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            Agenda Giornaliera
+            <Calendar className="w-4 h-4 text-indigo-600" />
+            <span>Agenda Giornaliera</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+              activeTab === 'agenda' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'
+            }`}>
+              {filteredAppointments.length}
+            </span>
           </button>
+
           <button
             onClick={() => setActiveTab('waitlist')}
-            className={`px-4 py-2 rounded-lg font-semibold text-xs transition-all duration-200 flex items-center gap-1.5 hover:-translate-y-0.5 active:scale-95 ${activeTab === 'waitlist' ? 'bg-white text-indigo-700 border border-slate-200 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-900'}`}
+            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all flex items-center gap-2 ${
+              activeTab === 'waitlist'
+                ? 'bg-white text-indigo-700 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
           >
-            Lista d'Attesa
+            <Bell className="w-4 h-4 text-amber-500" />
+            <span>Lista d'Attesa</span>
             {waitlist.length > 0 && (
-              <span className="bg-indigo-600 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">
+              <span className="bg-amber-500 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-xs">
                 {waitlist.length}
               </span>
             )}
           </button>
         </div>
 
-        {activeTab === 'agenda' ? (
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] self-start sm:self-auto shadow-md"
-          >
-            <Plus className="w-4 h-4 text-white" />
-            Nuovo Appuntamento
-          </button>
-        ) : (
-          <button
-            onClick={() => setShowAddWaitlistForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] self-start sm:self-auto shadow-md"
-          >
-            <Plus className="w-4 h-4" />
-            Inserisci in Lista
-          </button>
-        )}
+        {/* Statistiche Pills compatti */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span className="text-slate-500">Confermati:</span>
+            <strong className="text-slate-900">{dayStats.confirmed}</strong>
+          </div>
+          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span className="text-slate-500">In attesa:</span>
+            <strong className="text-slate-900">{dayStats.pending}</strong>
+          </div>
+          {dayStats.noShows > 0 && (
+            <div className="px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-1.5 shadow-xs">
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+              <span>No-Show:</span>
+              <strong>{dayStats.noShows}</strong>
+            </div>
+          )}
+          <div className="px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-1.5 shadow-xs font-semibold">
+            <span>Fatturato stimato:</span>
+            <strong className="text-indigo-900">{dayStats.totalRevenue} €</strong>
+          </div>
+        </div>
       </div>
 
-      {/* Matching alerts */}
+      {/* Avviso Match Intelligente Lista d'Attesa */}
       {matchedNotification && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-emerald-100 flex items-start gap-3 animate-pulse">
-          <Bell className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+        <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 text-emerald-900 flex items-start gap-3 shadow-sm animate-fade-in">
+          <Sparkles className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
           <div className="text-xs">
-            <p className="font-bold text-emerald-300">Lista d'Attesa Intelligente</p>
-            <p className="mt-0.5 text-emerald-200/80">{matchedNotification}</p>
+            <p className="font-extrabold text-emerald-800">Recupero Slot Automatico</p>
+            <p className="mt-0.5 text-emerald-700 leading-relaxed">{matchedNotification}</p>
           </div>
         </div>
       )}
 
-      {/* Main Panels */}
-      {activeTab === 'agenda' ? (
+      {/* ========================================================================= */}
+      {/* VISTA 1: AGENDA GIORNALIERA                                              */}
+      {/* ========================================================================= */}
+      {activeTab === 'agenda' && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Date Selector */}
-          <div className="glass-card p-5 rounded-2xl space-y-4">
-            <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2">
-              <Calendar className="w-4.5 h-4.5 text-indigo-600" />
-              Seleziona Data
-            </h4>
-            <div className="grid grid-cols-3 lg:grid-cols-1 gap-2">
-              {[
-                { date: '2026-06-23', label: 'Ieri' },
-                { date: '2026-06-24', label: 'Oggi' },
-                { date: '2026-06-25', label: 'Domani' },
-                { date: '2026-06-26', label: 'Venerdì' }
-              ].map(item => (
+          
+          {/* Barra Laterale Filtro Data */}
+          <div className="lg:col-span-1 space-y-4">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-indigo-600" />
+                  <span>Seleziona Data</span>
+                </h4>
                 <button
-                  key={item.date}
-                  onClick={() => setSelectedDate(item.date)}
-                  className={`p-3 rounded-lg border text-left transition-all duration-200 flex flex-col justify-between hover:-translate-y-0.5 active:scale-95 ${
-                    selectedDate === item.date
-                      ? 'border-indigo-100 bg-indigo-50/70 text-indigo-700 shadow-sm font-bold'
-                      : 'border-slate-200/80 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
-                  }`}
+                  type="button"
+                  onClick={handleSetToday}
+                  className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
                 >
-                  <span className={`text-[10px] uppercase font-bold tracking-wider ${selectedDate === item.date ? 'text-indigo-600' : 'text-slate-400'}`}>{item.label}</span>
-                  <span className="text-xs font-semibold mt-1">
-                    {new Date(item.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}
-                  </span>
+                  Oggi
                 </button>
-              ))}
+              </div>
+
+              {/* Selettore Native Date con Frecce */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleShiftDate(-1)}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition"
+                    title="Giorno precedente"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleShiftDate(1)}
+                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition"
+                    title="Giorno successivo"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Pulsanti Rapidi Date con appuntamenti */}
+              <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date rapide con slot</p>
+                {Array.from(new Set(appointments.map(a => a.date))).slice(0, 5).map(dateStr => {
+                  const count = appointments.filter(a => a.date === dateStr).length;
+                  const isSelected = selectedDate === dateStr;
+                  const dateObj = new Date(dateStr);
+                  const formatted = isNaN(dateObj.getTime())
+                    ? dateStr
+                    : dateObj.toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short' });
+
+                  return (
+                    <button
+                      key={dateStr}
+                      type="button"
+                      onClick={() => setSelectedDate(dateStr)}
+                      className={`w-full p-2.5 rounded-xl border text-left text-xs font-medium flex items-center justify-between transition ${
+                        isSelected
+                          ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold shadow-xs'
+                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="capitalize">{formatted}</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                        isSelected ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-100 text-slate-500'
+                      }`}>
+                        {count} slot
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          {/* Appointments Grid */}
+          {/* Griglia Appuntamenti del Giorno */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="glass-card p-4 rounded-xl flex items-center justify-between text-xs text-slate-500">
-              <span>Slot occupati in data {new Date(selectedDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-              <span className="font-bold text-slate-900">{filteredAppointments.length} Appuntamenti</span>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-indigo-600" />
+                <span className="font-semibold text-slate-700">
+                  Agenda del{' '}
+                  <strong className="text-slate-900 capitalize">
+                    {new Date(selectedDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </strong>
+                </span>
+              </div>
+              <span className="text-slate-500 font-medium">
+                {filteredAppointments.length} {filteredAppointments.length === 1 ? 'prenotazione registrata' : 'prenotazioni registrate'}
+              </span>
             </div>
 
             {filteredAppointments.length > 0 ? (
               <div className="space-y-3">
                 {filteredAppointments.map(app => {
-                  const isPast = app.date < '2026-06-24';
+                  const isNoShow = app.status === AppointmentStatus.NO_SHOW;
+                  const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
+                  const isCompleted = app.status === AppointmentStatus.COMPLETED;
+                  const isCancelled = app.status === AppointmentStatus.CANCELLED;
+
                   return (
                     <div
                       key={app.id}
-                      className={`p-5 rounded-2xl border transition ${
-                        app.status === AppointmentStatus.NO_SHOW 
-                          ? 'border-rose-200 bg-rose-50/40' 
-                          : 'glass-card glass-card-hover'
+                      className={`p-5 rounded-2xl border transition-all ${
+                        isNoShow
+                          ? 'border-rose-300 bg-rose-50/50'
+                          : isCompleted
+                          ? 'border-slate-200 bg-slate-50/60 opacity-80'
+                          : isCancelled
+                          ? 'border-slate-200 bg-slate-100/50 opacity-60'
+                          : 'border-slate-200/90 bg-white hover:border-slate-300 shadow-sm'
                       }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="space-y-1">
+                        
+                        {/* Info Principali */}
+                        <div className="space-y-1.5 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                            {/* Orario */}
+                            <span className="font-mono text-xs font-extrabold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
                               {app.time}
                             </span>
-                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                              app.status === AppointmentStatus.CONFIRMED ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' :
-                              app.status === AppointmentStatus.PENDING ? 'bg-amber-50 text-amber-700 border border-amber-200/60' :
-                              app.status === AppointmentStatus.COMPLETED ? 'bg-slate-100 text-slate-700 border border-slate-200' :
-                              app.status === AppointmentStatus.NO_SHOW ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                              'bg-slate-100 text-slate-500 border border-slate-200'
+
+                            {/* Badge Stato */}
+                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
+                              isConfirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                              app.status === AppointmentStatus.PENDING ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                              isCompleted ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                              isNoShow ? 'bg-rose-100 text-rose-800 border-rose-200' :
+                              'bg-slate-100 text-slate-500 border-slate-200'
                             }`}>
-                              {app.status === AppointmentStatus.CONFIRMED ? 'Confermato' :
+                              {isConfirmed ? 'Confermato' :
                                app.status === AppointmentStatus.PENDING ? 'In attesa' :
-                               app.status === AppointmentStatus.COMPLETED ? 'Completato' :
-                               app.status === AppointmentStatus.NO_SHOW ? 'No-Show' : 'Annullato'}
+                               isCompleted ? 'Completato' :
+                               isNoShow ? 'No-Show' : 'Annullato'}
                             </span>
-                            {app.isConfirmedByClient && app.status !== AppointmentStatus.NO_SHOW && (
-                              <span className="bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5 uppercase">
-                                <Check className="w-2.5 h-2.5" /> Cliente Confermato
+
+                            {/* Conferma Cliente */}
+                            {app.isConfirmedByClient && !isNoShow && !isCancelled && (
+                              <span className="bg-emerald-600 text-white text-[9px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1 uppercase">
+                                <Check className="w-2.5 h-2.5" /> Confermato da cliente
                               </span>
                             )}
                           </div>
-                          
-                          <h5 className="text-base font-bold text-slate-950 pt-1">{app.clientName}</h5>
-                          <p className="text-xs text-slate-600 font-semibold">{app.serviceName} • {app.price} €</p>
+
+                          {/* Nome Cliente & Servizio */}
+                          <div className="pt-1">
+                            <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                              <span>{app.clientName}</span>
+                              <span className="text-xs font-normal text-slate-500 font-mono">
+                                ({formatPhoneDisplay(app.clientPhone)})
+                              </span>
+                            </h4>
+                            <p className="text-xs font-bold text-indigo-700 mt-0.5">
+                              {app.serviceName} • {app.price} €
+                            </p>
+                          </div>
+
+                          {/* Note */}
                           {app.notes && (
-                            <p className="text-xs text-slate-700 italic bg-slate-50 p-2.5 rounded-lg border border-slate-100 mt-2">
-                              " {app.notes} "
+                            <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-2 max-w-xl">
+                              "{app.notes}"
                             </p>
                           )}
                         </div>
 
-                        <div className="flex flex-col items-end gap-1.5 self-start sm:self-auto">
-                          <p className="text-xs text-slate-500 font-medium">
+                        {/* Lato Destro: Pagamenti & Azioni */}
+                        <div className="flex flex-col items-start sm:items-end gap-2.5">
+                          {/* Stato Caparra / Pagamento */}
+                          <div className="text-xs text-slate-600">
                             {app.depositPaid > 0 ? (
-                              <>Caparra versata: <span className="font-bold text-emerald-700">{app.depositPaid} €</span></>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
+                                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                                Caparra: {app.depositPaid} €
+                              </span>
                             ) : (
-                              <span className="text-slate-500 bg-slate-100 px-2 py-0.5 rounded text-[11px]">Nessun acconto • Saldo in salone</span>
+                              <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                                Saldo completo in salone
+                              </span>
                             )}
-                          </p>
+                          </div>
 
-                          {/* Quick Interactive Actions */}
-                          <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                            {/* WhatsApp Direct Message Button */}
+                          {/* Pulsantiera Azioni */}
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {/* WhatsApp Direct Link */}
                             <a
                               href={buildWhatsAppUrl(
                                 app.clientPhone,
-                                `Ciao ${app.clientName}! Ti contattiamo dal salone per il tuo appuntamento di ${app.serviceName} alle ore ${app.time}.`,
+                                `Ciao ${app.clientName}! Ti contattiamo dal salone per il tuo appuntamento per ${app.serviceName} in data ${app.date} alle ore ${app.time}. A presto!`,
                                 'CH'
                               )}
                               target="_blank"
                               rel="noreferrer"
-                              className="p-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-lg text-xs font-semibold flex items-center gap-1 transition"
-                              title="Scrivi su WhatsApp al cliente (Prefisso Svizzera +41)"
+                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
+                              title="Scrivi su WhatsApp al cliente"
                             >
-                              <Send className="w-3 h-3 text-emerald-600" /> WhatsApp
+                              <Send className="w-3 h-3 text-emerald-600" />
+                              <span>WhatsApp</span>
                             </a>
 
+                            {/* Se in attesa: Conferma o Annulla */}
                             {app.status === AppointmentStatus.PENDING && (
                               <>
                                 <button
+                                  type="button"
                                   onClick={() => handleStatusChange(app.id, AppointmentStatus.CONFIRMED)}
-                                  className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-xs font-semibold flex items-center gap-1 border border-emerald-200"
-                                  title="Segna come confermato"
+                                  className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
                                 >
-                                  <Check className="w-3.5 h-3.5" /> Conferma
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Conferma</span>
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => handleStatusChange(app.id, AppointmentStatus.CANCELLED)}
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs font-semibold flex items-center gap-1 border border-rose-200"
-                                  title="Annulla appuntamento"
+                                  className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
                                 >
-                                  <X className="w-3.5 h-3.5" /> Annulla
+                                  <X className="w-3.5 h-3.5" />
+                                  <span>Annulla</span>
                                 </button>
                               </>
                             )}
 
+                            {/* Se confermato: Eseguito o No-Show */}
                             {app.status === AppointmentStatus.CONFIRMED && (
                               <>
                                 <button
+                                  type="button"
                                   onClick={() => handleStatusChange(app.id, AppointmentStatus.COMPLETED)}
-                                  className="p-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-lg text-xs font-semibold flex items-center gap-1"
+                                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition active:scale-95"
                                 >
-                                  <Check className="w-3.5 h-3.5" /> Eseguito
+                                  <Check className="w-3.5 h-3.5" />
+                                  <span>Eseguito</span>
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => handleStatusChange(app.id, AppointmentStatus.NO_SHOW)}
-                                  className="p-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-lg text-xs font-semibold flex items-center gap-1"
+                                  className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
+                                  title="Segna mancata presentazione"
                                 >
-                                  <AlertTriangle className="w-3.5 h-3.5" /> No-Show
+                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                                  <span>No-Show</span>
                                 </button>
                               </>
                             )}
 
-                            {(app.status === AppointmentStatus.NO_SHOW || app.status === AppointmentStatus.CANCELLED) && (
+                            {/* Se No-Show o Cancellato: Chiama Lista Attesa */}
+                            {(isNoShow || isCancelled) && (
                               <button
+                                type="button"
                                 onClick={() => handleNotifyWaitlist(app.serviceId, app.time)}
-                                className="p-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold flex items-center gap-1 border border-indigo-200"
+                                className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
                               >
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin-hover" />
-                                Chiama Lista Attesa
+                                <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Chiama Waitlist</span>
                               </button>
                             )}
                           </div>
                         </div>
+
                       </div>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="glass-card p-12 rounded-2xl text-center">
-                <Calendar className="w-12 h-12 mx-auto text-slate-300 stroke-1 mb-3" />
-                <h5 className="text-sm font-bold text-slate-800">Nessun appuntamento schedulato</h5>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Non ci sono appuntamenti registrati per questa data. Clicca su "Nuovo Appuntamento" per aggiungerne uno manualmente.
+              <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center shadow-sm space-y-3">
+                <Calendar className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
+                <h4 className="text-base font-extrabold text-slate-900">Nessun appuntamento per questa data</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                  Non ci sono appuntamenti registrati per il giorno selezionato. Clicca su "Nuovo Appuntamento" per inserire una prenotazione.
                 </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddForm(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Aggiungi Appuntamento</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
+
         </div>
-      ) : (
-        /* Waitlist Panel */
+      )}
+
+      {/* ========================================================================= */}
+      {/* VISTA 2: LISTA D'ATTESA (WAITLIST)                                        */}
+      {/* ========================================================================= */}
+      {activeTab === 'waitlist' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <h4 className="text-base font-bold text-slate-900">Persone in Lista d'Attesa</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <Bell className="w-4 h-4 text-amber-500" />
+                <span>Clienti in Lista d'Attesa ({waitlist.length})</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setShowAddWaitlistForm(true)}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Aggiungi cliente</span>
+              </button>
+            </div>
+
             {waitlist.length > 0 ? (
               <div className="space-y-3">
                 {waitlist.map(w => {
                   const matchingService = services.find(s => s.id === w.serviceId);
+                  const prefLabel = w.timePreference === 'MORNING' ? 'Mattina' : w.timePreference === 'AFTERNOON' ? 'Pomeriggio' : 'Qualsiasi orario';
+
                   return (
-                    <div key={w.id} className="p-4 glass-card glass-card-hover rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+                    <div
+                      key={w.id}
+                      className="p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h5 className="text-sm font-bold text-slate-900">{w.clientName}</h5>
-                          <span className="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded-full uppercase border border-indigo-100">
-                            Pref: {w.timePreference === 'MORNING' ? 'Mattina' : w.timePreference === 'AFTERNOON' ? 'Pomeriggio' : 'Qualsiasi ora'}
+                          <h5 className="text-sm font-extrabold text-slate-900">{w.clientName}</h5>
+                          <span className="text-[10px] bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                            {prefLabel}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">Servizio: {matchingService?.name || 'Servizio Generico'}</p>
-                        <p className="text-xs text-slate-500 font-medium">Recapito: {w.clientPhone}</p>
+                        <p className="text-xs text-indigo-700 font-bold">
+                          Servizio richiesto: {matchingService?.name || 'Servizio Generico'}
+                        </p>
+                        <p className="text-xs text-slate-500 font-mono">
+                          Recapito: {formatPhoneDisplay(w.clientPhone)}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-1.5">
+
+                      {/* Azioni Waitlist */}
+                      <div className="flex items-center gap-2">
                         <button
+                          type="button"
                           onClick={() => {
-                            // Convert Waitlist into active booking
+                            // Assegna e prenota all'istante
                             const newApp: Appointment = {
                               id: 'a_' + Date.now(),
                               clientId: w.clientId,
@@ -533,16 +806,23 @@ export default function Appointments({
                             };
                             onUpdateAppointments([...appointments, newApp]);
                             onUpdateWaitlist(waitlist.filter(item => item.id !== w.id));
-                            showToast(`Prenotazione creata con successo per ${w.clientName}!`);
+                            showToast(`Prenotazione confermata per ${w.clientName}!`);
+                            setActiveTab('agenda');
                           }}
-                          className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition"
+                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 flex items-center gap-1.5"
                         >
-                          Prenota Ora
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Assegna Slot Ora</span>
                         </button>
+
                         <button
-                          onClick={() => onUpdateWaitlist(waitlist.filter(item => item.id !== w.id))}
-                          className="p-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-400 hover:text-slate-600"
-                          title="Rimuovi"
+                          type="button"
+                          onClick={() => {
+                            onUpdateWaitlist(waitlist.filter(item => item.id !== w.id));
+                            showToast('Cliente rimosso dalla lista d\'attesa');
+                          }}
+                          className="p-2 border border-slate-200 hover:bg-rose-50 hover:border-rose-200 rounded-xl text-slate-400 hover:text-rose-600 transition"
+                          title="Rimuovi dalla lista"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -552,42 +832,78 @@ export default function Appointments({
                 })}
               </div>
             ) : (
-              <div className="glass-card p-12 rounded-2xl text-center">
-                <Bell className="w-12 h-12 mx-auto text-slate-300 stroke-1 mb-3 animate-pulse" />
-                <h5 className="text-sm font-bold text-slate-800">Lista d'attesa vuota</h5>
-                <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Nessun cliente in attesa. Quando l'agenda è piena, puoi inserire i clienti interessati qui per coprire i no-show.
+              <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center shadow-sm space-y-3">
+                <Bell className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
+                <h4 className="text-base font-extrabold text-slate-900">Lista d'attesa vuota</h4>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                  Nessun cliente in attesa di slot. Inserisci i clienti che non trovano posto per riempire automaticamente le cancellazioni improvvise.
                 </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddWaitlistForm(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition active:scale-95"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Aggiungi Cliente in Attesa</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
-          <div className="glass-card p-5 rounded-2xl space-y-4">
-            <h4 className="text-sm font-bold text-slate-950">Come funziona la Lista d'Attesa?</h4>
-            <ul className="text-xs text-slate-600 space-y-2.5 list-disc pl-4 font-medium">
-              <li>Quando un cliente cancella, l'app confronta la data e il servizio con i clienti registrati in lista.</li>
-              <li>Se viene rilevato un match, l'app invia un <strong className="text-indigo-600">SMS automatico di sollecito</strong> con un pulsante rapido per prenotarsi.</li>
-              <li>Il primo cliente della lista d'attesa che risponde si assicura lo slot liberato, prevenendo perdite finanziarie.</li>
-            </ul>
+          {/* Scheda Spiegazione Lista d'Attesa */}
+          <div className="space-y-4">
+            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-extrabold text-slate-900">
+                Come Funziona il Recupero No-Show
+              </h4>
+              <ul className="text-xs text-slate-600 space-y-3">
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
+                  <span>Quando un appuntamento viene cancellato o segnato come No-Show, il sistema individua i clienti in lista d'attesa.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
+                  <span>Un avviso rapido su WhatsApp/SMS notifica la disponibilità dello slot liberato in tempo reale.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
+                  <span>Con un click assegni la prenotazione, salvando il fatturato del salone.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       )}
 
-      {/* MODAL: ADD APPOINTMENT */}
+      {/* ========================================================================= */}
+      {/* MODALE: NUOVO APPUNTAMENTO MANUALE                                        */}
+      {/* ========================================================================= */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-bold text-slate-950">Nuovo Appuntamento Manuale</h4>
-              <button onClick={() => setShowAddForm(false)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-indigo-600" />
+                <span>Nuovo Appuntamento</span>
+              </h4>
+              <button
+                onClick={() => setShowAddForm(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddAppointmentSubmit} className="space-y-3.5 text-slate-700">
-              {/* Client Selection */}
+            <form onSubmit={handleAddAppointmentSubmit} className="space-y-3.5 text-xs">
+              
+              {/* Selezione Cliente o Creazione Rapida */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Seleziona Cliente</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Cliente</label>
                 <select
                   value={newAppClientId}
                   onChange={(e) => {
@@ -597,68 +913,73 @@ export default function Appointments({
                       setNewAppClientPhone('');
                     }
                   }}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 >
-                  <option value="">-- Crea Nuovo Cliente --</option>
+                  <option value="">-- Nuovo Cliente (inserisci dati sotto) --</option>
                   {clients.map(c => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
+                    <option key={c.id} value={c.id}>
+                      {c.name} ({formatPhoneDisplay(c.phone)})
+                    </option>
                   ))}
                 </select>
               </div>
 
-              {/* If New Client details required */}
+              {/* Dati se nuovo cliente */}
               {!newAppClientId && (
-                <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Nome e Cognome</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome e Cognome</label>
                     <input
                       type="text"
                       required={!newAppClientId}
-                      placeholder="es. Mario Rossi"
+                      placeholder="es. Laura Bianchi"
                       value={newAppClientName}
                       onChange={(e) => setNewAppClientName(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2 mt-1 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                      className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase">Telefono</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Cellulare</label>
                     <input
                       type="tel"
                       required={!newAppClientId}
-                      placeholder="+39 340..."
+                      placeholder="+41 79..."
                       value={newAppClientPhone}
                       onChange={(e) => setNewAppClientPhone(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2 mt-1 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                      className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
                     />
                   </div>
                 </div>
               )}
 
-              {/* Service Selection */}
+              {/* Selezione Servizio */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Servizio Richiesto</label>
                 <select
                   required
                   value={newAppServiceId}
                   onChange={(e) => setNewAppServiceId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 >
-                  <option value="">Seleziona Servizio...</option>
+                  <option value="">Seleziona un Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
-                    <option key={s.id} value={s.id}>{s.name} - {s.price} € ({s.duration} min)</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name} - {s.price} € ({s.duration} min)
+                    </option>
                   ))}
                 </select>
               </div>
 
-              {/* Time Selector */}
+              {/* Data e Orario */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Data</label>
                   <input
                     type="date"
-                    disabled
-                    value={selectedDate}
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-400 text-xs rounded-lg p-2.5 cursor-not-allowed"
+                    required
+                    value={newAppDate}
+                    onChange={(e) => setNewAppDate(e.target.value)}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                   />
                 </div>
                 <div>
@@ -668,24 +989,21 @@ export default function Appointments({
                     required
                     value={newAppTime}
                     onChange={(e) => setNewAppTime(e.target.value)}
-                    className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                   />
                 </div>
               </div>
 
-              {/* Caparra / Acconto Incassato (Opzionale) */}
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 space-y-2">
+              {/* Opzione Acconto / Caparra */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <label htmlFor="modal-toggle-deposit" className="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
-                      <CreditCard className="w-3.5 h-3.5 text-indigo-600" />
-                      Registra Caparra / Acconto (Opzionale)
-                    </label>
-                    <p className="text-[10px] text-slate-500">Non obbligatorio. Spunta solo se il cliente ha già versato un acconto.</p>
-                  </div>
+                  <label htmlFor="toggle-deposit-check" className="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
+                    <CreditCard className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Registra Caparra / Acconto</span>
+                  </label>
                   <input
+                    id="toggle-deposit-check"
                     type="checkbox"
-                    id="modal-toggle-deposit"
                     checked={newAppHasDeposit}
                     onChange={(e) => {
                       setNewAppHasDeposit(e.target.checked);
@@ -697,72 +1015,78 @@ export default function Appointments({
                         }
                       }
                     }}
-                    className="w-4 h-4 accent-indigo-600 cursor-pointer rounded"
+                    className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
                   />
                 </div>
 
                 {newAppHasDeposit && (
                   <div className="pt-2 border-t border-slate-200/60 flex items-center gap-2 animate-fade-in">
-                    <label className="text-[11px] font-semibold text-slate-700">Importo Acconto (€):</label>
+                    <span className="text-[11px] font-semibold text-slate-600">Importo Acconto (€):</span>
                     <input
                       type="number"
                       min={0}
-                      max={services.find(s => s.id === newAppServiceId)?.price || 500}
                       value={newAppDepositPaid}
                       onChange={(e) => setNewAppDepositPaid(Math.max(0, Number(e.target.value)))}
-                      className="w-24 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-lg p-2 focus:border-indigo-500 focus:outline-none"
+                      className="w-24 px-2 py-1.5 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-lg focus:border-indigo-500 focus:outline-none"
                     />
-                    <span className="text-[10px] text-slate-400">
-                      su {services.find(s => s.id === newAppServiceId)?.price || 0}€ totali
-                    </span>
                   </div>
                 )}
               </div>
 
-              {/* Notes */}
+              {/* Note */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Note Opzionali</label>
                 <textarea
                   rows={2}
-                  placeholder="Note aggiuntive..."
+                  placeholder="es. Preferenza colore, richieste particolari..."
                   value={newAppNotes}
                   onChange={(e) => setNewAppNotes(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 />
               </div>
 
+              {/* Pulsanti Modale */}
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-3 rounded-lg border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-sm"
+                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md"
+                  className="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md transition active:scale-95"
                 >
-                  Conferma & Salva
+                  Salva Prenotazione
                 </button>
               </div>
+
             </form>
           </div>
         </div>
       )}
 
-      {/* MODAL: ADD WAITLIST */}
+      {/* ========================================================================= */}
+      {/* MODALE: INSERISCI IN LISTA D'ATTESA                                       */}
+      {/* ========================================================================= */}
       {showAddWaitlistForm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-bold text-slate-950">Inserisci Cliente in Lista d'Attesa</h4>
-              <button onClick={() => setShowAddWaitlistForm(false)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <Bell className="w-5 h-5 text-amber-500" />
+                <span>Nuovo in Lista d'Attesa</span>
+              </h4>
+              <button
+                onClick={() => setShowAddWaitlistForm(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddWaitlistSubmit} className="space-y-3.5 text-slate-700">
+            <form onSubmit={handleAddWaitlistSubmit} className="space-y-3.5 text-xs">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Nome Cliente</label>
                 <input
@@ -771,56 +1095,58 @@ export default function Appointments({
                   placeholder="Nome e cognome..."
                   value={waitlistClientName}
                   onChange={(e) => setWaitlistClientName(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Telefono Cliente</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Cellulare (per avviso WhatsApp/SMS)</label>
                 <input
                   type="tel"
                   required
-                  placeholder="Numero cellulare per SMS..."
+                  placeholder="+41 79 123 45 67"
                   value={waitlistClientPhone}
                   onChange={(e) => setWaitlistClientPhone(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Servizio Desiderato</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Servizio Richiesto</label>
                 <select
                   required
                   value={waitlistServiceId}
                   onChange={(e) => setWaitlistServiceId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
                 >
                   <option value="">Seleziona Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.price} €)
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Preferenza Orario</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Fascia Oraria Preferita</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { val: 'MORNING', label: 'Mattina' },
                     { val: 'AFTERNOON', label: 'Pomeriggio' },
                     { val: 'ANYTIME', label: 'Qualsiasi' }
-                  ].map(pref => (
+                  ].map(p => (
                     <button
-                      key={pref.val}
+                      key={p.val}
                       type="button"
-                      onClick={() => setWaitlistTimePref(pref.val as any)}
-                      className={`p-2.5 rounded-lg text-xs font-semibold border text-center transition-all duration-200 ${
-                        waitlistTimePref === pref.val
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm font-bold'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5 active:scale-[0.98]'
+                      onClick={() => setWaitlistTimePref(p.val as any)}
+                      className={`py-2 rounded-xl border text-xs font-bold text-center transition ${
+                        waitlistTimePref === p.val
+                          ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      {pref.label}
+                      {p.label}
                     </button>
                   ))}
                 </div>
@@ -830,21 +1156,22 @@ export default function Appointments({
                 <button
                   type="button"
                   onClick={() => setShowAddWaitlistForm(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-3 rounded-lg border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-sm"
+                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md"
+                  className="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md transition active:scale-95"
                 >
-                  Aggiungi alla lista
+                  Salva in Lista
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }

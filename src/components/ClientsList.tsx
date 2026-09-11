@@ -1,13 +1,14 @@
 import { useState, useMemo, FormEvent } from 'react';
 import { Client } from '../types';
-import { Search, UserPlus, AlertOctagon, CheckCircle2, AlertTriangle, Phone, Mail, Edit3, X, Save, ShieldAlert, Users } from 'lucide-react';
+import { Search, UserPlus, AlertOctagon, CheckCircle2, AlertTriangle, Phone, Mail, Edit3, X, Save, ShieldAlert, Users, Share2, Send } from 'lucide-react';
 
 interface ClientsListProps {
   clients: Client[];
   onUpdateClients: (cls: Client[]) => void;
+  onOpenInviteClient?: (client?: Client) => void;
 }
 
-export default function ClientsList({ clients, onUpdateClients }: ClientsListProps) {
+export default function ClientsList({ clients, onUpdateClients, onOpenInviteClient }: ClientsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRisk, setFilterRisk] = useState<string>('ALL');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -141,15 +142,27 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
             <Users className="w-5 h-5 text-indigo-600 stroke-[1.5]" />
             Anagrafica Clienti
           </h2>
-          <p className="text-xs text-slate-500 mt-1">Gestisci i recapiti e tieni traccia del punteggio di puntualità di ogni cliente.</p>
+          <p className="text-xs text-slate-500 mt-1">Gestisci i recapiti, invia inviti per la Web App e tieni traccia del punteggio di puntualità.</p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] self-start sm:self-auto shadow-md"
-        >
-          <UserPlus className="w-4 h-4 text-white" />
-          Aggiungi Nuovo Cliente
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          {onOpenInviteClient && (
+            <button
+              onClick={() => onOpenInviteClient()}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] shadow-sm"
+              title="Invia link di iscrizione Web App via WhatsApp, Email o SMS"
+            >
+              <Share2 className="w-4 h-4 text-white" />
+              Invia Invito App
+            </button>
+          )}
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] shadow-md"
+          >
+            <UserPlus className="w-4 h-4 text-white" />
+            Nuovo Cliente
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -267,7 +280,7 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
                 </div>
 
                 {/* Protect / Risk trigger footer */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 text-xs">
                     {isHighRisk ? (
                       <span className="text-rose-600 font-bold flex items-center gap-1">
@@ -280,16 +293,30 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
                     )}
                   </div>
 
-                  <button
-                    onClick={() => toggleHighRisk(client.id)}
-                    className={`text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-sm ${
-                      isHighRisk 
-                        ? 'border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100' 
-                        : 'border border-slate-200 text-slate-700 hover:bg-slate-50 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    {isHighRisk ? 'Rimuovi restrizione' : 'Richiedi Caparra 100%'}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {onOpenInviteClient && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenInviteClient(client)}
+                        className="text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-1.5 transition active:scale-95 shadow-2xs"
+                        title="Invia link invito Web App via WhatsApp, Email o SMS"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Invita App</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => toggleHighRisk(client.id)}
+                      className={`text-xs font-semibold px-3.5 py-2 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-sm ${
+                        isHighRisk 
+                          ? 'border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100' 
+                          : 'border border-slate-200 text-slate-700 hover:bg-slate-50 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      {isHighRisk ? 'Rimuovi restrizione' : 'Richiedi Caparra 100%'}
+                    </button>
+                  </div>
                 </div>
               </div>
             );

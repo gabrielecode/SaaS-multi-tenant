@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Appointment, Client, AppointmentStatus } from '../types';
 import { buildWhatsAppUrl } from '../lib/phoneUtils';
-import { TrendingUp, AlertTriangle, ShieldCheck, Euro, Calendar, Users, Percent, HelpCircle, BarChart2, Sparkles, Send } from 'lucide-react';
+import { TrendingUp, AlertTriangle, ShieldCheck, Euro, Calendar, Users, Percent, HelpCircle, BarChart2, Sparkles, Send, Share2 } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -17,9 +17,10 @@ interface DashboardProps {
   appointments: Appointment[];
   clients: Client[];
   onNavigateToSection: (section: string) => void;
+  onOpenInviteClient?: (client?: Client) => void;
 }
 
-export default function Dashboard({ appointments, clients, onNavigateToSection }: DashboardProps) {
+export default function Dashboard({ appointments, clients, onNavigateToSection, onOpenInviteClient }: DashboardProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const triggerToast = (msg: string) => {
@@ -92,6 +93,39 @@ export default function Dashboard({ appointments, clients, onNavigateToSection }
           </div>
         </div>
       </div>
+
+      {/* Quick Invite Banner for Salon Owner */}
+      {onOpenInviteClient && (
+        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-indigo-200 shrink-0">
+              <Share2 className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  Novità Clienti
+                </span>
+                <span className="text-xs text-indigo-200">Invito Multi-Canale</span>
+              </div>
+              <h4 className="text-sm font-extrabold text-white mt-0.5">
+                Invia il Link di Invito per Iscriversi all'App
+              </h4>
+              <p className="text-xs text-indigo-200/80 mt-0.5">
+                Raggiungi i tuoi clienti via <strong>WhatsApp (🇨🇭 +41)</strong>, <strong>Email</strong>, <strong>SMS</strong> o con <strong>QR Code</strong> per fargli prenotare 24/7.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenInviteClient}
+            className="px-5 py-2.5 bg-white hover:bg-slate-100 text-indigo-900 font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition active:scale-95 shrink-0"
+          >
+            <Share2 className="w-4 h-4 text-indigo-600" />
+            <span>Invia Invito a Cliente</span>
+          </button>
+        </div>
+      )}
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

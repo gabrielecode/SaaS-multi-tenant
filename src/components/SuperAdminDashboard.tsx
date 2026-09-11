@@ -1,17 +1,27 @@
 import { useState, FormEvent } from 'react';
 import { TenantSalon, SystemLog } from '../types';
-import { Building2, ShieldCheck, DollarSign, Activity, Users, AlertTriangle, CheckCircle, RefreshCw, Server, Database, Plus, X } from 'lucide-react';
+import { maskEmail, maskPhoneNumber } from '../lib/privacyUtils';
+import { Building2, ShieldCheck, DollarSign, Activity, Users, AlertTriangle, CheckCircle, RefreshCw, Server, Database, Plus, X, Eye, Lock, ShieldAlert } from 'lucide-react';
 
 interface SuperAdminDashboardProps {
   tenants: TenantSalon[];
   onSelectTenant: (tenantId: string) => void;
   currentTenantId: string;
+  onInspectApp?: (tenantId: string) => void;
+  onLogoutAdmin?: () => void;
 }
 
-export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTenantId }: SuperAdminDashboardProps) {
+export default function SuperAdminDashboard({ 
+  tenants, 
+  onSelectTenant, 
+  currentTenantId,
+  onInspectApp,
+  onLogoutAdmin
+}: SuperAdminDashboardProps) {
   const [tenantList, setTenantList] = useState<TenantSalon[]>(tenants);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [privacyMaskingActive, setPrivacyMaskingActive] = useState(true);
   
   // New Tenant form state
   const [newSalonName, setNewSalonName] = useState('');
@@ -90,25 +100,39 @@ export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTe
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 bg-purple-50 text-purple-700 text-[10px] font-bold rounded-full border border-purple-200 uppercase">Super Admin SaaS</span>
             <span className="text-xs text-slate-400">Piattaforma Multi-Tenant Centrale</span>
+            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-full flex items-center gap-1">
+              <Lock className="w-2.5 h-2.5" /> Dati Sensibili Protetti (LPD/GDPR)
+            </span>
           </div>
           <h2 className="text-xl font-extrabold text-slate-900 mt-1">Controllo Infrastruttura & Saloni</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Gestisci tutti i tenant iscritti, monitora il fatturato ricorrente (MRR) e lo stato di Supabase.</p>
+          <p className="text-xs text-slate-500 mt-0.5">Gestisci tutti i tenant iscritti, monitora il fatturato ricorrente (MRR) e ispeziona l'app con anonimizzazione automatica dei dati privati.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {onInspectApp && (
+            <button
+              onClick={() => onInspectApp(currentTenantId)}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
+              title="Visiona tutta l'app del salone selezionato con dati sensibili esclusi"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Visiona Tutta l'App (Audit)
+            </button>
+          )}
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
           >
             <Plus className="w-3.5 h-3.5" />
-            Registra Nuovo Salone
+            Registra Salone
           </button>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-2 transition"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Sincronizza Cloud
-          </button>
+          {onLogoutAdmin && (
+            <button
+              onClick={onLogoutAdmin}
+              className="px-3.5 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-700 text-xs font-bold rounded-xl transition active:scale-95"
+            >
+              Disconnetti
+            </button>
+          )}
         </div>
       </div>
 
@@ -202,7 +226,15 @@ export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTe
                     </td>
                     <td className="p-4">
                       <div className="font-semibold text-slate-800">{tenant.ownerName}</div>
-                      <div className="text-[11px] text-slate-400">{tenant.email}</div>
+                      <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                        <Lock className="w-2.5 h-2.5 text-emerald-600" />
+                        {privacyMaskingActive ? maskEmail(tenant.email) : tenant.email}
+                      </div>
+                      {tenant.phone && (
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          {privacyMaskingActive ? maskPhoneNumber(tenant.phone) : tenant.phone}
+                        </div>
+                      )}
                     </td>
                     <td className="p-4">
                       <span className="px-2 py-1 bg-slate-100 font-bold text-slate-700 rounded-md text-[10px] uppercase">
@@ -233,7 +265,16 @@ export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTe
                         </span>
                       </div>
                     </td>
-                    <td className="p-4 text-right space-x-2">
+                    <td className="p-4 text-right space-x-2 whitespace-nowrap">
+                      {onInspectApp && (
+                        <button
+                          onClick={() => onInspectApp(tenant.id)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition"
+                          title="Visiona app con dati sensibili protetti"
+                        >
+                          Visiona App
+                        </button>
+                      )}
                       <button
                         onClick={() => onSelectTenant(tenant.id)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${

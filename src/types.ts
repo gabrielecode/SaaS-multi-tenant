@@ -154,7 +154,7 @@ export interface SystemLog {
   id: string;
   timestamp: string;
   level: 'INFO' | 'WARNING' | 'ERROR';
-  service: 'SUPABASE' | 'META_WHATSAPP' | 'STRIPE' | 'CRON_REMINDERS';
+  service: 'SUPABASE' | 'META_WHATSAPP' | 'STRIPE' | 'CRON_REMINDERS' | 'SMS_GATEWAY' | 'EMAIL_SERVICE';
   message: string;
   tenant_id?: string;
 }

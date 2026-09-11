@@ -26,8 +26,8 @@ import { TenantSalon, BusinessConfig, ClientAuthUser } from '../types';
 interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'super_admin' | 'owner' | 'client';
-  onSelectMode: (mode: 'super_admin' | 'owner' | 'client') => void;
+  mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway';
+  onSelectMode: (mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway') => void;
   ownerSection: string;
   onSelectOwnerSection: (section: string) => void;
   tenants: TenantSalon[];
@@ -129,6 +129,27 @@ export default function MobileNavDrawer({
               Ruolo & Modalità Visualizzazione
             </span>
             <div className="grid grid-cols-1 gap-1.5 bg-slate-800/60 p-1.5 rounded-xl border border-slate-800">
+              <button
+                onClick={() => {
+                  onSelectMode('staff_gateway');
+                  onClose();
+                }}
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold transition ${
+                  mode === 'staff_gateway'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'text-amber-300 hover:bg-slate-700/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Lock className={`w-4 h-4 ${mode === 'staff_gateway' ? 'text-white' : 'text-amber-400'}`} />
+                  <div className="text-left">
+                    <p className="leading-tight font-bold">Home Accessi Staff & Admin</p>
+                    <p className="text-[10px] text-slate-300 font-normal">Gatekeeper con PIN Dedicati</p>
+                  </div>
+                </div>
+                {mode === 'staff_gateway' && <CheckCircle2 className="w-4 h-4 text-white" />}
+              </button>
+
               <button
                 onClick={() => {
                   onSelectMode('owner');

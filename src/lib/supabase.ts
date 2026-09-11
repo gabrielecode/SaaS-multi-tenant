@@ -69,7 +69,7 @@ export async function sendWhatsAppTemplateMessage(
   };
 }
 
-export function logSystemEvent(level: 'INFO' | 'WARNING' | 'ERROR', service: 'SUPABASE' | 'META_WHATSAPP' | 'STRIPE' | 'CRON_REMINDERS', message: string, tenant_id?: string) {
+export function logSystemEvent(level: 'INFO' | 'WARNING' | 'ERROR', service: 'SUPABASE' | 'META_WHATSAPP' | 'STRIPE' | 'CRON_REMINDERS' | 'SMS_GATEWAY' | 'EMAIL_SERVICE', message: string, tenant_id?: string) {
   const logs = JSON.parse(localStorage.getItem('ns_system_logs') || '[]');
   const newLog = {
     id: 'log_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),

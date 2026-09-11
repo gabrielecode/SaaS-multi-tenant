@@ -114,3 +114,27 @@ export function formatPhoneDisplay(phone: string): string {
   }
   return trimmed;
 }
+
+/**
+ * Genera l'URL per inviare un SMS nativo da smartphone o tablet.
+ * Compatibile con standard moderni iOS e Android.
+ */
+export function buildSmsUrl(phone: string, message: string = '', defaultCountry: string = 'CH'): string {
+  const normalized = normalizePhoneForWhatsApp(phone, defaultCountry);
+  if (!normalized) return '#';
+  const encodedText = message ? encodeURIComponent(message) : '';
+  // Separatore universale per iOS/Android: ?body=
+  return `sms:+${normalized}?body=${encodedText}`;
+}
+
+/**
+ * Genera l'URL mailto: sicuro per l'invio via email
+ */
+export function buildMailtoUrl(email: string, subject: string = '', body: string = ''): string {
+  if (!email) return '#';
+  const params: string[] = [];
+  if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
+  if (body) params.push(`body=${encodeURIComponent(body)}`);
+  const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+  return `mailto:${email.trim()}${queryString}`;
+}

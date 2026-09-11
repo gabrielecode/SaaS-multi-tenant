@@ -16,7 +16,7 @@ import {
 import { ClientAuthUser } from '../types';
 
 interface MobileBottomBarProps {
-  mode: 'super_admin' | 'owner' | 'client';
+  mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway';
   ownerSection: string;
   onSelectOwnerSection: (section: string) => void;
   onOpenDrawer: () => void;
@@ -24,7 +24,8 @@ interface MobileBottomBarProps {
   todayAppointmentsCount: number;
   loggedClientUser: ClientAuthUser | null;
   onOpenAuthModal: () => void;
-  onSelectMode: (mode: 'super_admin' | 'owner' | 'client') => void;
+  onSelectMode: (mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway') => void;
+  isOwnerAuthenticated?: boolean;
 }
 
 export default function MobileBottomBar({
@@ -36,7 +37,8 @@ export default function MobileBottomBar({
   todayAppointmentsCount,
   loggedClientUser,
   onOpenAuthModal,
-  onSelectMode
+  onSelectMode,
+  isOwnerAuthenticated
 }: MobileBottomBarProps) {
   return (
     <nav 
@@ -44,7 +46,34 @@ export default function MobileBottomBar({
       id="mobile-bottom-navigation"
       aria-label="Navigazione mobile rapida"
     >
-      {mode === 'owner' ? (
+      {mode === 'staff_gateway' ? (
+        /* Staff Gateway Mode Navigation */
+        <div className="grid grid-cols-3 items-center justify-around text-center">
+          <button
+            onClick={() => onSelectMode('staff_gateway')}
+            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-amber-600 font-bold active:scale-90 transition"
+          >
+            <Lock className="w-5 h-5 text-amber-500" />
+            <span className="text-[10px] mt-1 font-extrabold">Accessi Staff</span>
+          </button>
+
+          <button
+            onClick={() => onSelectMode('client')}
+            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 hover:text-slate-900 font-medium active:scale-90 transition"
+          >
+            <Globe className="w-5 h-5 text-emerald-600" />
+            <span className="text-[10px] mt-1">Prenotazioni</span>
+          </button>
+
+          <button
+            onClick={onOpenDrawer}
+            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 hover:text-slate-900 font-medium active:scale-90 transition"
+          >
+            <Menu className="w-5 h-5" />
+            <span className="text-[10px] mt-1">Menu</span>
+          </button>
+        </div>
+      ) : mode === 'owner' ? (
         /* Owner Mode Navigation */
         <div className="grid grid-cols-5 items-center justify-around text-center">
           
@@ -167,13 +196,23 @@ export default function MobileBottomBar({
             </span>
           </button>
 
-          {/* Torna al Salone */}
+          {/* Torna al Salone o Accesso Staff */}
           <button
             onClick={() => onSelectMode('owner')}
-            className="flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-slate-500 hover:text-slate-900 font-medium active:scale-90 transition"
+            className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl font-medium active:scale-90 transition ${
+              isOwnerAuthenticated 
+                ? 'text-indigo-600 font-bold' 
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
           >
-            <Sparkles className="w-5 h-5 text-indigo-500" />
-            <span className="text-[10px] mt-1">Titolare</span>
+            {isOwnerAuthenticated ? (
+              <Sparkles className="w-5 h-5 text-indigo-600" />
+            ) : (
+              <Lock className="w-5 h-5 text-amber-500" />
+            )}
+            <span className="text-[10px] mt-1">
+              {isOwnerAuthenticated ? 'Titolare' : 'Staff PIN'}
+            </span>
           </button>
 
           {/* Menu Drawer */}

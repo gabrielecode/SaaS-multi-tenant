@@ -9,7 +9,8 @@ import {
   Sparkles, 
   ArrowRight,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  Share2
 } from 'lucide-react';
 import { TenantSalon } from '../types';
 
@@ -35,6 +36,13 @@ export default function MobileQuickActionModal({
   const currentTenant = tenants.find(t => t.id === currentTenantId) || tenants[0];
 
   const actions = [
+    {
+      id: 'invite_client',
+      title: 'Invia Invito Web App',
+      desc: 'Invita clienti via WhatsApp (🇨🇭 +41), Email o SMS',
+      icon: Share2,
+      color: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+    },
     {
       id: 'new_appointment',
       title: 'Nuovo Appuntamento in Agenda',
