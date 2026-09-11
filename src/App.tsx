@@ -30,6 +30,7 @@ import Instructions from './components/Instructions';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import MarketingWhatsApp from './components/MarketingWhatsApp';
 import ClientAuthModal from './components/ClientAuthModal';
+import PwaInstallBanner from './components/PwaInstallBanner';
 
 // Icons
 import { 
@@ -170,6 +171,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800" id="app-root">
+      <PwaInstallBanner />
       
       {/* Top Navbar */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-slate-200/80 shadow-sm" id="global-header">
