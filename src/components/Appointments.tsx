@@ -130,21 +130,30 @@ export default function Appointments({
         finalClientPhone = exist.phone;
       }
     } else {
-      // Create new client first
+      // Check if phone already belongs to an existing client
       if (!newAppClientName || !newAppClientPhone) return;
-      finalClientId = 'c_' + Date.now();
-      const newClient: Client = {
-        id: finalClientId,
-        name: newAppClientName,
-        phone: newAppClientPhone,
-        email: '',
-        noShowCount: 0,
-        completedCount: 0,
-        reliabilityScore: 100,
-        notes: 'Nuovo cliente creato da Agenda',
-        riskLevel: 'LOW'
-      };
-      onUpdateClients([...clients, newClient]);
+      const cleanInputPhone = newAppClientPhone.replace(/\D/g, '');
+      const existingClientByPhone = clients.find(c => c.phone.replace(/\D/g, '') === cleanInputPhone);
+
+      if (existingClientByPhone) {
+        finalClientId = existingClientByPhone.id;
+        finalClientName = existingClientByPhone.name;
+        finalClientPhone = existingClientByPhone.phone;
+      } else {
+        finalClientId = 'c_' + Date.now();
+        const newClient: Client = {
+          id: finalClientId,
+          name: newAppClientName.trim(),
+          phone: newAppClientPhone.trim(),
+          email: '',
+          noShowCount: 0,
+          completedCount: 0,
+          reliabilityScore: 100,
+          notes: 'Nuovo cliente creato da Agenda',
+          riskLevel: 'LOW'
+        };
+        onUpdateClients([...clients, newClient]);
+      }
     }
 
     const selectedService = services.find(s => s.id === newAppServiceId);

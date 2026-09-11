@@ -18,6 +18,7 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
   const [newEmail, setNewEmail] = useState('');
   const [newNotes, setNewNotes] = useState('');
   const [newRisk, setNewRisk] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('LOW');
+  const [addError, setAddError] = useState<string | null>(null);
 
   // Editing notes state
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
@@ -38,17 +39,48 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
   // Handle new client submit
   const handleAddSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!newName || !newPhone) return;
+    setAddError(null);
+
+    const cleanName = newName.trim();
+    const cleanPhone = newPhone.trim();
+    const cleanEmail = newEmail.trim().toLowerCase();
+
+    if (!cleanName) {
+      setAddError('Inserisci il nome e cognome del cliente.');
+      return;
+    }
+
+    const digitsOnlyPhone = cleanPhone.replace(/\D/g, '');
+    if (digitsOnlyPhone.length < 8) {
+      setAddError('Inserisci un numero di cellulare valido (almeno 8 cifre).');
+      return;
+    }
+
+    // Check duplicate phone
+    const existingByPhone = clients.find(c => c.phone.replace(/\D/g, '') === digitsOnlyPhone);
+    if (existingByPhone) {
+      setAddError(`Questo numero è già associato a ${existingByPhone.name}. Modifica il profilo esistente.`);
+      return;
+    }
+
+    // Check duplicate email if provided
+    if (cleanEmail) {
+      const existingByEmail = clients.find(c => c.email && c.email.toLowerCase() === cleanEmail);
+      if (existingByEmail) {
+        setAddError(`Questa email è già associata a ${existingByEmail.name}.`);
+        return;
+      }
+    }
 
     const newCl: Client = {
       id: 'c_' + Date.now(),
-      name: newName,
-      phone: newPhone,
-      email: newEmail,
+      name: cleanName,
+      phone: cleanPhone,
+      email: cleanEmail,
       noShowCount: 0,
       completedCount: 0,
       reliabilityScore: 100,
-      notes: newNotes || 'Nessuna nota aggiuntiva.',
+      notes: newNotes.trim() || 'Nessuna nota aggiuntiva.',
       riskLevel: newRisk
     };
 
@@ -60,6 +92,7 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
     setNewEmail('');
     setNewNotes('');
     setNewRisk('LOW');
+    setAddError(null);
     setShowAddForm(false);
   };
 
@@ -278,10 +311,23 @@ export default function ClientsList({ clients, onUpdateClients }: ClientsListPro
           <div className="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-lg font-bold text-slate-950">Aggiungi Nuovo Cliente</h4>
-              <button onClick={() => setShowAddForm(false)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900">
+              <button 
+                onClick={() => {
+                  setShowAddForm(false);
+                  setAddError(null);
+                }} 
+                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {addError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span className="font-semibold">{addError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleAddSubmit} className="space-y-3.5 text-slate-700">
               <div>

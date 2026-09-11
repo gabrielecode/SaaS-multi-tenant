@@ -106,6 +106,19 @@ export interface BusinessConfig {
   stripeSecretKey?: string;
 }
 
+export interface Promotion {
+  id: string;
+  tenant_id?: string;
+  title: string;
+  description: string;
+  discountPercentage?: number;
+  discountFixed?: number;
+  code: string;
+  validUntil: string;
+  badge?: string;
+  highlight?: boolean;
+}
+
 export interface WhatsAppCampaign {
   id: string;
   tenant_id?: string;
@@ -126,6 +139,8 @@ export interface ClientAuthUser {
   phone: string;
   pushSubscribed: boolean;
   token?: string;
+  password?: string;
+  createdAt?: string;
 }
 
 export interface SystemLog {

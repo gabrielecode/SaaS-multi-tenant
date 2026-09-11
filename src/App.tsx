@@ -83,7 +83,23 @@ export default function App() {
   
   // Client auth modal & logged client
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [loggedClientUser, setLoggedClientUser] = useState<ClientAuthUser | null>(null);
+  const [loggedClientUser, setLoggedClientUser] = useState<ClientAuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('ns_logged_client_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Persist client auth user session
+  useEffect(() => {
+    if (loggedClientUser) {
+      localStorage.setItem('ns_logged_client_user', JSON.stringify(loggedClientUser));
+    } else {
+      localStorage.removeItem('ns_logged_client_user');
+    }
+  }, [loggedClientUser]);
 
   // Mobile drawer & quick action modal states
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -164,8 +180,54 @@ export default function App() {
     return appointments.filter(a => a.date === '2026-06-24' && a.status !== AppointmentStatus.CANCELLED).length;
   }, [appointments]);
 
+  // Synchronize or register client when a new appointment is booked
   const handleAddAppointment = (newApp: Appointment) => {
     setAppointments(prev => [newApp, ...prev]);
+
+    // Check if client is already registered in clients list
+    const normalizedAppPhone = newApp.clientPhone.replace(/\D/g, '');
+    const clientExists = clients.some(c => 
+      c.id === newApp.clientId || 
+      (c.phone && c.phone.replace(/\D/g, '') === normalizedAppPhone)
+    );
+
+    if (!clientExists && newApp.clientName && newApp.clientPhone) {
+      const autoRegisteredClient: Client = {
+        id: newApp.clientId || ('c_' + Date.now()),
+        tenant_id: currentTenantId,
+        name: newApp.clientName,
+        phone: newApp.clientPhone,
+        email: loggedClientUser?.email || '',
+        noShowCount: 0,
+        completedCount: 0,
+        reliabilityScore: 100,
+        notes: 'Cliente registrato automaticamente dalla prenotazione online',
+        riskLevel: 'LOW',
+        loyaltyPoints: 10
+      };
+      setClients(prev => [...prev, autoRegisteredClient]);
+    }
+  };
+
+  // Direct client registration handler (from auth modal or signup)
+  const handleRegisterClient = (newClient: Client) => {
+    setClients(prev => {
+      const normalizedNewPhone = newClient.phone.replace(/\D/g, '');
+      const exists = prev.some(c => 
+        (newClient.email && c.email.toLowerCase() === newClient.email.toLowerCase()) ||
+        (newClient.phone && c.phone.replace(/\D/g, '') === normalizedNewPhone)
+      );
+      if (exists) {
+        // Update existing record if needed
+        return prev.map(c => {
+          if (c.phone.replace(/\D/g, '') === normalizedNewPhone) {
+            return { ...c, name: newClient.name, email: newClient.email || c.email };
+          }
+          return c;
+        });
+      }
+      return [...prev, newClient];
+    });
   };
 
   const handleSelectTenant = (tenantId: string) => {
@@ -538,16 +600,23 @@ export default function App() {
             services={services}
             appointments={appointments}
             clients={clients}
+            campaigns={campaigns}
+            loggedClientUser={loggedClientUser}
+            onOpenAuth={() => setShowAuthModal(true)}
+            onLogoutClient={() => setLoggedClientUser(null)}
             onAddAppointment={handleAddAppointment}
             onUpdateAppointments={setAppointments}
           />
 
           {showAuthModal && (
             <ClientAuthModal
+              currentTenantId={currentTenantId}
+              existingClients={clients}
               onLogin={(user) => {
                 setLoggedClientUser(user);
                 setShowAuthModal(false);
               }}
+              onRegisterClient={handleRegisterClient}
               onClose={() => setShowAuthModal(false)}
             />
           )}

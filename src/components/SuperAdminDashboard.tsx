@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, FormEvent } from 'react';
 import { TenantSalon, SystemLog } from '../types';
-import { Building2, ShieldCheck, DollarSign, Activity, Users, AlertTriangle, CheckCircle, RefreshCw, Server, Database } from 'lucide-react';
+import { Building2, ShieldCheck, DollarSign, Activity, Users, AlertTriangle, CheckCircle, RefreshCw, Server, Database, Plus, X } from 'lucide-react';
 
 interface SuperAdminDashboardProps {
   tenants: TenantSalon[];
@@ -11,9 +11,57 @@ interface SuperAdminDashboardProps {
 export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTenantId }: SuperAdminDashboardProps) {
   const [tenantList, setTenantList] = useState<TenantSalon[]>(tenants);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  
+  // New Tenant form state
+  const [newSalonName, setNewSalonName] = useState('');
+  const [newOwnerName, setNewOwnerName] = useState('');
+  const [newCategory, setNewCategory] = useState('Barbiere & Parrucchiere');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+  const [newPlan, setNewPlan] = useState<'BASIC' | 'PRO' | 'ENTERPRISE'>('PRO');
+  const [modalError, setModalError] = useState<string | null>(null);
+
   const [logs] = useState<SystemLog[]>(() => {
     return JSON.parse(localStorage.getItem('ns_system_logs') || '[]');
   });
+
+  const handleRegisterTenant = (e: FormEvent) => {
+    e.preventDefault();
+    setModalError(null);
+
+    if (!newSalonName.trim() || !newOwnerName.trim() || !newEmail.trim() || !newPhone.trim()) {
+      setModalError('Tutti i campi contrassegnati con * sono obbligatori.');
+      return;
+    }
+
+    const feeMap = { BASIC: 29, PRO: 49, ENTERPRISE: 99 };
+    const newTenant: TenantSalon = {
+      id: 'salon_tenant_' + Date.now(),
+      name: newSalonName.trim(),
+      category: newCategory,
+      ownerName: newOwnerName.trim(),
+      email: newEmail.trim(),
+      phone: newPhone.trim(),
+      subscriptionStatus: 'ACTIVE',
+      plan: newPlan,
+      monthlyFee: feeMap[newPlan],
+      createdAt: new Date().toISOString().split('T')[0],
+      supabaseConfigured: true,
+      metaWhatsAppConfigured: true
+    };
+
+    const updated = [newTenant, ...tenantList];
+    setTenantList(updated);
+    localStorage.setItem('ns_tenants', JSON.stringify(updated));
+
+    // Reset form
+    setNewSalonName('');
+    setNewOwnerName('');
+    setNewEmail('');
+    setNewPhone('');
+    setShowAddModal(false);
+  };
 
   const totalMRR = tenantList.reduce((acc, t) => acc + (t.subscriptionStatus === 'ACTIVE' ? t.monthlyFee : 0), 0);
   const activeSalonsCount = tenantList.filter(t => t.subscriptionStatus === 'ACTIVE').length;
@@ -47,6 +95,13 @@ export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTe
           <p className="text-xs text-slate-500 mt-0.5">Gestisci tutti i tenant iscritti, monitora il fatturato ricorrente (MRR) e lo stato di Supabase.</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition active:scale-95"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Registra Nuovo Salone
+          </button>
           <button 
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl flex items-center gap-2 transition"
@@ -232,6 +287,149 @@ export default function SuperAdminDashboard({ tenants, onSelectTenant, currentTe
           ))}
         </div>
       </div>
+
+      {/* Modal: Registra Nuovo Salone Tenant */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 my-auto animate-fade-in">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Registra Nuovo Salone (Tenant)</h3>
+                  <p className="text-xs text-slate-500">Crea un nuovo ambiente aziendale isolato sulla piattaforma SaaS.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setShowAddModal(false);
+                  setModalError(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {modalError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span className="font-semibold">{modalError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleRegisterTenant} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Nome del Salone / Attività *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="es. Barberia & Spa Napoli Centro"
+                  value={newSalonName}
+                  onChange={e => setNewSalonName(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Nome Titolare *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="es. Antonio Esposito"
+                    value={newOwnerName}
+                    onChange={e => setNewOwnerName(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Categoria *</label>
+                  <select
+                    value={newCategory}
+                    onChange={e => setNewCategory(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  >
+                    <option value="Barbiere & Parrucchiere">Barbiere & Parrucchiere</option>
+                    <option value="Centro Estetico & Benessere">Centro Estetico & Benessere</option>
+                    <option value="Salone Acconciature Donna">Salone Acconciature Donna</option>
+                    <option value="Nail & Lash Studio">Nail & Lash Studio</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Email Aziendale / Login *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="es. info@barberia.it"
+                    value={newEmail}
+                    onChange={e => setNewEmail(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Telefono WhatsApp *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="es. +39 340 1234567"
+                    value={newPhone}
+                    onChange={e => setNewPhone(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Piano SaaS Selezionato</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'BASIC', label: 'Basic (29€/m)', fee: 29 },
+                    { id: 'PRO', label: 'Pro (49€/m)', fee: 49 },
+                    { id: 'ENTERPRISE', label: 'Enterprise (99€/m)', fee: 99 }
+                  ].map(p => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setNewPlan(p.id as any)}
+                      className={`p-2.5 rounded-xl border text-center font-bold transition ${
+                        newPlan === p.id 
+                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="text-[11px]">{p.id}</div>
+                      <div className="text-[10px] text-slate-400 font-normal">€{p.fee}/mese</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition"
+                >
+                  Annulla
+                </button>
+                <button
+                  type="submit"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  Crea Salone Tenant
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
