@@ -1,0 +1,16 @@
+{
+  "name": "NoShow Reducer - SaaS",
+  "short_name": "NoShowReducer",
+  "description": "Piattaforma multi-tenant per la gestione di appuntamenti e riduzione no-show con Meta WhatsApp e Supabase",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

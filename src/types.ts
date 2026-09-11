@@ -6,8 +6,24 @@ export enum AppointmentStatus {
   COMPLETED = 'COMPLETED',
 }
 
+export interface TenantSalon {
+  id: string;
+  name: string;
+  category: string;
+  ownerName: string;
+  email: string;
+  phone: string;
+  subscriptionStatus: 'ACTIVE' | 'TRIAL' | 'SUSPENDED';
+  plan: 'BASIC' | 'PRO' | 'ENTERPRISE';
+  monthlyFee: number;
+  createdAt: string;
+  supabaseConfigured: boolean;
+  metaWhatsAppConfigured: boolean;
+}
+
 export interface Client {
   id: string;
+  tenant_id?: string;
   name: string;
   phone: string;
   email: string;
@@ -16,10 +32,15 @@ export interface Client {
   reliabilityScore: number; // Percentage (e.g. 85%)
   notes: string;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+  habits?: string[];
+  preferenceHistory?: string[];
+  loyaltyPoints?: number;
+  isVip?: boolean;
 }
 
 export interface Service {
   id: string;
+  tenant_id?: string;
   name: string;
   duration: number; // in minutes
   price: number;
@@ -31,8 +52,9 @@ export interface Service {
 
 export interface Appointment {
   id: string;
+  tenant_id?: string;
   clientId: string;
-  clientName: string; // denormalized for ease of use
+  clientName: string;
   clientPhone: string;
   serviceId: string;
   serviceName: string;
@@ -45,10 +67,12 @@ export interface Appointment {
   reminderSent: boolean;
   isConfirmedByClient: boolean;
   stripePaymentId?: string;
+  rescheduledFrom?: string;
 }
 
 export interface WaitlistEntry {
   id: string;
+  tenant_id?: string;
   clientId: string;
   clientName: string;
   clientPhone: string;
@@ -59,6 +83,7 @@ export interface WaitlistEntry {
 }
 
 export interface BusinessConfig {
+  tenant_id?: string;
   name: string;
   category: string;
   phone: string;
@@ -68,4 +93,39 @@ export interface BusinessConfig {
   stripeConnected: boolean;
   autoWaitlistNotify: boolean;
   cancellationPolicyHours: number; // e.g. 24
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
+  metaWhatsappToken?: string;
+  metaPhoneNumberId?: string;
+}
+
+export interface WhatsAppCampaign {
+  id: string;
+  tenant_id?: string;
+  title: string;
+  templateName: string;
+  targetAudience: 'ALL' | 'VIP' | 'AT_RISK' | 'INACTIVE';
+  messageBody: string;
+  sentCount: number;
+  deliveredCount: number;
+  status: 'DRAFT' | 'SENDING' | 'COMPLETED';
+  createdAt: string;
+}
+
+export interface ClientAuthUser {
+  id: string;
+  email: string;
+  name: string;
+  phone: string;
+  pushSubscribed: boolean;
+  token?: string;
+}
+
+export interface SystemLog {
+  id: string;
+  timestamp: string;
+  level: 'INFO' | 'WARNING' | 'ERROR';
+  service: 'SUPABASE' | 'META_WHATSAPP' | 'STRIPE' | 'CRON_REMINDERS';
+  message: string;
+  tenant_id?: string;
 }
