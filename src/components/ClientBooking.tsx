@@ -41,7 +41,7 @@ interface ClientBookingProps {
 const SALON_PROMOTIONS: Promotion[] = [
   {
     id: 'promo_welcome',
-    title: 'Offerta Benvenuto 1ª Visita',
+    title: 'Offerta Benvenuto 1° Visita',
     description: 'Sconto immediato del 20% sul tuo primo appuntamento in salone per qualsiasi trattamento.',
     discountPercentage: 20,
     code: 'BENVENUTO20',
@@ -61,11 +61,11 @@ const SALON_PROMOTIONS: Promotion[] = [
   {
     id: 'promo_combo',
     title: 'Speciale Combo Deluxe',
-    description: '10€ di sconto immediato al check-out sui trattamenti completi (es. Colore + Piega o Combo Barba & Capelli).',
+    description: '10 CHF/EUR di sconto immediato al check-out sui trattamenti completi.',
     discountFixed: 10,
     code: 'DELUXE10',
     validUntil: 'Fino a esaurimento slot',
-    badge: 'Risparmio 10€'
+    badge: 'Risparmio 10'
   }
 ];
 
