@@ -1,7 +1,27 @@
 import { useMemo, useState } from 'react';
 import { Appointment, Client, AppointmentStatus } from '../types';
-import { buildWhatsAppUrl } from '../lib/phoneUtils';
-import { TrendingUp, AlertTriangle, ShieldCheck, Euro, Calendar, Users, Percent, HelpCircle, BarChart2, Sparkles, Send, Share2 } from 'lucide-react';
+import { buildWhatsAppUrl, formatPhoneDisplay } from '../lib/phoneUtils';
+import { 
+  TrendingUp, 
+  AlertTriangle, 
+  ShieldCheck, 
+  Euro, 
+  Calendar, 
+  Users, 
+  Percent, 
+  HelpCircle, 
+  BarChart2, 
+  Sparkles, 
+  Send, 
+  Share2,
+  Clock,
+  CheckCircle2,
+  Search,
+  ChevronRight,
+  Filter,
+  Phone,
+  UserCheck
+} from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -10,7 +30,9 @@ import {
   Tooltip, 
   ResponsiveContainer, 
   Cell,
-  CartesianGrid
+  CartesianGrid,
+  AreaChart,
+  Area
 } from 'recharts';
 
 interface DashboardProps {
@@ -22,13 +44,14 @@ interface DashboardProps {
 
 export default function Dashboard({ appointments, clients, onNavigateToSection, onOpenInviteClient }: DashboardProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [clientSearchQuery, setClientSearchQuery] = useState('');
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Compute metrics based on all mock appointments
+  // Compute metrics based on mock appointments
   const metrics = useMemo(() => {
     const completed = appointments.filter(a => a.status === AppointmentStatus.COMPLETED);
     const noShows = appointments.filter(a => a.status === AppointmentStatus.NO_SHOW);
@@ -38,437 +61,376 @@ export default function Dashboard({ appointments, clients, onNavigateToSection, 
 
     const totalPastClosed = completed.length + noShows.length;
     const noShowRate = totalPastClosed > 0 ? Math.round((noShows.length / totalPastClosed) * 100) : 0;
-    const cancellationRate = appointments.length > 0 ? Math.round((cancelled.length / appointments.length) * 100) : 0;
-
+    
     // Revenue calculations
     const totalLostRevenue = noShows.reduce((sum, a) => sum + a.price, 0);
-    const totalRecoveredRevenue = noShows.reduce((sum, a) => sum + a.depositPaid, 0);
-    const netLoss = totalLostRevenue - totalRecoveredRevenue;
-
-    // Today's occupancy rate simulation
-    const todayStr = '2026-06-24';
+    const totalRecoveredRevenue = noShows.reduce((sum, a) => sum + (a.depositPaid || 0), 0);
+    
+    // Today's appointments (default 2026-06-24 or nearest date with apps)
+    const todayStr = appointments.length > 0 ? appointments[0].date : '2026-06-24';
     const todayApps = appointments.filter(a => a.date === todayStr);
-    const completedOrConfirmedToday = todayApps.filter(a => 
-      a.status === AppointmentStatus.COMPLETED || 
-      a.status === AppointmentStatus.CONFIRMED ||
-      a.status === AppointmentStatus.PENDING
-    ).length;
-    // Assuming 8 total slots available in a working day
-    const occupancyRate = Math.round((completedOrConfirmedToday / 8) * 100);
+    const estimatedTodayRevenue = todayApps
+      .filter(a => a.status !== AppointmentStatus.CANCELLED && a.status !== AppointmentStatus.NO_SHOW)
+      .reduce((sum, a) => sum + a.price, 0);
 
     return {
       noShowRate,
-      cancellationRate,
       totalLostRevenue,
       totalRecoveredRevenue,
-      netLoss,
-      occupancyRate,
+      todayCount: todayApps.length,
+      estimatedTodayRevenue,
       confirmedCount: confirmed.length,
       pendingCount: pending.length,
       completedCount: completed.length,
-      noShowCount: noShows.length
+      noShowCount: noShows.length,
+      todayApps
     };
   }, [appointments]);
 
-  // Clients with high risk of no-show
-  const highRiskClients = useMemo(() => {
-    return clients.filter(c => c.riskLevel === 'HIGH' || c.noShowCount > 1);
-  }, [clients]);
+  // Filter clients for modern table
+  const filteredClients = useMemo(() => {
+    if (!clientSearchQuery.trim()) return clients.slice(0, 5);
+    const q = clientSearchQuery.toLowerCase();
+    return clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+  }, [clients, clientSearchQuery]);
+
+  // Chart mock weekly data
+  const revenueChartData = [
+    { day: 'Lun', incasso: 320, protetto: 280 },
+    { day: 'Mar', incasso: 450, protetto: 410 },
+    { day: 'Mer', incasso: 390, protetto: 350 },
+    { day: 'Gio', incasso: 520, protetto: 490 },
+    { day: 'Ven', incasso: 680, protetto: 620 },
+    { day: 'Sab', incasso: 850, protetto: 800 },
+    { day: 'Dom', incasso: 210, protetto: 200 },
+  ];
 
   return (
-    <div className="space-y-6" id="dashboard-container">
-      {/* Welcome & Intro */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white text-slate-800 rounded-2xl shadow-sm border border-slate-200/80 animate-fade-in">
-        <div>
-          <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Benvenuto nel tuo NoShow Reducer!</h2>
-          <p className="text-slate-500 mt-1 text-xs md:text-sm">
-            Ecco l'impatto reale sul tuo fatturato. Grazie ai depositi richiesti, stai recuperando gran parte delle perdite.
-          </p>
-        </div>
-        <div className="flex items-center gap-3 bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl border border-emerald-200 self-start md:self-auto shadow-sm">
-          <ShieldCheck className="w-5 h-5 flex-shrink-0 text-emerald-600" />
-          <div className="text-xs">
-            <p className="font-bold uppercase tracking-wider text-[9px] text-emerald-800">Stato Protezione</p>
-            <p className="text-xs font-bold text-emerald-900">Attiva & Monitorata</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Invite Banner for Salon Owner */}
-      {onOpenInviteClient && (
-        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-5 rounded-2xl shadow-md border border-indigo-700/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-indigo-200 shrink-0">
-              <Share2 className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                  Novità Clienti
-                </span>
-                <span className="text-xs text-indigo-200">Invito Multi-Canale</span>
-              </div>
-              <h4 className="text-sm font-extrabold text-white mt-0.5">
-                Invia il Link di Invito per Iscriversi all'App
-              </h4>
-              <p className="text-xs text-indigo-200/80 mt-0.5">
-                Raggiungi i tuoi clienti via <strong>WhatsApp (🇨🇭 +41)</strong>, <strong>Email</strong>, <strong>SMS</strong> o con <strong>QR Code</strong> per fargli prenotare 24/7.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={onOpenInviteClient}
-            className="px-5 py-2.5 bg-white hover:bg-slate-100 text-indigo-900 font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition active:scale-95 shrink-0"
-          >
-            <Share2 className="w-4 h-4 text-indigo-600" />
-            <span>Invia Invito a Cliente</span>
-          </button>
-        </div>
-      )}
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Tasso No-Show */}
-        <div className="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between" id="kpi-noshow">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tasso No-Show storico</p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-1">{metrics.noShowRate}%</h3>
-            </div>
-            <div className={`p-2.5 rounded-xl border shadow-sm ${metrics.noShowRate > 15 ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-1.5">
-            <span className={metrics.noShowRate > 15 ? 'text-rose-600 font-semibold' : 'text-emerald-600 font-semibold'}>
-              {metrics.noShowCount} mancati arrivi
-            </span>
-            <span>su {metrics.completedCount + metrics.noShowCount} appuntamenti</span>
-          </div>
-        </div>
-
-        {/* Fatturato Recuperato */}
-        <div className="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between" id="kpi-recovered">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Fatturato Recuperato</p>
-              <h3 className="text-3xl font-extrabold text-emerald-600 mt-1">{metrics.totalRecoveredRevenue} €</h3>
-            </div>
-            <div className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl shadow-sm">
-              <Euro className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-1.5">
-            <span className="text-emerald-600 font-bold flex items-center gap-0.5">
-              <TrendingUp className="w-3.5 h-3.5" />
-              Risolto {Math.round((metrics.totalRecoveredRevenue / (metrics.totalLostRevenue || 1)) * 100)}%
-            </span>
-            <span>delle potenziali perdite</span>
-          </div>
-        </div>
-
-        {/* Perdita Netta */}
-        <div className="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between" id="kpi-loss">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Perdita Effettiva</p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-1">{metrics.netLoss} €</h3>
-            </div>
-            <div className="p-2.5 bg-slate-50 text-slate-600 border border-slate-200 rounded-xl shadow-sm">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-1.5">
-            <span>Senza caparra avresti perso</span>
-            <span className="font-semibold text-rose-600">{metrics.totalLostRevenue} €</span>
-          </div>
-        </div>
-
-        {/* Occupancy Rate */}
-        <div className="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between" id="kpi-occupancy">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saturazione Agenda (Oggi)</p>
-              <h3 className="text-3xl font-extrabold text-slate-900 mt-1">{metrics.occupancyRate}%</h3>
-            </div>
-            <div className="p-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-xl shadow-sm">
-              <Percent className="w-5 h-5" />
-            </div>
-          </div>
-          <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-1.5">
-            <span className="text-indigo-600 font-semibold">4 / 8 slot riempiti</span>
-            <span>per la giornata odierna</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Recharts Summary Card */}
-      <div className="glass-card p-6 rounded-2xl border border-slate-200/80 shadow-md bg-gradient-to-br from-white via-slate-50 to-indigo-50/30" id="recharts-summary-card">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          
-          {/* Text and stats metrics description */}
-          <div className="lg:col-span-5 space-y-4">
-            <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider shadow-sm">
-              <Sparkles className="w-3 h-3 text-indigo-600" />
-              Riepilogo Prestazioni & Impatto
-            </span>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <BarChart2 className="w-5 h-5 text-indigo-600" />
-                Impatto delle Caparre & Successo Agenda
-              </h3>
-              <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                Analisi dell'efficacia delle caparre confirmatorie nel preservare il fatturato rispetto agli appuntamenti portati a termine con successo.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="bg-white p-3.5 rounded-xl border border-slate-100 space-y-1 shadow-sm">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Caparre Trattenute</span>
-                <span className="text-xl font-extrabold text-emerald-600 block">{metrics.totalRecoveredRevenue} €</span>
-                <span className="text-[9px] text-slate-500 leading-tight block font-medium">Fatturato protetto da No-Show</span>
-              </div>
-              <div className="bg-white p-3.5 rounded-xl border border-slate-100 space-y-1 shadow-sm">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Successi in Agenda</span>
-                <span className="text-xl font-extrabold text-indigo-600 block">{metrics.completedCount}</span>
-                <span className="text-[9px] text-slate-500 leading-tight block font-medium">Appuntamenti conclusi</span>
-              </div>
-            </div>
-
-            <div className="text-[11px] text-slate-600 bg-slate-100/50 p-3.5 rounded-xl border border-slate-200/40 leading-relaxed font-medium">
-              Grazie alla barriera all'ingresso della caparra, <strong className="text-emerald-700 font-bold">{metrics.totalRecoveredRevenue} €</strong> sono stati recuperati da disdette tardive. Contemporaneamente, sono stati completati con successo <strong className="text-indigo-700 font-bold">{metrics.completedCount}</strong> appuntamenti.
-            </div>
-          </div>
-
-          {/* Recharts Bar Chart Visualizer */}
-          <div className="lg:col-span-7 h-64 bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Visualizzazione Grafica Recharts</span>
-              <span className="text-[9px] font-mono text-slate-400">Valori Integrati</span>
-            </div>
-            
-            <div className="flex-1 w-full mt-3" style={{ minHeight: '170px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: 'Caparre Trattenute (€)', valore: metrics.totalRecoveredRevenue, color: '#10b981' },
-                    { name: 'Appuntamenti Completati (N°)', valore: metrics.completedCount, color: '#6366f1' }
-                  ]}
-                  margin={{ top: 10, right: 10, left: -25, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.05)" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="rgba(15, 23, 42, 0.5)" 
-                    fontSize={10}
-                    tickLine={false}
-                    tick={{ fill: '#475569', fontWeight: 500 }}
-                  />
-                  <YAxis 
-                    stroke="rgba(15, 23, 42, 0.5)" 
-                    fontSize={10} 
-                    tickLine={false}
-                    tick={{ fill: '#475569', fontWeight: 500 }}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(99, 102, 241, 0.03)' }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        return (
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-xl shadow-lg">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{data.name}</p>
-                            <p className="text-sm font-extrabold mt-1" style={{ color: data.color }}>
-                              {data.valore} {data.name.includes('€') ? '€' : 'Appuntamenti'}
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="valore" radius={[8, 8, 0, 0]} maxBarSize={60}>
-                    <Cell fill="#10b981" />
-                    <Cell fill="#6366f1" />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Main Analytics Charts & Risk analysis */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Graph Card */}
-        <div className="glass-card p-6 rounded-2xl space-y-6 lg:col-span-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-lg font-bold text-slate-900">Analisi Finanziaria No-Show</h4>
-              <p className="text-xs text-slate-500 mt-0.5">Confronto tra perdita potenziale e perdite recuperate grazie alle caparre Stripe</p>
-            </div>
-          </div>
-
-          {/* Recharts Financial Chart replacing custom divs */}
-          <div className="h-68 w-full pt-4">
-            <div className="h-44 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={[
-                    { name: 'Perdita Potenziale', importo: metrics.totalLostRevenue, colore: '#ef4444', desc: 'Mancato incasso lordo No-Show' },
-                    { name: 'Caparre Trattenute', importo: metrics.totalRecoveredRevenue, colore: '#10b981', desc: 'Acconti trattenuti' },
-                    { name: 'Perdita Effettiva', importo: metrics.netLoss, colore: '#64748b', desc: 'Perdita netta finale' }
-                  ]}
-                  margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(15,23,42,0.05)" />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="rgba(15, 23, 42, 0.4)" 
-                    fontSize={10}
-                    tickLine={false}
-                    tick={{ fill: '#475569', fontWeight: 600 }}
-                  />
-                  <YAxis 
-                    stroke="rgba(15, 23, 42, 0.4)" 
-                    fontSize={10} 
-                    tickLine={false}
-                    unit=" €"
-                    tick={{ fill: '#475569', fontWeight: 600 }}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(99, 102, 241, 0.03)' }}
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const data = payload[0].payload;
-                        return (
-                          <div className="bg-white border border-slate-200 p-2.5 rounded-xl shadow-lg text-xs">
-                            <p className="font-bold text-slate-800">{data.name}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold">{data.desc}</p>
-                            <p className="text-sm font-extrabold mt-1" style={{ color: data.colore }}>
-                              {data.importo} €
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar dataKey="importo" radius={[8, 8, 0, 0]} maxBarSize={50}>
-                    <Cell fill="#ef4444" />
-                    <Cell fill="#10b981" />
-                    <Cell fill="#64748b" />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="bg-slate-50 border border-slate-100 p-3.5 rounded-xl flex items-center justify-between mt-4">
-              <span className="text-xs text-slate-600 font-medium">Stima del fatturato salvato questo mese:</span>
-              <span className="text-sm font-extrabold text-emerald-600">+{metrics.totalRecoveredRevenue} €</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Client Risk Alerts */}
-        <div className="glass-card p-6 rounded-2xl flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-bold text-slate-900">Allarmi Rischio Clienti</h4>
-              <span className="bg-rose-50 text-rose-700 border border-rose-100 text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase shadow-sm">
-                {highRiskClients.length} Critici
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">Clienti con comportamenti passati inclini a no-show</p>
-
-            <div className="mt-4 space-y-3">
-              {highRiskClients.length > 0 ? (
-                highRiskClients.map(client => (
-                  <div key={client.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-slate-800">{client.name}</p>
-                      <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-md">
-                        {client.noShowCount} No-Show
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      {client.notes || "Nessuna nota impostata."}
-                    </p>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] font-semibold text-slate-400">Affidabilità: {client.reliabilityScore}%</span>
-                      <button 
-                        onClick={() => onNavigateToSection('clients')}
-                        className="text-[10px] text-indigo-600 font-bold hover:text-indigo-800 transition"
-                      >
-                        Imposta caparra 100% →
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6 text-slate-400">
-                  <ShieldCheck className="w-10 h-10 mx-auto text-emerald-500 stroke-1 mb-2 animate-pulse" />
-                  <p className="text-xs font-semibold text-slate-500">Nessun cliente ad alto rischio registrato!</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 mt-4">
-            <div className="flex items-start gap-2.5 text-xs text-slate-500 font-medium">
-              <HelpCircle className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <p>
-                <strong>Consiglio:</strong> Puoi escludere determinati clienti dai no-show futuri rendendo l'acconto obbligatorio solo per chi ha affidabilità inferiore all'80%.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Suggested Actions Row */}
-      <div className="bg-gradient-to-r from-indigo-50/50 to-purple-50/30 border border-indigo-100 rounded-2xl p-6 shadow-sm">
-        <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-indigo-600" />
-          Azione Consigliata di Oggi
-        </h4>
-        <p className="text-sm text-slate-600 mt-1 leading-relaxed font-medium">
-          Hai un appuntamento in sospeso (<strong>Davide Neri</strong> alle <strong>10:30</strong>) che non ha ancora risposto al promemoria.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <button 
-            onClick={() => onNavigateToSection('appointments')}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200"
-          >
-            Gestisci Agenda
-          </button>
-          <button 
-            onClick={() => {
-              const davideApp = appointments.find(a => a.clientName.toLowerCase().includes('davide')) || appointments[0];
-              const phone = davideApp?.clientPhone || '+41 79 987 65 43';
-              const text = `Ciao Davide! Ti ricordiamo la conferma del tuo appuntamento per oggi alle 10:30. Rispondi con un tap a questo messaggio per confermare.`;
-              const url = buildWhatsAppUrl(phone, text, 'CH');
-              window.open(url, '_blank', 'noopener,noreferrer');
-              triggerToast(`Sollecito WhatsApp aperto con successo con prefisso Svizzera (+41) per ${davideApp?.clientName || 'Davide Neri'}!`);
-            }}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-5 py-3 rounded-lg shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 flex items-center gap-1.5"
-          >
-            <Send className="w-3.5 h-3.5" />
-            Invia Sollecito WhatsApp
-          </button>
-        </div>
-      </div>
-
-      {/* Toast Notification */}
+    <div className="space-y-6 animate-fade-in" id="dashboard-container">
+      {/* Toast Feedback */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-indigo-600 border border-indigo-500 text-white font-bold text-xs py-3.5 px-5 rounded-2xl shadow-2xl flex items-center gap-2 animate-fade-in">
-          <Sparkles className="w-4 h-4 fill-white" />
+        <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-bold py-3 px-4 rounded-2xl shadow-2xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* Top Banner / Welcome Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">Salone Attivo & Protetto</span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight mt-1">
+            Dashboard Principale
+          </h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Panoramica in tempo reale delle prenotazioni, protezione No-Show e performance del salone.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          {onOpenInviteClient && (
+            <button
+              type="button"
+              onClick={onOpenInviteClient}
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-md shadow-indigo-600/20 transition active:scale-95 flex items-center gap-2"
+            >
+              <Share2 className="w-4 h-4 text-indigo-200" />
+              <span>Invita Cliente</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onNavigateToSection('appointments')}
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition flex items-center gap-1.5"
+          >
+            <Calendar className="w-4 h-4 text-slate-500" />
+            <span>Apri Agenda</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 1. SHADCN ADMIN KPI CARDS GRID                                */}
+      {/* ------------------------------------------------------------- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        {/* KPI 1: Appuntamenti di Oggi */}
+        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Appuntamenti Oggi</p>
+              <h3 className="text-3xl font-black text-slate-900 mt-1">{metrics.todayCount}</h3>
+            </div>
+            <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:bg-indigo-600 group-hover:text-white transition">
+              <Calendar className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+            <span className="text-emerald-600 flex items-center gap-1 font-bold">
+              <TrendingUp className="w-3.5 h-3.5" /> 100% confermati
+            </span>
+            <span>Slot odierni</span>
+          </div>
+        </div>
+
+        {/* KPI 2: No-Show Evitati / Fatturato Protetto */}
+        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-emerald-300 transition group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Fatturato Protetto</p>
+              <h3 className="text-3xl font-black text-emerald-600 mt-1">€{metrics.totalRecoveredRevenue}</h3>
+            </div>
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:bg-emerald-600 group-hover:text-white transition">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+            <span className="text-emerald-700 font-bold">Caparre incassate</span>
+            <span>Zero perdite</span>
+          </div>
+        </div>
+
+        {/* KPI 3: Incasso Stimato */}
+        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-indigo-300 transition group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Incasso Stimato Oggi</p>
+              <h3 className="text-3xl font-black text-slate-900 mt-1">€{metrics.estimatedTodayRevenue}</h3>
+            </div>
+            <div className="p-3 bg-slate-100 text-slate-700 rounded-2xl group-hover:bg-slate-900 group-hover:text-white transition">
+              <Euro className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+            <span>Media per slot</span>
+            <strong className="text-slate-900">€45 - €70</strong>
+          </div>
+        </div>
+
+        {/* KPI 4: Clienti Attivi */}
+        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between hover:border-amber-300 transition group">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Clienti Registrati</p>
+              <h3 className="text-3xl font-black text-slate-900 mt-1">{clients.length}</h3>
+            </div>
+            <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl group-hover:bg-amber-500 group-hover:text-white transition">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-slate-500">
+            <span className="text-indigo-600 font-bold">Database PWA</span>
+            <span>Attivi</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 2. AREA CENTRALE: GRAFICO INCASSI & AGENDA ODIERNA             */}
+      {/* ------------------------------------------------------------- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Grafico Trend Settimanale (2 colonne) */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-black text-slate-900">Andamento Incassi & Protezione</h3>
+              <p className="text-xs text-slate-500">Confronto tra fatturato totale e importi protetti da caparra.</p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl">
+              <BarChart2 className="w-4 h-4 text-indigo-600" />
+              <span>Ultimi 7 Giorni</span>
+            </div>
+          </div>
+
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="day" stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#0f172a', borderRadius: '12px', color: '#fff', border: 'none', fontSize: '12px' }}
+                />
+                <Bar dataKey="incasso" fill="#6366f1" radius={[6, 6, 0, 0]} name="Incasso Totale (€)" />
+                <Bar dataKey="protetto" fill="#10b981" radius={[6, 6, 0, 0]} name="Protetto (€)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Agenda Odierna / Prossimi Slot (1 colonna) */}
+        <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-indigo-600" />
+              <span>Agenda Odierna</span>
+            </h3>
+            <button
+              onClick={() => onNavigateToSection('appointments')}
+              className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
+            >
+              Vedi tutti <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="space-y-3 flex-1 overflow-y-auto max-h-72">
+            {metrics.todayApps.length > 0 ? (
+              metrics.todayApps.map(app => (
+                <div key={app.id} className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 flex items-center justify-between gap-2 text-xs">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-black bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-800">
+                        {app.time}
+                      </span>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                        app.status === AppointmentStatus.CONFIRMED ? 'bg-emerald-100 text-emerald-800' :
+                        app.status === AppointmentStatus.COMPLETED ? 'bg-slate-200 text-slate-700' :
+                        'bg-amber-100 text-amber-800'
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <p className="font-extrabold text-slate-900 pt-1">{app.clientName}</p>
+                    <p className="text-[11px] text-indigo-600 font-bold">{app.serviceName}</p>
+                  </div>
+
+                  <a
+                    href={buildWhatsAppUrl(app.clientPhone, `Ciao ${app.clientName}! Ti ricordiamo il tuo appuntamento oggi alle ${app.time}.`, 'CH')}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition"
+                    title="WhatsApp"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-10 text-slate-400 text-xs">
+                Nessun appuntamento per oggi.
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={() => onNavigateToSection('appointments')}
+            className="w-full py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs rounded-2xl transition flex items-center justify-center gap-1.5"
+          >
+            <span>Gestisci Nuova Prenotazione</span>
+          </button>
+        </div>
+
+      </div>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 3. TABELLA MODERNA GESTIONE CLIENTI & AZIONI RAPIDE           */}
+      {/* ------------------------------------------------------------- */}
+      <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-black text-slate-900">Anagrafica Clienti Recenti</h3>
+            <p className="text-xs text-slate-500">Gestisci i recapiti, verifica l'affidabilità e contatta i clienti.</p>
+          </div>
+
+          {/* Ricerca Rapida */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Cerca cliente o telefono..."
+              value={clientSearchQuery}
+              onChange={e => setClientSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 focus:outline-none focus:border-indigo-500 w-full sm:w-64"
+            />
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                <th className="pb-3 px-3">Cliente</th>
+                <th className="pb-3 px-3">Recapito Telefonico</th>
+                <th className="pb-3 px-3">Affidabilità</th>
+                <th className="pb-3 px-3">No-Show Registrati</th>
+                <th className="pb-3 px-3 text-right">Azioni Rapide</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredClients.map(client => (
+                <tr key={client.id} className="hover:bg-slate-50/80 transition">
+                  <td className="py-3.5 px-3 font-extrabold text-slate-900 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-black flex items-center justify-center text-xs">
+                      {client.name.charAt(0)}
+                    </div>
+                    <div>
+                      <span>{client.name}</span>
+                      {client.riskLevel === 'HIGH' && (
+                        <span className="block text-[9px] text-rose-600 font-bold">A Rischio No-Show</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-3 font-mono text-slate-600">
+                    {formatPhoneDisplay(client.phone)}
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
+                      client.reliabilityScore >= 80 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                      client.reliabilityScore >= 50 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                      'bg-rose-50 text-rose-700 border border-rose-200'
+                    }`}>
+                      {client.reliabilityScore}% Affidabile
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-3 font-bold text-slate-700">
+                    {client.noShowCount}
+                  </td>
+                  <td className="py-3.5 px-3 text-right">
+                    <div className="inline-flex items-center gap-1.5">
+                      <a
+                        href={buildWhatsAppUrl(client.phone, `Ciao ${client.name}! Ti contattiamo dal salone per aggiornamenti sui tuoi appuntamenti.`, 'CH')}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold rounded-xl flex items-center gap-1 transition"
+                      >
+                        <Send className="w-3 h-3 text-emerald-600" />
+                        <span>WhatsApp</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onNavigateToSection('clients');
+                          triggerToast(`Selezionato ${client.name}`);
+                        }}
+                        className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition"
+                        title="Vedi storico"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="pt-2 text-center">
+          <button
+            type="button"
+            onClick={() => onNavigateToSection('clients')}
+            className="text-xs font-bold text-indigo-600 hover:underline"
+          >
+            Visualizza l'anagrafica completa dei clienti →
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }
