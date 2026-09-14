@@ -11,7 +11,9 @@ import {
   Sparkles,
   UserCheck,
   Lock,
-  ListOrdered
+  ListOrdered,
+  Store,
+  NotebookTabs
 } from 'lucide-react';
 import { ClientAuthUser } from '../types';
 
@@ -169,50 +171,40 @@ export default function MobileBottomBar({
 
         </div>
       ) : mode === 'client' ? (
-        /* Client Mode Navigation */
+        /* Client Mode Navigation (Puro per il Cliente - No Accessi Staff) */
         <div className="grid grid-cols-4 items-center justify-around text-center">
           
-          {/* Prenota */}
+          {/* Salone Home / Info */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex flex-col items-center justify-center py-2 px-1 rounded-[4px] text-slate-500 hover:text-slate-900 font-medium active:scale-95 transition"
+          >
+            <Store className="w-5 h-5 text-[#1450FF]" />
+            <span className="text-[10px] mt-1 truncate max-w-[64px]">Salone</span>
+          </button>
+
+          {/* Servizi & Listino */}
+          <button
+            onClick={() => {
+              const el = document.getElementById('services-list') || document.getElementById('services-section');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="flex flex-col items-center justify-center py-2 px-1 rounded-[4px] text-slate-500 hover:text-slate-900 font-medium active:scale-95 transition"
+          >
+            <NotebookTabs className="w-5 h-5" />
+            <span className="text-[10px] mt-1">Servizi</span>
+          </button>
+
+          {/* Prenota Appuntamento */}
+          <button
+            onClick={() => {
+              const el = document.getElementById('client-booking-form') || document.getElementById('booking-calendar');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="flex flex-col items-center justify-center py-2 px-1 rounded-[4px] text-[#1450FF] font-bold active:scale-95 transition"
           >
             <Calendar className="w-5 h-5 stroke-[2.2]" />
             <span className="text-[10px] mt-1">Prenota</span>
-          </button>
-
-          {/* Account / Login */}
-          <button
-            onClick={onOpenAuthModal}
-            className="flex flex-col items-center justify-center py-2 px-1 rounded-[4px] text-slate-500 hover:text-slate-900 font-medium active:scale-95 transition"
-          >
-            {loggedClientUser ? (
-              <UserCheck className="w-5 h-5 text-emerald-600" />
-            ) : (
-              <Lock className="w-5 h-5 text-[#1450FF]" />
-            )}
-            <span className="text-[10px] mt-1 truncate max-w-[64px]">
-              {loggedClientUser ? 'Profilo' : 'Accedi'}
-            </span>
-          </button>
-
-          {/* Torna al Salone o Accesso Staff */}
-          <button
-            onClick={() => onSelectMode('owner')}
-            className={`flex flex-col items-center justify-center py-2 px-1 rounded-[4px] font-medium active:scale-95 transition ${
-              isOwnerAuthenticated 
-                ? 'text-[#1450FF] font-bold' 
-                : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            {isOwnerAuthenticated ? (
-              <Sparkles className="w-5 h-5 text-[#1450FF]" />
-            ) : (
-              <Lock className="w-5 h-5 text-amber-500" />
-            )}
-            <span className="text-[10px] mt-1">
-              {isOwnerAuthenticated ? 'Titolare' : 'Staff PIN'}
-            </span>
           </button>
 
           {/* Menu Drawer */}
