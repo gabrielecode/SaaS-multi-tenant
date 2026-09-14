@@ -45,6 +45,8 @@ interface MobileNavDrawerProps {
   onOpenAuthModal: () => void;
   onLogoutClient: () => void;
   onQuickNewAppointment: () => void;
+  isOwnerAuthenticated?: boolean;
+  isSuperAdminAuthenticated?: boolean;
 }
 
 export default function MobileNavDrawer({
@@ -63,7 +65,9 @@ export default function MobileNavDrawer({
   loggedClientUser,
   onOpenAuthModal,
   onLogoutClient,
-  onQuickNewAppointment
+  onQuickNewAppointment,
+  isOwnerAuthenticated = false,
+  isSuperAdminAuthenticated = false
 }: MobileNavDrawerProps) {
   if (!isOpen) return null;
 
@@ -291,18 +295,37 @@ export default function MobileNavDrawer({
                 </p>
               </div>
 
-              {/* Footer Discreto: Link Riservato Staff */}
+              {/* Footer Discreto */}
               <div className="pt-6 border-t border-slate-800 text-center space-y-2">
-                <button
-                  onClick={() => {
-                    onClose();
-                    onSelectMode('staff_gateway');
-                  }}
-                  className="text-[11px] text-slate-500 hover:text-slate-300 transition inline-flex items-center gap-1.5 py-1 px-2 rounded-[4px] hover:bg-slate-800/60"
-                >
-                  <Lock className="w-3 h-3 text-slate-500" />
-                  <span>Accesso riservato al personale</span>
-                </button>
+                {isOwnerAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onSelectMode('owner');
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold bg-[#1450FF] text-white transition active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Store className="w-4 h-4" />
+                      <span>Torna a Gestione Salone</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-70" />
+                  </button>
+                ) : isSuperAdminAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      onSelectMode('super_admin');
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold bg-slate-800 text-white border border-slate-700 transition active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Building2 className="w-4 h-4 text-[#1450FF]" />
+                      <span>Torna a Super Admin</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </button>
+                ) : null}
                 <p className="text-[10px] text-slate-600">
                   {config.name} • Prenotazioni online sicure
                 </p>

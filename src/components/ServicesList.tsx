@@ -1,13 +1,15 @@
 import { useState, FormEvent } from 'react';
-import { Service } from '../types';
+import { Service, BusinessConfig } from '../types';
 import { Plus, ToggleLeft, ToggleRight, DollarSign, Clock, ShieldAlert, X, ShieldCheck, CreditCard, NotebookTabs } from 'lucide-react';
 
 interface ServicesListProps {
   services: Service[];
+  config?: BusinessConfig;
   onUpdateServices: (svs: Service[]) => void;
 }
 
-export default function ServicesList({ services, onUpdateServices }: ServicesListProps) {
+export default function ServicesList({ services, config, onUpdateServices }: ServicesListProps) {
+  const currency = config?.currency || 'CHF';
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDuration, setNewDuration] = useState(30);
@@ -106,7 +108,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     <Clock className="w-3.5 h-3.5 text-slate-400" /> {service.duration} Minuti
                   </span>
                   <span className="flex items-center gap-1 bg-slate-100 border border-[#E4E6EA] px-2.5 py-1 rounded-[4px]">
-                    <DollarSign className="w-3.5 h-3.5 text-slate-400" /> {service.price} €
+                    <DollarSign className="w-3.5 h-3.5 text-slate-400" /> {service.price} {currency}
                   </span>
                 </div>
 
@@ -117,7 +119,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     <div>
                       <p className="font-bold text-emerald-800">Acconto Opzionale Attivo</p>
                       <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                        Consigliati <span className="font-bold text-emerald-700 font-mono">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : '€'}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)}€` : `${service.depositValue}€`}). Il cliente può versarli o pagare in sede.
+                        Consigliati <span className="font-bold text-emerald-700 font-mono">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : ` ${currency}`}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)} ${currency}` : `${service.depositValue} ${currency}`}). Il cliente può versarli o pagare in sede.
                       </p>
                     </div>
                   </div>
@@ -190,7 +192,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Prezzo (€)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Prezzo ({currency})</label>
                   <input
                     type="number"
                     required
@@ -232,7 +234,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                               : 'border-[#E4E6EA] bg-white text-slate-700 hover:bg-slate-50'
                           }`}
                         >
-                          Quota Fissa (es. 10€)
+                          Quota Fissa (es. 10 {currency})
                         </button>
                         <button
                           type="button"
@@ -250,7 +252,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
 
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">
-                        Valore Caparra ({newDepositType === 'FIXED' ? '€' : '%'})
+                        Valore Caparra ({newDepositType === 'FIXED' ? currency : '%'})
                       </label>
                       <input
                         type="number"
@@ -262,7 +264,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                         className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2 focus:border-[#1450FF] focus:outline-none transition font-mono"
                       />
                       <p className="text-[10px] text-slate-500 mt-1 font-medium">
-                        I clienti pagheranno {newDepositType === 'FIXED' ? `${newDepositValue}€` : `${Math.round((newPrice * newDepositValue) / 100)}€`} all'atto della prenotazione.
+                        I clienti pagheranno {newDepositType === 'FIXED' ? `${newDepositValue} ${currency}` : `${Math.round((newPrice * newDepositValue) / 100)} ${currency}`} all'atto della prenotazione.
                       </p>
                     </div>
                   </div>

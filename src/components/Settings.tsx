@@ -29,8 +29,10 @@ import {
   Check,
   ArrowRight,
   Copy,
-  Info
+  Info,
+  Star
 } from 'lucide-react';
+import { DEFAULT_REVIEW_TEMPLATE, formatReviewMessage } from '../lib/reviewAutomation';
 import { logSystemEvent, sendWhatsAppTemplateMessage } from '../lib/supabase';
 import { 
   SUPPORTED_COUNTRIES, 
@@ -76,6 +78,16 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
   const [cancellationPolicyHours, setCancellationPolicyHours] = useState(config.cancellationPolicyHours);
   const [depositPolicy, setDepositPolicy] = useState<'OPTIONAL' | 'DISABLED' | 'MANDATORY'>(config.depositPolicy || 'OPTIONAL');
 
+  // Automazione Richiesta Recensione Google WhatsApp
+  const [googleReviewLink, setGoogleReviewLink] = useState(config.googleReviewLink || 'https://g.page/r/CbG9Z123gentlemansclub/review');
+  const [googleReviewAutomationEnabled, setGoogleReviewAutomationEnabled] = useState(config.googleReviewAutomationEnabled ?? true);
+  const [googleReviewDelayHours, setGoogleReviewDelayHours] = useState(config.googleReviewDelayHours ?? 2);
+  const [googleReviewTemplate, setGoogleReviewTemplate] = useState(config.googleReviewTemplate || DEFAULT_REVIEW_TEMPLATE);
+  const [autoCompletePastAppointments, setAutoCompletePastAppointments] = useState(config.autoCompletePastAppointments ?? true);
+  const [testReviewPhone, setTestReviewPhone] = useState(config.phone || '+41 79 345 67 89');
+  const [reviewTestSuccess, setReviewTestSuccess] = useState<string | null>(null);
+  const [isSendingReviewTest, setIsSendingReviewTest] = useState(false);
+
   // API Credentials state
   const [metaWhatsappToken, setMetaWhatsappToken] = useState(config.metaWhatsappToken || '');
   const [metaPhoneNumberId, setMetaPhoneNumberId] = useState(config.metaPhoneNumberId || '');
@@ -120,6 +132,12 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
       autoWaitlistNotify,
       cancellationPolicyHours,
       depositPolicy,
+      // Automazione Recensione Google WhatsApp
+      googleReviewLink: googleReviewLink.trim(),
+      googleReviewAutomationEnabled,
+      googleReviewDelayHours,
+      googleReviewTemplate: googleReviewTemplate.trim(),
+      autoCompletePastAppointments,
       // API Keys
       metaWhatsappToken: metaWhatsappToken.trim(),
       metaPhoneNumberId: metaPhoneNumberId.trim(),
@@ -170,6 +188,53 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
     setWhatsAppTestSuccess(`Chat WhatsApp di prova aperta verso +${normalizedDigits}.`);
     logSystemEvent('INFO', 'META_WHATSAPP', `Test apertura link WhatsApp su numero ${targetPhone} con prefisso +${normalizedDigits.substring(0, 2)}`, config.tenant_id);
     setTimeout(() => setWhatsAppTestSuccess(null), 8000);
+  };
+
+  // Test invio o apertura WhatsApp per Recensione Google
+  const handleTestReviewWhatsApp = async (mode: 'direct' | 'api' = 'direct') => {
+    setIsSendingReviewTest(true);
+    const targetPhone = testReviewPhone || phone;
+    const sampleMessage = formatReviewMessage(
+      googleReviewTemplate,
+      'Marco',
+      name,
+      'Taglio Capelli Premium',
+      googleReviewLink
+    );
+
+    if (mode === 'api' && metaPhoneNumberId && metaWhatsappToken && metaWhatsappToken.length > 10 && metaWhatsappToken !== 'mock_token') {
+      try {
+        const res = await sendWhatsAppTemplateMessage(
+          metaPhoneNumberId,
+          metaWhatsappToken,
+          targetPhone,
+          'google_review_request',
+          {
+            nome: 'Marco',
+            salone: name,
+            link: googleReviewLink
+          }
+        );
+        setReviewTestSuccess(`Richiesta recensione di prova inviata con successo via Meta Cloud API a ${targetPhone}! (ID: ${res.messageId})`);
+      } catch (err: any) {
+        setReviewTestSuccess(`Errore invio Meta API: ${err?.message || 'Verifica le credenziali'}`);
+      } finally {
+        setIsSendingReviewTest(false);
+      }
+    } else {
+      const url = buildWhatsAppUrl(targetPhone, sampleMessage, country);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setReviewTestSuccess(`Chat WhatsApp con testo recensione Google aperta per ${targetPhone}.`);
+      setIsSendingReviewTest(false);
+    }
+
+    logSystemEvent(
+      'INFO',
+      'META_WHATSAPP',
+      `Test messaggio richiesta recensione Google per ${targetPhone}`,
+      config.tenant_id
+    );
+    setTimeout(() => setReviewTestSuccess(null), 8000);
   };
 
   // Invio test via Meta WhatsApp API
@@ -838,7 +903,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-mono"
                     >
                       <option value="CHF">CHF - Franco Svizzero (Svizzera)</option>
-                      <option value="EUR">EUR - Euro (€)</option>
+                      <option value="EUR">EUR - Euro</option>
                     </select>
                   </div>
 
@@ -1181,6 +1246,234 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       onChange={(e) => setReminderTemplate(e.target.value)}
                       className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3.5 focus:border-[#1450FF] focus:outline-none leading-relaxed font-mono text-[11px]"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Automazione Richiesta Recensione Google WhatsApp */}
+              <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E4E6EA] pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-[4px] bg-amber-50 border border-amber-200 flex items-center justify-center">
+                      <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-950 font-display flex items-center gap-2">
+                        Automazione Recensioni Google (WhatsApp)
+                        <span className="px-2 py-0.5 rounded-[4px] text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 font-mono">
+                          Trigger Post-Servizio
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Invia in automatico un messaggio WhatsApp personalizzato dopo che l'appuntamento passa a "Completato".
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                      {googleReviewAutomationEnabled ? 'Automazione Attiva' : 'Automazione Disattivata'}
+                    </label>
+                    <input
+                      type="checkbox"
+                      checked={googleReviewAutomationEnabled}
+                      onChange={(e) => setGoogleReviewAutomationEnabled(e.target.checked)}
+                      className="w-5 h-5 accent-[#1450FF] cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                {/* Opzioni di attivazione e Auto-completamento */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="p-3.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">Auto-completamento a fine orario</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Segna come "Eseguito" gli appuntamenti confermati quando l'orario di lavoro è trascorso.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={autoCompletePastAppointments}
+                      onChange={(e) => setAutoCompletePastAppointments(e.target.checked)}
+                      className="w-4.5 h-4.5 accent-[#1450FF] cursor-pointer"
+                    />
+                  </div>
+
+                  <div className="p-3.5 bg-blue-50/60 border border-blue-200 rounded-[4px]">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#1450FF]">
+                      <ShieldCheck className="w-4 h-4 text-[#1450FF]" />
+                      Controllo Anti-Duplicati Attivo
+                    </div>
+                    <p className="text-[10px] text-slate-600 mt-1 leading-relaxed">
+                      Il sistema imposta il flag <code>recensione_richiesta = true</code> per evitare qualsiasi invio duplicato allo stesso cliente per lo stesso servizio.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Parametri Chiave: Link Google e Timer Delay */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  <div className="sm:col-span-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block font-bold text-slate-700">
+                        Link Diretto Scheda Recensioni Google Business
+                      </label>
+                      {googleReviewLink && (
+                        <a
+                          href={googleReviewLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-[#1450FF] hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Test Link Esterno
+                        </a>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="url"
+                        value={googleReviewLink}
+                        onChange={(e) => setGoogleReviewLink(e.target.value)}
+                        placeholder="https://g.page/r/identificativo/review o link Google My Business"
+                        className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-mono text-xs focus:border-[#1450FF] focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                      Trovi il link breve nella dashboard di Google Business Profile sotto la voce <em>"Chiedi recensioni"</em>.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Timer di Attesa (Delay Invio)
+                    </label>
+                    <select
+                      value={googleReviewDelayHours}
+                      onChange={(e) => setGoogleReviewDelayHours(Number(e.target.value))}
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-medium focus:border-[#1450FF] focus:outline-none"
+                    >
+                      <option value={0}>0 ore - Invio Immediato (Test)</option>
+                      <option value={1}>1 ora dopo il completamento</option>
+                      <option value={2}>2 ore dopo (Default consigliato)</option>
+                      <option value={3}>3 ore dopo il completamento</option>
+                      <option value={4}>4 ore dopo il completamento</option>
+                      <option value={6}>6 ore dopo il completamento</option>
+                      <option value={24}>24 ore dopo (Giorno successivo)</option>
+                    </select>
+                    <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                      Attende che il cliente sia tornato a casa prima di inviare.
+                    </p>
+                  </div>
+
+                  {/* Template Messaggio */}
+                  <div className="sm:col-span-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                      <label className="block font-bold text-slate-700">
+                        Testo Messaggio WhatsApp Personalizzato
+                      </label>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400">Clicca per inserire:</span>
+                        {['{NOME}', '{SALONE}', '{SERVIZIO}', '{LINK_RECENSIONE}'].map(tag => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => setGoogleReviewTemplate(prev => prev + ' ' + tag)}
+                            className="text-[10px] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] text-slate-700 px-1.5 py-0.5 rounded-[4px] font-mono transition"
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={googleReviewTemplate}
+                      onChange={(e) => setGoogleReviewTemplate(e.target.value)}
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3.5 focus:border-[#1450FF] focus:outline-none leading-relaxed font-mono text-[11px]"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Preview WhatsApp Bubble & Test Invio */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {/* Anteprima Live WhatsApp */}
+                  <div className="bg-[#EFEAE2] p-4 rounded-[6px] border border-[#DDD6CE]">
+                    <div className="flex items-center justify-between pb-2 border-b border-[#E0D7CD] mb-3">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                        <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                        Anteprima Schermo Cliente
+                      </span>
+                      <span className="text-[9px] text-slate-500 font-mono">WhatsApp Web/App</span>
+                    </div>
+
+                    {/* Chat Bubble */}
+                    <div className="max-w-[90%] bg-white rounded-tr-lg rounded-br-lg rounded-bl-lg p-3 shadow-xs text-xs text-slate-800 space-y-2 border border-slate-100">
+                      <p className="whitespace-pre-wrap leading-relaxed">
+                        {formatReviewMessage(googleReviewTemplate, 'Alessandro', name, 'Taglio Capelli Premium', googleReviewLink)}
+                      </p>
+                      <div className="flex items-center justify-end gap-1 text-[9px] text-slate-400 font-mono">
+                        <span>14:30</span>
+                        <span className="text-blue-500 font-bold">✓✓</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Box di Test Rapido Invio */}
+                  <div className="bg-slate-50 p-4 rounded-[6px] border border-[#E4E6EA] flex flex-col justify-between space-y-3">
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <Send className="w-3.5 h-3.5 text-[#1450FF]" />
+                        Testa l'Invio del Messaggio Recensione
+                      </h5>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Invia una simulazione di richiesta recensione al tuo numero di prova per verificare formattazione e link.
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-600 uppercase font-mono">
+                        Numero di Telefono per Test
+                      </label>
+                      <input
+                        type="tel"
+                        value={testReviewPhone}
+                        onChange={(e) => setTestReviewPhone(e.target.value)}
+                        placeholder="+41 79 123 45 67 o +39 345..."
+                        className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 font-mono focus:border-[#1450FF] focus:outline-none"
+                      />
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleTestReviewWhatsApp('direct')}
+                          disabled={isSendingReviewTest}
+                          className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition active:scale-[0.98]"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Apri su WhatsApp (wa.me)</span>
+                        </button>
+
+                        {metaWhatsappToken && metaPhoneNumberId && (
+                          <button
+                            type="button"
+                            onClick={() => handleTestReviewWhatsApp('api')}
+                            disabled={isSendingReviewTest}
+                            className="px-3 py-2 bg-slate-900 hover:bg-black text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition active:scale-[0.98]"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                            <span>Invia via Meta Cloud API</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {reviewTestSuccess && (
+                        <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-[4px] text-[11px] font-medium flex items-center gap-1.5 animate-fade-in">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                          <span>{reviewTestSuccess}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -71,6 +71,10 @@ export interface Appointment {
   isConfirmedByClient: boolean;
   stripePaymentId?: string;
   rescheduledFrom?: string;
+  completedAt?: string; // Data e ora ISO di completamento servizio
+  reviewRequestSent?: boolean; // Flag anti-duplicato per recensione Google
+  recensione_richiesta?: boolean; // Flag compatibile "recensione_richiesta = true"
+  reviewRequestedAt?: string; // Timestamp invio richiesta recensione Google
 }
 
 export interface WaitlistEntry {
@@ -104,6 +108,12 @@ export interface BusinessConfig {
   autoWaitlistNotify: boolean;
   cancellationPolicyHours: number; // e.g. 24
   depositPolicy?: 'OPTIONAL' | 'DISABLED' | 'MANDATORY';
+  // Automazione Richiesta Recensione Google su WhatsApp
+  googleReviewLink?: string; // Link diretto scheda Google Business per recensioni
+  googleReviewAutomationEnabled?: boolean; // Trigger attivo
+  googleReviewDelayHours?: number; // Timer di attesa (default: 2 ore)
+  googleReviewTemplate?: string; // Template personalizzabile
+  autoCompletePastAppointments?: boolean; // Auto-completamento appuntamenti a fine orario
   supabaseUrl?: string;
   supabaseAnonKey?: string;
   metaWhatsappToken?: string;

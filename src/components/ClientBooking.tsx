@@ -1,6 +1,7 @@
 import React, { useState, useMemo, FormEvent } from 'react';
 import { Service, Appointment, Client, AppointmentStatus, BusinessConfig, Promotion, WhatsAppCampaign } from '../types';
 import { buildWhatsAppUrl } from '../lib/phoneUtils';
+import { DateWheelPicker } from '@/components/ui/date-wheel-picker';
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -114,6 +115,8 @@ export default function ClientBooking({
   // Navigation: 'home' | 'book' | 'promos' | 'my_appointments'
   const [activeTab, setActiveTab] = useState<'home' | 'book' | 'promos' | 'my_appointments'>('home');
 
+  const currency = config.currency || 'CHF';
+
   // Step: 1 (Servizio) -> 2 (Data & Ora) -> 3 (Dati) -> 4 (Confermato)
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
@@ -121,6 +124,24 @@ export default function ClientBooking({
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>('2026-06-24');
   const [selectedTime, setSelectedTime] = useState<string>('');
+
+  // Date conversion for DateWheelPicker
+  const selectedDateObj = useMemo(() => {
+    if (!selectedDate) return new Date();
+    const parts = selectedDate.split('-').map(Number);
+    if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) {
+      return new Date(parts[0], parts[1] - 1, parts[2]);
+    }
+    return new Date();
+  }, [selectedDate]);
+
+  const handleDateWheelChange = (newDate: Date) => {
+    const y = newDate.getFullYear();
+    const m = String(newDate.getMonth() + 1).padStart(2, '0');
+    const d = String(newDate.getDate()).padStart(2, '0');
+    setSelectedDate(`${y}-${m}-${d}`);
+    setSelectedTime('');
+  };
   
   // Client info
   const [name, setName] = useState(() => loggedClientUser?.name || localStorage.getItem('client_name') || '');
@@ -255,7 +276,7 @@ export default function ClientBooking({
       depositPaid: 0,
       paymentMethod: 'IN_SALON',
       status: AppointmentStatus.PENDING,
-      notes: `${notes.trim()}${appliedPromo ? ` [Promo: ${appliedPromo.code} - Sconto €${discountAmount}]` : ''}`.trim(),
+      notes: `${notes.trim()}${appliedPromo ? ` [Promo: ${appliedPromo.code} - Sconto ${currency} ${discountAmount}]` : ''}`.trim(),
       reminderSent: true,
       isConfirmedByClient: false
     };
@@ -443,8 +464,8 @@ export default function ClientBooking({
                   className="bg-[#1a1a1e] border border-white/10 hover:border-amber-500/50 p-4 rounded-3xl flex items-center justify-between gap-4 cursor-pointer transition group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 font-black flex items-center justify-center text-base group-hover:bg-amber-500 group-hover:text-black transition">
-                      €{service.price}
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 font-black flex items-center justify-center text-xs group-hover:bg-amber-500 group-hover:text-black transition px-1 text-center font-mono">
+                      {currency} {service.price}
                     </div>
                     <div>
                       <h4 className="font-extrabold text-white text-sm">{service.name}</h4>
@@ -556,7 +577,7 @@ export default function ClientBooking({
                     <div key={app.id} className="p-4 rounded-2xl border border-white/10 bg-black/30 flex items-center justify-between gap-3 text-xs">
                       <div>
                         <p className="font-extrabold text-white text-sm">{app.serviceName}</p>
-                        <p className="text-neutral-400 text-[11px] mt-0.5">{app.date} • {app.time} (€{app.price})</p>
+                        <p className="text-neutral-400 text-[11px] mt-0.5">{app.date} • {app.time} ({currency} {app.price})</p>
                       </div>
                       {app.status !== AppointmentStatus.CANCELLED && (
                         <button
@@ -664,11 +685,11 @@ export default function ClientBooking({
                           <div>
                             {appliedPromo && displayDiscount > 0 ? (
                               <div>
-                                <span className="text-[11px] text-neutral-500 line-through">€{service.price}</span>
-                                <span className="block text-sm font-black text-emerald-400">€{discountedServicePrice}</span>
+                                <span className="text-[11px] text-neutral-500 line-through">{currency} {service.price}</span>
+                                <span className="block text-sm font-black text-emerald-400">{currency} {discountedServicePrice}</span>
                               </div>
                             ) : (
-                              <span className="text-sm font-black text-amber-400">€{service.price}</span>
+                              <span className="text-sm font-black text-amber-400">{currency} {service.price}</span>
                             )}
                           </div>
                           <div className={`w-7 h-7 rounded-full flex items-center justify-center ${isSelected ? 'bg-amber-500 text-black' : 'bg-white/5 text-neutral-400'}`}>
@@ -689,45 +710,37 @@ export default function ClientBooking({
               <div className="flex items-center justify-between border-b border-white/10 pb-3">
                 <div>
                   <h2 className="text-sm font-black text-white uppercase tracking-wider">Data e Orario</h2>
-                  <p className="text-xs text-amber-400 font-bold">{selectedService.name} (€{finalPrice})</p>
+                  <p className="text-xs text-amber-400 font-bold">{selectedService.name} ({currency} {finalPrice})</p>
                 </div>
                 <button onClick={() => setStep(1)} className="text-xs text-neutral-400 font-bold hover:text-white flex items-center gap-1">
                   <ArrowLeft className="w-3.5 h-3.5" /> Indietro
                 </button>
               </div>
 
-              {/* Day Selector Horizontal Pills */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-neutral-300 block">Seleziona Giorno:</label>
-                <div className="flex gap-2.5 overflow-x-auto pb-2 no-scrollbar">
-                  {days.map(d => {
-                    const isSelected = selectedDate === d.dateStr;
-                    return (
-                      <button
-                        key={d.dateStr}
-                        disabled={d.isClosed}
-                        onClick={() => {
-                          setSelectedDate(d.dateStr);
-                          setSelectedTime('');
-                        }}
-                        className={`flex-shrink-0 w-16 p-3 rounded-3xl border text-center transition flex flex-col items-center justify-center gap-1 ${
-                          d.isClosed 
-                            ? 'bg-black/20 text-neutral-600 border-white/5 cursor-not-allowed'
-                            : isSelected
-                            ? 'bg-amber-500 text-black border-amber-500 shadow-lg font-black'
-                            : 'bg-black/40 hover:bg-black/60 text-neutral-300 border-white/10 font-medium'
-                        }`}
-                      >
-                        {d.tag && (
-                          <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${isSelected ? 'bg-black text-amber-400' : 'bg-amber-500/20 text-amber-300'}`}>
-                            {d.tag}
-                          </span>
-                        )}
-                        <span className="text-[10px] text-neutral-400">{d.shortDay}</span>
-                        <span className="text-base font-black">{d.dayNumber}</span>
-                      </button>
-                    );
-                  })}
+              {/* Date Wheel Picker */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-neutral-300 flex items-center gap-1.5">
+                    <CalendarIcon className="w-3.5 h-3.5 text-amber-400" />
+                    Seleziona Data:
+                  </label>
+                  <span className="text-xs font-bold text-amber-400 capitalize">
+                    {selectedDateObj.toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                </div>
+                <div 
+                  className="bg-black/40 border border-white/10 rounded-2xl py-3 px-4 flex justify-center overflow-hidden"
+                  style={{ '--wheel-bg': '#141417', '--background': '#141417' } as React.CSSProperties}
+                >
+                  <DateWheelPicker
+                    value={selectedDateObj}
+                    onChange={handleDateWheelChange}
+                    locale="it-IT"
+                    minYear={2026}
+                    maxYear={2028}
+                    size="md"
+                    className="text-white"
+                  />
                 </div>
               </div>
 
@@ -808,7 +821,7 @@ export default function ClientBooking({
                   <p className="text-[11px] text-neutral-400 mt-0.5">{selectedService.duration} min • Pagamento in salone</p>
                 </div>
                 <div className="text-right">
-                  <span className="text-lg font-black text-amber-400">€{finalPrice}</span>
+                  <span className="text-lg font-black text-amber-400">{currency} {finalPrice}</span>
                 </div>
               </div>
 
@@ -833,7 +846,7 @@ export default function ClientBooking({
                 </button>
               </div>
               {promoError && <p className="text-[11px] text-rose-400 font-medium">{promoError}</p>}
-              {appliedPromo && <p className="text-[11px] text-emerald-400 font-bold">✓ Coupon {appliedPromo.code} applicato (-€{discountAmount})</p>}
+              {appliedPromo && <p className="text-[11px] text-emerald-400 font-bold">✓ Coupon {appliedPromo.code} applicato (-{currency} {discountAmount})</p>}
 
               {/* Inputs */}
               <div className="space-y-3.5">
@@ -878,7 +891,7 @@ export default function ClientBooking({
                 className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs rounded-2xl shadow-xl transition active:scale-95 flex items-center justify-center gap-2 tracking-wide uppercase"
               >
                 <Check className="w-4 h-4" />
-                Conferma Prenotazione (€{finalPrice})
+                Conferma Prenotazione ({currency} {finalPrice})
               </button>
             </form>
           )}
@@ -898,7 +911,7 @@ export default function ClientBooking({
               <div className="bg-black/40 border border-white/10 rounded-2xl p-4 text-left text-xs space-y-2.5">
                 <div className="flex justify-between"><span className="text-neutral-400">Trattamento</span><strong className="text-white">{selectedService.name}</strong></div>
                 <div className="flex justify-between"><span className="text-neutral-400">Data e Ora</span><strong className="text-amber-400">{selectedDate} - {selectedTime}</strong></div>
-                <div className="flex justify-between pt-2 border-t border-white/10"><span className="text-neutral-400">Totale in Salone</span><strong className="text-white font-black">€{finalPrice}</strong></div>
+                <div className="flex justify-between pt-2 border-t border-white/10"><span className="text-neutral-400">Totale in Salone</span><strong className="text-white font-black">{currency} {finalPrice}</strong></div>
               </div>
 
               <div className="space-y-2.5">

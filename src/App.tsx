@@ -661,16 +661,7 @@ export default function App() {
                     <Building2 className="w-3.5 h-3.5 text-[#1450FF]" />
                     <span>Torna a Super Admin</span>
                   </button>
-                ) : (
-                  <button
-                    onClick={() => setMode('staff_gateway')}
-                    className="px-2.5 py-1.5 text-slate-500 hover:text-slate-800 rounded-[4px] text-xs font-medium flex items-center gap-1.5 transition"
-                    title="Accesso riservato per Titolare del salone con PIN"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Accesso Staff</span>
-                  </button>
-                )}
+                ) : null}
 
                 <button
                   onClick={() => setMode('landing')}
@@ -1048,6 +1039,7 @@ export default function App() {
                 clients={activeClients}
                 services={services}
                 waitlist={waitlist}
+                config={config}
                 onUpdateAppointments={isSuperAdminAuditing ? () => {} : setAppointments}
                 onUpdateWaitlist={isSuperAdminAuditing ? () => {} : setWaitlist}
                 onUpdateClients={isSuperAdminAuditing ? () => {} : setClients}
@@ -1069,6 +1061,7 @@ export default function App() {
             {ownerSection === 'services' && (
               <ServicesList 
                 services={services} 
+                config={config}
                 onUpdateServices={isSuperAdminAuditing ? () => {} : setServices} 
               />
             )}
@@ -1227,6 +1220,8 @@ export default function App() {
           setInitialAppointmentsTab('agenda');
           setAutoOpenAddApp(true);
         }}
+        isOwnerAuthenticated={isOwnerAuthenticated}
+        isSuperAdminAuthenticated={isSuperAdminAuthenticated}
       />
 
       {/* ========================================================================= */}

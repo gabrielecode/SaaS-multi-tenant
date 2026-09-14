@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, FormEvent } from 'react';
-import { Appointment, AppointmentStatus, Client, Service, WaitlistEntry } from '../types';
+import { Appointment, AppointmentStatus, BusinessConfig, Client, Service, WaitlistEntry } from '../types';
 import { buildWhatsAppUrl, formatPhoneDisplay } from '../lib/phoneUtils';
 import { 
   Plus, 
@@ -20,14 +20,18 @@ import {
   UserPlus, 
   Sparkles,
   Search,
-  Filter
+  Filter,
+  Star
 } from 'lucide-react';
+import { getGoogleReviewState, triggerReviewRequest } from '../lib/reviewAutomation';
+import { INITIAL_BUSINESS_CONFIG } from '../data/mockData';
 
 interface AppointmentsProps {
   appointments: Appointment[];
   clients: Client[];
   services: Service[];
   waitlist: WaitlistEntry[];
+  config?: BusinessConfig;
   onUpdateAppointments: (apps: Appointment[]) => void;
   onUpdateWaitlist: (wl: WaitlistEntry[]) => void;
   onUpdateClients: (cls: Client[]) => void;
@@ -41,6 +45,7 @@ export default function Appointments({
   clients,
   services,
   waitlist,
+  config,
   onUpdateAppointments,
   onUpdateWaitlist,
   onUpdateClients,
@@ -48,6 +53,8 @@ export default function Appointments({
   onResetAutoOpen,
   initialTab
 }: AppointmentsProps) {
+  const currency = config?.currency || 'CHF';
+
   // Determinazione data iniziale intelligente (usa la data del primo appuntamento o oggi)
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     if (appointments.length > 0) {
@@ -199,6 +206,11 @@ export default function Appointments({
   const handleStatusChange = (id: string, newStatus: AppointmentStatus) => {
     const updated = appointments.map(app => {
       if (app.id === id) {
+        let completedAt = app.completedAt;
+        if (newStatus === AppointmentStatus.COMPLETED && !completedAt) {
+          completedAt = new Date().toISOString();
+        }
+
         // Se lo stato diventa NO_SHOW o COMPLETED, aggiorna metriche del cliente
         if (newStatus === AppointmentStatus.NO_SHOW || newStatus === AppointmentStatus.COMPLETED) {
           const clientIndex = clients.findIndex(c => c.id === app.clientId);
@@ -224,7 +236,7 @@ export default function Appointments({
             onUpdateClients(updatedClients);
           }
         }
-        return { ...app, status: newStatus };
+        return { ...app, status: newStatus, completedAt };
       }
       return app;
     });
@@ -238,7 +250,31 @@ export default function Appointments({
       [AppointmentStatus.CANCELLED]: 'Appuntamento annullato',
       [AppointmentStatus.PENDING]: 'Impostato in attesa'
     };
-    showToast(labels[newStatus] || 'Stato aggiornato');
+
+    let msg = labels[newStatus] || 'Stato aggiornato';
+    if (newStatus === AppointmentStatus.COMPLETED) {
+      const delay = config?.googleReviewDelayHours ?? 2;
+      msg = `Appuntamento completato! Richiesta recensione Google programmata tra ${delay} ore.`;
+    }
+    showToast(msg);
+  };
+
+  // Invia richiesta recensione Google WhatsApp (manuale o anticipata)
+  const handleSendReviewNow = async (app: Appointment) => {
+    const activeConfig = config || INITIAL_BUSINESS_CONFIG;
+    const res = await triggerReviewRequest(app, activeConfig);
+    
+    // Aggiorna lista appuntamenti con flag anti-duplicato
+    const updated = appointments.map(a => a.id === app.id ? res.updatedAppointment : a);
+    onUpdateAppointments(updated);
+
+    // Apri WhatsApp
+    const state = getGoogleReviewState(app, activeConfig);
+    if (state.whatsAppUrl && state.whatsAppUrl !== '#') {
+      window.open(state.whatsAppUrl, '_blank');
+    }
+
+    showToast(`Richiesta recensione Google inviata a ${app.clientName} su WhatsApp!`);
   };
 
   // Submit creazione appuntamento manuale
@@ -618,6 +654,7 @@ export default function Appointments({
                       const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
                       const isCompleted = app.status === AppointmentStatus.COMPLETED;
                       const isCancelled = app.status === AppointmentStatus.CANCELLED;
+                      const reviewState = getGoogleReviewState(app, config || INITIAL_BUSINESS_CONFIG);
 
                       return (
                         <div
@@ -673,7 +710,7 @@ export default function Appointments({
                                   </span>
                                 </h4>
                                 <p className="text-xs font-bold text-[#1450FF] mt-0.5 font-mono">
-                                  {app.serviceName} • {app.price} €
+                                  {app.serviceName} • {app.price} {currency}
                                 </p>
                               </div>
 
@@ -692,7 +729,7 @@ export default function Appointments({
                                 {app.depositPaid > 0 ? (
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold font-mono">
                                     <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                                    Caparra: {app.depositPaid} €
+                                    Caparra: {app.depositPaid} {currency}
                                   </span>
                                 ) : (
                                   <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[4px]">
@@ -761,6 +798,50 @@ export default function Appointments({
                                       <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                                       <span>No-Show</span>
                                     </button>
+                                  </>
+                                )}
+
+                                {/* Se completato: Gestione Recensione Google WhatsApp */}
+                                {isCompleted && (
+                                  <>
+                                    {reviewState.isAlreadySent ? (
+                                      <span 
+                                        className="inline-flex items-center gap-1 px-2 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-[4px] text-xs font-bold font-mono"
+                                        title={app.reviewRequestedAt ? `Richiesta recensione inviata il ${new Date(app.reviewRequestedAt).toLocaleString()}` : 'Recensione Google richiesta'}
+                                      >
+                                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                                        <span>Recensione Richiesta</span>
+                                      </span>
+                                    ) : reviewState.isPendingTimer ? (
+                                      <div className="flex items-center gap-1">
+                                        <span 
+                                          className="inline-flex items-center gap-1 px-2 py-1.5 bg-amber-50 border border-amber-200 text-amber-800 rounded-[4px] text-xs font-medium"
+                                          title={`Invio automatico WhatsApp programmato per le ore ${reviewState.scheduledSendTime?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (ritardo configurato)`}
+                                        >
+                                          <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                          <span>Timer Recensione ({reviewState.remainingMinutes}m)</span>
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleSendReviewNow(app)}
+                                          className="px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-[4px] text-xs flex items-center gap-1 transition shadow-xs"
+                                          title="Invia subito la richiesta di recensione su WhatsApp senza attendere la scadenza del timer"
+                                        >
+                                          <Star className="w-3 h-3 fill-slate-950 text-slate-950" />
+                                          <span>Invia Subito</span>
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSendReviewNow(app)}
+                                        className="px-2.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                        title="Invia richiesta recensione Google su WhatsApp"
+                                      >
+                                        <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                                        <span>Invia Recensione Google</span>
+                                      </button>
+                                    )}
                                   </>
                                 )}
 
@@ -846,7 +927,7 @@ export default function Appointments({
                               >
                                 <div className="flex items-center justify-between font-mono font-bold text-[10px]">
                                   <span>{app.time}</span>
-                                  <span>{app.price}€</span>
+                                  <span>{app.price} {currency}</span>
                                 </div>
                                 <div className="truncate font-bold mt-0.5">{app.clientName}</div>
                               </div>
@@ -1156,7 +1237,7 @@ export default function Appointments({
                   <option value="">Seleziona un Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.name} - {s.price} € ({s.duration} min)
+                      {s.name} - {s.price} {currency} ({s.duration} min)
                     </option>
                   ))}
                 </select>
@@ -1213,7 +1294,7 @@ export default function Appointments({
 
                 {newAppHasDeposit && (
                   <div className="pt-2 border-t border-[#E4E6EA] flex items-center gap-2 animate-fade-in">
-                    <span className="text-[11px] font-semibold text-slate-600">Importo Acconto (€):</span>
+                    <span className="text-[11px] font-semibold text-slate-600">Importo Acconto ({currency}):</span>
                     <input
                       type="number"
                       min={0}
@@ -1314,7 +1395,7 @@ export default function Appointments({
                   <option value="">Seleziona Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
                     <option key={s.id} value={s.id}>
-                      {s.name} ({s.price} €)
+                      {s.name} ({s.price} {currency})
                     </option>
                   ))}
                 </select>
