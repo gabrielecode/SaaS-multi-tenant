@@ -725,7 +725,7 @@ export default function Appointments({
                                     <button
                                       type="button"
                                       onClick={() => handleStatusChange(app.id, AppointmentStatus.CONFIRMED)}
-                                      className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                      className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-[#1450FF] rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
                                     >
                                       <Check className="w-3.5 h-3.5" />
                                       <span>Conferma</span>
@@ -891,7 +891,7 @@ export default function Appointments({
                             {dayNum}
                           </span>
                           {dayApps.length > 0 && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] bg-indigo-50 text-[#1450FF] font-mono">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] bg-blue-50 text-[#1450FF] font-mono">
                               {dayApps.length}
                             </span>
                           )}
@@ -935,14 +935,14 @@ export default function Appointments({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2 font-display">
                 <Bell className="w-4 h-4 text-amber-500" />
                 <span>Clienti in Lista d'Attesa ({waitlist.length})</span>
               </h4>
               <button
                 type="button"
                 onClick={() => setShowAddWaitlistForm(true)}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 hover:underline"
+                className="text-xs font-bold text-[#1450FF] hover:underline flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Aggiungi cliente</span>
@@ -958,16 +958,16 @@ export default function Appointments({
                   return (
                     <div
                       key={w.id}
-                      className="p-5 bg-white border border-slate-200/90 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                      className="p-4 bg-white border border-[#E4E6EA] rounded-[6px] flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <h5 className="text-sm font-extrabold text-slate-900">{w.clientName}</h5>
-                          <span className="text-[10px] bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-200">
+                          <span className="text-[10px] bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded-[4px] border border-amber-200">
                             {prefLabel}
                           </span>
                         </div>
-                        <p className="text-xs text-indigo-700 font-bold">
+                        <p className="text-xs text-[#1450FF] font-bold">
                           Servizio richiesto: {matchingService?.name || 'Servizio Generico'}
                         </p>
                         <p className="text-xs text-slate-500 font-mono">
@@ -1001,7 +1001,7 @@ export default function Appointments({
                             showToast(`Prenotazione confermata per ${w.clientName}!`);
                             setActiveTab('agenda');
                           }}
-                          className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 flex items-center gap-1.5"
+                          className="px-3 py-2 bg-[#1450FF] hover:bg-blue-600 text-white text-xs font-bold rounded-[4px] transition active:scale-95 flex items-center gap-1.5"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>Assegna Slot Ora</span>
@@ -1013,7 +1013,7 @@ export default function Appointments({
                             onUpdateWaitlist(waitlist.filter(item => item.id !== w.id));
                             showToast('Cliente rimosso dalla lista d\'attesa');
                           }}
-                          className="p-2 border border-slate-200 hover:bg-rose-50 hover:border-rose-200 rounded-xl text-slate-400 hover:text-rose-600 transition"
+                          className="p-2 border border-[#E4E6EA] hover:bg-rose-50 hover:border-rose-200 rounded-[4px] text-slate-400 hover:text-rose-600 transition"
                           title="Rimuovi dalla lista"
                         >
                           <X className="w-4 h-4" />
@@ -1024,9 +1024,9 @@ export default function Appointments({
                 })}
               </div>
             ) : (
-              <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center shadow-sm space-y-3">
-                <Bell className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
-                <h4 className="text-base font-extrabold text-slate-900">Lista d'attesa vuota</h4>
+              <div className="bg-white p-10 rounded-[6px] border border-[#E4E6EA] text-center space-y-3">
+                <Bell className="w-10 h-10 mx-auto text-slate-300 stroke-1" />
+                <h4 className="text-base font-extrabold text-slate-900 font-display">Lista d'attesa vuota</h4>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
                   Nessun cliente in attesa di slot. Inserisci i clienti che non trovano posto per riempire automaticamente le cancellazioni improvvise.
                 </p>
@@ -1034,7 +1034,7 @@ export default function Appointments({
                   <button
                     type="button"
                     onClick={() => setShowAddWaitlistForm(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md transition active:scale-95"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-[4px] bg-[#1450FF] hover:bg-blue-600 text-white text-xs font-bold transition active:scale-95"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Aggiungi Cliente in Attesa</span>
@@ -1046,24 +1046,24 @@ export default function Appointments({
 
           {/* Scheda Spiegazione Lista d'Attesa */}
           <div className="space-y-4">
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-              <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <div className="bg-white p-5 rounded-[6px] border border-[#E4E6EA] space-y-4">
+              <div className="w-9 h-9 rounded-[4px] bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <Sparkles className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-extrabold text-slate-900">
+              <h4 className="text-sm font-extrabold text-slate-900 font-display">
                 Come Funziona il Recupero No-Show
               </h4>
               <ul className="text-xs text-slate-600 space-y-3">
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">1</span>
+                  <span className="w-5 h-5 rounded-[4px] bg-blue-50 text-[#1450FF] font-bold flex items-center justify-center flex-shrink-0 text-[10px] font-mono">1</span>
                   <span>Quando un appuntamento viene cancellato o segnato come No-Show, il sistema individua i clienti in lista d'attesa.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">2</span>
+                  <span className="w-5 h-5 rounded-[4px] bg-blue-50 text-[#1450FF] font-bold flex items-center justify-center flex-shrink-0 text-[10px] font-mono">2</span>
                   <span>Un avviso rapido su WhatsApp/SMS notifica la disponibilità dello slot liberato in tempo reale.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-5 h-5 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center flex-shrink-0 text-[10px]">3</span>
+                  <span className="w-5 h-5 rounded-[4px] bg-blue-50 text-[#1450FF] font-bold flex items-center justify-center flex-shrink-0 text-[10px] font-mono">3</span>
                   <span>Con un click assegni la prenotazione, salvando il fatturato del salone.</span>
                 </li>
               </ul>
@@ -1077,15 +1077,15 @@ export default function Appointments({
       {/* ========================================================================= */}
       {showAddForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-600" />
+          <div className="bg-white rounded-[6px] max-w-md w-full p-6 border border-[#E4E6EA] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4E6EA]">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2 font-display">
+                <Calendar className="w-5 h-5 text-[#1450FF]" />
                 <span>Nuovo Appuntamento</span>
               </h4>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition"
+                className="p-1.5 hover:bg-slate-100 rounded-[4px] text-slate-400 hover:text-slate-700 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1105,7 +1105,7 @@ export default function Appointments({
                       setNewAppClientPhone('');
                     }
                   }}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs font-medium focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 >
                   <option value="">-- Nuovo Cliente (inserisci dati sotto) --</option>
                   {clients.map(c => (
@@ -1118,7 +1118,7 @@ export default function Appointments({
 
               {/* Dati se nuovo cliente */}
               {!newAppClientId && (
-                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-slate-200/80 rounded-xl">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-slate-50 border border-[#E4E6EA] rounded-[4px]">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nome e Cognome</label>
                     <input
@@ -1127,7 +1127,7 @@ export default function Appointments({
                       placeholder="es. Laura Bianchi"
                       value={newAppClientName}
                       onChange={(e) => setNewAppClientName(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
+                      className="w-full px-2.5 py-2 bg-white border border-[#E4E6EA] rounded-[4px] text-xs text-slate-900 focus:border-[#1450FF] focus:outline-none"
                     />
                   </div>
                   <div>
@@ -1138,7 +1138,7 @@ export default function Appointments({
                       placeholder="+41 79..."
                       value={newAppClientPhone}
                       onChange={(e) => setNewAppClientPhone(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
+                      className="w-full px-2.5 py-2 bg-white border border-[#E4E6EA] rounded-[4px] text-xs text-slate-900 focus:border-[#1450FF] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -1151,7 +1151,7 @@ export default function Appointments({
                   required
                   value={newAppServiceId}
                   onChange={(e) => setNewAppServiceId(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs font-medium focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs font-medium focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 >
                   <option value="">Seleziona un Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
@@ -1171,7 +1171,7 @@ export default function Appointments({
                     required
                     value={newAppDate}
                     onChange={(e) => setNewAppDate(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-xs font-medium text-slate-900 focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                 </div>
                 <div>
@@ -1181,16 +1181,16 @@ export default function Appointments({
                     required
                     value={newAppTime}
                     onChange={(e) => setNewAppTime(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-xs font-medium text-slate-900 focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                 </div>
               </div>
 
               {/* Opzione Acconto / Caparra */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
+              <div className="p-3 bg-slate-50 rounded-[4px] border border-[#E4E6EA] space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="toggle-deposit-check" className="text-xs font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
-                    <CreditCard className="w-3.5 h-3.5 text-indigo-600" />
+                    <CreditCard className="w-3.5 h-3.5 text-[#1450FF]" />
                     <span>Registra Caparra / Acconto</span>
                   </label>
                   <input
@@ -1207,19 +1207,19 @@ export default function Appointments({
                         }
                       }
                     }}
-                    className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
+                    className="w-4 h-4 accent-[#1450FF] rounded cursor-pointer"
                   />
                 </div>
 
                 {newAppHasDeposit && (
-                  <div className="pt-2 border-t border-slate-200/60 flex items-center gap-2 animate-fade-in">
+                  <div className="pt-2 border-t border-[#E4E6EA] flex items-center gap-2 animate-fade-in">
                     <span className="text-[11px] font-semibold text-slate-600">Importo Acconto (€):</span>
                     <input
                       type="number"
                       min={0}
                       value={newAppDepositPaid}
                       onChange={(e) => setNewAppDepositPaid(Math.max(0, Number(e.target.value)))}
-                      className="w-24 px-2 py-1.5 bg-white border border-slate-200 text-slate-900 text-xs font-bold rounded-lg focus:border-indigo-500 focus:outline-none"
+                      className="w-24 px-2 py-1.5 bg-white border border-[#E4E6EA] text-slate-900 text-xs font-bold rounded-[4px] focus:border-[#1450FF] focus:outline-none font-mono"
                     />
                   </div>
                 )}
@@ -1233,7 +1233,7 @@ export default function Appointments({
                   placeholder="es. Preferenza colore, richieste particolari..."
                   value={newAppNotes}
                   onChange={(e) => setNewAppNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 />
               </div>
 
@@ -1242,13 +1242,13 @@ export default function Appointments({
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-[4px] transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md transition active:scale-95"
+                  className="w-1/2 py-2.5 bg-[#1450FF] hover:bg-blue-600 text-white font-bold rounded-[4px] transition active:scale-95"
                 >
                   Salva Prenotazione
                 </button>
@@ -1264,15 +1264,15 @@ export default function Appointments({
       {/* ========================================================================= */}
       {showAddWaitlistForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <div className="bg-white rounded-[6px] max-w-md w-full p-6 border border-[#E4E6EA] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4E6EA]">
+              <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2 font-display">
                 <Bell className="w-5 h-5 text-amber-500" />
                 <span>Nuovo in Lista d'Attesa</span>
               </h4>
               <button
                 onClick={() => setShowAddWaitlistForm(false)}
-                className="p-1.5 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-700 transition"
+                className="p-1.5 hover:bg-slate-100 rounded-[4px] text-slate-400 hover:text-slate-700 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1287,7 +1287,7 @@ export default function Appointments({
                   placeholder="Nome e cognome..."
                   value={waitlistClientName}
                   onChange={(e) => setWaitlistClientName(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 />
               </div>
 
@@ -1299,7 +1299,7 @@ export default function Appointments({
                   placeholder="+41 79 123 45 67"
                   value={waitlistClientPhone}
                   onChange={(e) => setWaitlistClientPhone(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 />
               </div>
 
@@ -1309,7 +1309,7 @@ export default function Appointments({
                   required
                   value={waitlistServiceId}
                   onChange={(e) => setWaitlistServiceId(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-slate-900 text-xs focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                 >
                   <option value="">Seleziona Servizio...</option>
                   {services.filter(s => s.isActive).map(s => (
@@ -1332,10 +1332,10 @@ export default function Appointments({
                       key={p.val}
                       type="button"
                       onClick={() => setWaitlistTimePref(p.val as any)}
-                      className={`py-2 rounded-xl border text-xs font-bold text-center transition ${
+                      className={`py-2 rounded-[4px] border text-xs font-bold text-center transition ${
                         waitlistTimePref === p.val
-                          ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-blue-50 border-blue-300 text-[#1450FF]'
+                          : 'bg-white border-[#E4E6EA] text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {p.label}
@@ -1348,13 +1348,13 @@ export default function Appointments({
                 <button
                   type="button"
                   onClick={() => setShowAddWaitlistForm(false)}
-                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition"
+                  className="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-[4px] transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md transition active:scale-95"
+                  className="w-1/2 py-2.5 bg-[#1450FF] hover:bg-blue-600 text-white font-bold rounded-[4px] transition active:scale-95"
                 >
                   Salva in Lista
                 </button>

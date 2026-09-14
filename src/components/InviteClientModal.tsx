@@ -254,31 +254,31 @@ export default function InviteClientModal({
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/80 z-10 flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="relative w-full max-w-2xl bg-white rounded-[6px] border border-[#E4E6EA] z-10 flex flex-col max-h-[92vh] overflow-hidden">
         
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-5 sm:px-6 py-4 bg-[#14161A] text-white flex items-center justify-between border-b border-[#E4E6EA]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-inner">
-              <Share2 className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-[4px] bg-blue-950/70 border border-blue-800 flex items-center justify-center text-[#1450FF]">
+              <Share2 className="w-4.5 h-4.5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded border border-indigo-400/20">
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-950 text-blue-300 px-2 py-0.5 rounded-[4px] border border-blue-800 font-mono">
                   Pannello Titolare Salone
                 </span>
-                <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 font-mono">
                   <span>🇨🇭</span> Svizzera (+41)
                 </span>
               </div>
-              <h3 className="text-base sm:text-lg font-extrabold text-white mt-0.5">
+              <h3 className="text-base sm:text-lg font-bold text-white mt-0.5 font-display">
                 Invia Link di Invito per Iscriversi all'App
               </h3>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-95"
+            className="w-8 h-8 rounded-[4px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-[0.98]"
             aria-label="Chiudi"
           >
             <X className="w-4 h-4" />
@@ -289,18 +289,18 @@ export default function InviteClientModal({
         <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-slate-800">
           
           {/* Step 1: Destinatario */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-3">
+          <div className="bg-slate-50 p-4 rounded-[6px] border border-[#E4E6EA] space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <User className="w-3.5 h-3.5 text-indigo-600" />
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-display">
+                <User className="w-3.5 h-3.5 text-[#1450FF]" />
                 1. Scegli Destinatario
               </span>
-              <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 text-xs">
+              <div className="flex items-center bg-white p-0.5 rounded-[4px] border border-[#E4E6EA] text-xs">
                 <button
                   type="button"
                   onClick={() => setRecipientType('new')}
-                  className={`px-3 py-1 rounded-md font-semibold transition ${
-                    recipientType === 'new' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  className={`px-3 py-1 rounded-[4px] font-semibold transition ${
+                    recipientType === 'new' ? 'bg-[#1450FF] text-white' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Nuovo Contatto
@@ -308,8 +308,8 @@ export default function InviteClientModal({
                 <button
                   type="button"
                   onClick={() => setRecipientType('existing')}
-                  className={`px-3 py-1 rounded-md font-semibold transition ${
-                    recipientType === 'existing' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  className={`px-3 py-1 rounded-[4px] font-semibold transition ${
+                    recipientType === 'existing' ? 'bg-[#1450FF] text-white' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
                   Dall'Anagrafica ({clients.length})
@@ -334,7 +334,7 @@ export default function InviteClientModal({
                       setEmail(found.email || '');
                     }
                   }}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-xl p-2.5 font-medium focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 font-medium focus:border-[#1450FF] focus:outline-none"
                 >
                   <option value="">-- Seleziona un cliente dalla rubrica --</option>
                   {clients.map(c => (
@@ -355,7 +355,7 @@ export default function InviteClientModal({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="es. Mario Rossi"
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none font-medium"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-medium"
                 />
               </div>
 
@@ -366,7 +366,7 @@ export default function InviteClientModal({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="es. +41 79 123 45 67 o 079..."
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none font-medium font-mono"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-medium font-mono"
                 />
               </div>
 
@@ -377,13 +377,13 @@ export default function InviteClientModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="es. cliente@email.com"
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-xl p-2.5 focus:border-indigo-500 focus:outline-none font-medium"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-medium"
                 />
               </div>
             </div>
 
             {phone && (
-              <div className="flex items-center justify-between text-[11px] text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 bg-white px-3 py-1.5 rounded-[4px] border border-[#E4E6EA]">
                 <span>Numero normalizzato per Svizzera/Estero:</span>
                 <span className="font-mono font-bold text-emerald-600">
                   +{normalizePhoneForWhatsApp(phone, country)}
@@ -394,8 +394,8 @@ export default function InviteClientModal({
 
           {/* Step 2: Canale di Invio */}
           <div className="space-y-3">
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <Send className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 font-display">
+              <Send className="w-3.5 h-3.5 text-[#1450FF]" />
               2. Scegli Canale di Invio
             </span>
 
@@ -404,20 +404,20 @@ export default function InviteClientModal({
               <button
                 type="button"
                 onClick={() => setActiveChannel('whatsapp')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-2 active:scale-95 ${
+                className={`p-3 rounded-[4px] border text-left transition flex flex-col justify-between gap-2 active:scale-[0.98] ${
                   activeChannel === 'whatsapp'
-                    ? 'bg-emerald-50/90 border-emerald-300 text-emerald-900 shadow-sm ring-2 ring-emerald-500/20'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                    : 'bg-white border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-[4px] bg-emerald-100 text-emerald-700 flex items-center justify-center">
                     <MessageSquare className="w-4 h-4" />
                   </div>
                   {activeChannel === 'whatsapp' && <span className="w-2 h-2 rounded-full bg-emerald-500"></span>}
                 </div>
                 <div>
-                  <h4 className="text-xs font-extrabold">WhatsApp</h4>
+                  <h4 className="text-xs font-bold">WhatsApp</h4>
                   <p className="text-[10px] text-slate-500">Apertura chat con testo</p>
                 </div>
               </button>
@@ -425,20 +425,20 @@ export default function InviteClientModal({
               <button
                 type="button"
                 onClick={() => setActiveChannel('email')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-2 active:scale-95 ${
+                className={`p-3 rounded-[4px] border text-left transition flex flex-col justify-between gap-2 active:scale-[0.98] ${
                   activeChannel === 'email'
-                    ? 'bg-blue-50/90 border-blue-300 text-blue-900 shadow-sm ring-2 ring-blue-500/20'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900'
+                    : 'bg-white border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-[4px] bg-blue-100 text-blue-700 flex items-center justify-center">
                     <Mail className="w-4 h-4" />
                   </div>
                   {activeChannel === 'email' && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
                 </div>
                 <div>
-                  <h4 className="text-xs font-extrabold">Email Ufficiale</h4>
+                  <h4 className="text-xs font-bold">Email Ufficiale</h4>
                   <p className="text-[10px] text-slate-500">Invio formattato mailto</p>
                 </div>
               </button>
@@ -446,20 +446,20 @@ export default function InviteClientModal({
               <button
                 type="button"
                 onClick={() => setActiveChannel('sms')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-2 active:scale-95 ${
+                className={`p-3 rounded-[4px] border text-left transition flex flex-col justify-between gap-2 active:scale-[0.98] ${
                   activeChannel === 'sms'
-                    ? 'bg-purple-50/90 border-purple-300 text-purple-900 shadow-sm ring-2 ring-purple-500/20'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-blue-50 border-blue-300 text-blue-900'
+                    : 'bg-white border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-[4px] bg-blue-100 text-[#1450FF] flex items-center justify-center">
                     <Smartphone className="w-4 h-4" />
                   </div>
-                  {activeChannel === 'sms' && <span className="w-2 h-2 rounded-full bg-purple-500"></span>}
+                  {activeChannel === 'sms' && <span className="w-2 h-2 rounded-full bg-[#1450FF]"></span>}
                 </div>
                 <div>
-                  <h4 className="text-xs font-extrabold">SMS Nativo</h4>
+                  <h4 className="text-xs font-bold">SMS Nativo</h4>
                   <p className="text-[10px] text-slate-500">Messaggi smartphone</p>
                 </div>
               </button>
@@ -467,20 +467,20 @@ export default function InviteClientModal({
               <button
                 type="button"
                 onClick={() => setActiveChannel('link')}
-                className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-2 active:scale-95 ${
+                className={`p-3 rounded-[4px] border text-left transition flex flex-col justify-between gap-2 active:scale-[0.98] ${
                   activeChannel === 'link'
-                    ? 'bg-amber-50/90 border-amber-300 text-amber-900 shadow-sm ring-2 ring-amber-500/20'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'bg-amber-50 border-amber-300 text-amber-900'
+                    : 'bg-white border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-[4px] bg-amber-100 text-amber-700 flex items-center justify-center">
                     <Copy className="w-4 h-4" />
                   </div>
                   {activeChannel === 'link' && <span className="w-2 h-2 rounded-full bg-amber-500"></span>}
                 </div>
                 <div>
-                  <h4 className="text-xs font-extrabold">Link & QR Code</h4>
+                  <h4 className="text-xs font-bold">Link & QR Code</h4>
                   <p className="text-[10px] text-slate-500">Copia rapida & scan</p>
                 </div>
               </button>
@@ -488,13 +488,13 @@ export default function InviteClientModal({
           </div>
 
           {/* Dettagli Canale Attivo & Editor Messaggio */}
-          <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
+          <div className="border border-[#E4E6EA] rounded-[6px] p-4 bg-slate-50/50 space-y-3">
             
             {/* WHATSAPP CONTENT */}
             {activeChannel === 'whatsapp' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-display">
                     <MessageSquare className="w-4 h-4 text-emerald-600" />
                     Messaggio WhatsApp per {name || 'il Cliente'}
                   </span>
@@ -512,18 +512,18 @@ export default function InviteClientModal({
                   rows={6}
                   value={customWaText}
                   onChange={(e) => setCustomWaText(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl p-3 focus:border-emerald-500 focus:outline-none font-mono leading-relaxed"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-800 text-xs rounded-[4px] p-3 focus:border-emerald-500 focus:outline-none font-mono leading-relaxed"
                   placeholder="Scrivi il messaggio WhatsApp..."
                 />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-                  <span className="text-[11px] text-slate-500">
-                    Apre la chat su WhatsApp Web o App con numero <strong>+{normalizePhoneForWhatsApp(phone, country) || 'destinatario'}</strong>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Apre la chat con <strong>+{normalizePhoneForWhatsApp(phone, country) || 'destinatario'}</strong>
                   </span>
                   <button
                     type="button"
                     onClick={handleSendWhatsApp}
-                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-sm"
+                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-[4px] flex items-center justify-center gap-2 transition active:scale-[0.98]"
                   >
                     <Send className="w-4 h-4" />
                     Invia Invito su WhatsApp
@@ -536,7 +536,7 @@ export default function InviteClientModal({
             {activeChannel === 'email' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-display">
                     <Mail className="w-4 h-4 text-blue-600" />
                     Invito via Email
                   </span>
@@ -556,7 +556,7 @@ export default function InviteClientModal({
                     type="text"
                     value={customEmailSubject}
                     onChange={(e) => setCustomEmailSubject(e.target.value)}
-                    className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 focus:border-blue-500 focus:outline-none font-medium"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-800 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-medium"
                   />
                 </div>
 
@@ -566,19 +566,19 @@ export default function InviteClientModal({
                     rows={6}
                     value={customEmailBody}
                     onChange={(e) => setCustomEmailBody(e.target.value)}
-                    className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl p-3 focus:border-blue-500 focus:outline-none leading-relaxed font-sans"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-800 text-xs rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none leading-relaxed font-sans"
                   />
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-                  <span className="text-[11px] text-slate-500">
-                    Destinatario email: <strong>{email || 'Nessuna email indicata'}</strong>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Destinatario: <strong>{email || 'Nessuna email indicata'}</strong>
                   </span>
                   <button
                     type="button"
                     onClick={handleSendEmail}
                     disabled={!email}
-                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+                    className="w-full sm:w-auto bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-[4px] flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <Mail className="w-4 h-4" />
                     Invia tramite Client Email (mailto)
@@ -591,16 +591,16 @@ export default function InviteClientModal({
             {activeChannel === 'sms' && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <Smartphone className="w-4 h-4 text-purple-600" />
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-display">
+                    <Smartphone className="w-4 h-4 text-[#1450FF]" />
                     Messaggio SMS Tradizionale
                   </span>
                   <button
                     type="button"
                     onClick={() => handleCopyCurrentText(customSmsText || defaultSmsMessage)}
-                    className="text-[11px] text-purple-700 hover:text-purple-800 font-bold flex items-center gap-1"
+                    className="text-[11px] text-[#1450FF] hover:underline font-bold flex items-center gap-1"
                   >
-                    {copiedText ? <Check className="w-3.5 h-3.5 text-purple-600" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                     {copiedText ? 'Copiato!' : 'Copia Testo SMS'}
                   </button>
                 </div>
@@ -609,18 +609,18 @@ export default function InviteClientModal({
                   rows={4}
                   value={customSmsText}
                   onChange={(e) => setCustomSmsText(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-800 text-xs rounded-xl p-3 focus:border-purple-500 focus:outline-none font-mono"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-800 text-xs rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none font-mono"
                   placeholder="Scrivi il testo dell'SMS..."
                 />
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1">
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-slate-500 font-mono">
                     Caratteri: <strong>{customSmsText.length}</strong> (circa {Math.ceil(customSmsText.length / 160)} SMS)
                   </span>
                   <button
                     type="button"
                     onClick={handleSendSms}
-                    className="w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 transition active:scale-95 shadow-sm"
+                    className="w-full sm:w-auto bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-[4px] flex items-center justify-center gap-2 transition active:scale-[0.98]"
                   >
                     <Smartphone className="w-4 h-4" />
                     Invia SMS su Smartphone
@@ -633,14 +633,14 @@ export default function InviteClientModal({
             {activeChannel === 'link' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5 font-display">
                     <Globe className="w-4 h-4 text-amber-600" />
                     Link Diretto e QR Code Invito
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowQrCode(!showQrCode)}
-                    className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                    className="text-[11px] font-bold text-[#1450FF] hover:underline flex items-center gap-1"
                   >
                     <QrCode className="w-3.5 h-3.5" />
                     {showQrCode ? 'Nascondi QR Code' : 'Mostra QR Code'}
@@ -648,14 +648,14 @@ export default function InviteClientModal({
                 </div>
 
                 {/* Link Box with Copy button */}
-                <div className="bg-white p-3 rounded-xl border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                  <div className="text-xs font-mono text-indigo-900 break-all select-all flex-1">
+                <div className="bg-white p-3 rounded-[4px] border border-[#E4E6EA] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                  <div className="text-xs font-mono text-[#1450FF] break-all select-all flex-1 font-semibold">
                     {appBaseUrl}
                   </div>
                   <button
                     type="button"
                     onClick={handleCopyLink}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-lg flex items-center justify-center gap-1.5 transition active:scale-95 shadow-xs shrink-0"
+                    className="bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-[4px] flex items-center justify-center gap-1.5 transition active:scale-[0.98] shrink-0"
                   >
                     {copiedLink ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
                     <span>{copiedLink ? 'Copiato!' : 'Copia Link'}</span>
@@ -664,13 +664,13 @@ export default function InviteClientModal({
 
                 {/* QR Code Viewer */}
                 {showQrCode && (
-                  <div className="bg-white p-5 rounded-xl border border-slate-200 text-center space-y-3 animate-fade-in">
+                  <div className="bg-white p-5 rounded-[4px] border border-[#E4E6EA] text-center space-y-3 animate-fade-in">
                     <img 
                       src={qrCodeUrl} 
                       alt="QR Code Invito App Salone" 
-                      className="w-40 h-40 mx-auto rounded-lg shadow-sm border border-slate-100"
+                      className="w-40 h-40 mx-auto rounded-[4px] border border-[#E4E6EA]"
                     />
-                    <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                    <p className="text-xs text-slate-600 max-w-xs mx-auto font-medium">
                       Fai inquadrare questo QR Code al cliente dal suo smartphone alla cassa o in sala d'attesa per fargli scaricare l'app all'istante.
                     </p>
                   </div>
@@ -681,18 +681,18 @@ export default function InviteClientModal({
 
           {/* Feedback Success Box */}
           {actionSuccessMessage && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl text-xs flex items-center gap-2.5 font-semibold animate-fade-in shadow-xs">
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-[4px] text-xs flex items-center gap-2.5 font-semibold animate-fade-in">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{actionSuccessMessage}</span>
             </div>
           )}
 
           {/* Tips Box per il Titolare */}
-          <div className="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3.5 flex items-start gap-3 text-xs text-indigo-950">
-            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+          <div className="bg-blue-50/60 border border-blue-150 rounded-[4px] p-3.5 flex items-start gap-3 text-xs text-slate-800">
+            <Sparkles className="w-4 h-4 text-[#1450FF] shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-indigo-900">Perché invitare i clienti alla Web App?</p>
-              <p className="text-indigo-800/80 mt-0.5 text-[11px] leading-relaxed">
+              <p className="font-bold text-slate-900 font-display">Perché invitare i clienti alla Web App?</p>
+              <p className="text-slate-600 mt-0.5 text-[11px] leading-relaxed font-medium">
                 I clienti registrati possono prenotare autonomamente 24/7, ricevono promemoria automatici e riducono i mancati arrivi (no-show) fino all'80%. L'app non necessita di installazione dagli store: si apre subito nel browser e si aggiunge alla schermata home come una PWA.
               </p>
             </div>
@@ -701,11 +701,11 @@ export default function InviteClientModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs">
+        <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-[#E4E6EA] flex items-center justify-between text-xs">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold rounded-xl transition active:scale-95 shadow-xs"
+            className="px-4 py-2 bg-white border border-[#E4E6EA] hover:bg-slate-100 text-slate-700 font-bold rounded-[4px] transition active:scale-[0.98]"
           >
             Chiudi
           </button>
@@ -714,7 +714,7 @@ export default function InviteClientModal({
             <button
               type="button"
               onClick={handleCopyLink}
-              className="px-3.5 py-2 bg-slate-200/80 hover:bg-slate-300 text-slate-800 font-bold rounded-xl flex items-center gap-1.5 transition active:scale-95"
+              className="px-3.5 py-2 bg-slate-200/80 hover:bg-slate-300 text-slate-800 font-bold rounded-[4px] flex items-center gap-1.5 transition active:scale-[0.98]"
             >
               <Copy className="w-3.5 h-3.5" />
               <span>{copiedLink ? 'Link Copiato!' : 'Copia Link'}</span>
@@ -727,7 +727,7 @@ export default function InviteClientModal({
                 else if (activeChannel === 'sms') handleSendSms();
                 else handleCopyLink();
               }}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl flex items-center gap-1.5 transition active:scale-95 shadow-sm"
+              className="px-5 py-2 bg-[#1450FF] hover:bg-blue-600 text-white font-bold rounded-[4px] flex items-center gap-1.5 transition active:scale-[0.98]"
             >
               <Send className="w-3.5 h-3.5" />
               <span>Procedi con Invio</span>

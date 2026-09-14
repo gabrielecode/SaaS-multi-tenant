@@ -19,15 +19,16 @@ import {
   Zap,
   Lock,
   UserCheck,
-  ExternalLink
+  ExternalLink,
+  Home
 } from 'lucide-react';
 import { TenantSalon, BusinessConfig, ClientAuthUser } from '../types';
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway';
-  onSelectMode: (mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway') => void;
+  mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway' | 'landing';
+  onSelectMode: (mode: 'super_admin' | 'owner' | 'client' | 'staff_gateway' | 'landing') => void;
   ownerSection: string;
   onSelectOwnerSection: (section: string) => void;
   tenants: TenantSalon[];
@@ -89,17 +90,17 @@ export default function MobileNavDrawer({
         {/* Drawer Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900/95 backdrop-blur z-20">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-600/30">
+            <div className="w-8 h-8 rounded-[4px] bg-[#1450FF] flex items-center justify-center text-white font-bold">
               <Zap className="w-4 h-4 fill-white" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm tracking-tight text-white leading-tight">NoShow Reducer</h3>
-              <p className="text-[10px] text-indigo-400 font-semibold">Menu Mobile & Navigazione</p>
+              <h3 className="font-extrabold text-sm tracking-tight text-white leading-tight font-display">NoShow Reducer</h3>
+              <p className="text-[10px] text-blue-400 font-semibold">Menu Mobile & Navigazione</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition active:scale-95"
+            className="w-9 h-9 rounded-[4px] bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition active:scale-95"
             aria-label="Chiudi menu"
           >
             <X className="w-5 h-5" />
@@ -116,7 +117,7 @@ export default function MobileNavDrawer({
                 onClose();
                 onQuickNewAppointment();
               }}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs py-3 px-4 rounded-xl shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              className="w-full bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs py-3 px-4 rounded-[4px] flex items-center justify-center gap-2 transition active:scale-[0.98]"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               Nuovo Appuntamento Rapido
@@ -128,23 +129,44 @@ export default function MobileNavDrawer({
             <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 px-1">
               Ruolo & Modalità Visualizzazione
             </span>
-            <div className="grid grid-cols-1 gap-1.5 bg-slate-800/60 p-1.5 rounded-xl border border-slate-800">
+            <div className="grid grid-cols-1 gap-1.5 bg-slate-800/60 p-1.5 rounded-[6px] border border-slate-800">
+              <button
+                onClick={() => {
+                  onSelectMode('landing');
+                  onClose();
+                }}
+                className={`w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold transition ${
+                  mode === 'landing'
+                    ? 'bg-[#1450FF] text-white'
+                    : 'text-slate-300 hover:bg-slate-700/60'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Home className={`w-4 h-4 ${mode === 'landing' ? 'text-white' : 'text-blue-400'}`} />
+                  <div className="text-left">
+                    <p className="leading-tight font-bold">Home / Presentazione SaaS</p>
+                    <p className="text-[10px] text-slate-400 font-normal">Panoramica no-show & caparra</p>
+                  </div>
+                </div>
+                {mode === 'landing' && <CheckCircle2 className="w-4 h-4 text-white" />}
+              </button>
+
               <button
                 onClick={() => {
                   onSelectMode('staff_gateway');
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold transition ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold transition ${
                   mode === 'staff_gateway'
-                    ? 'bg-amber-600 text-white shadow-sm'
+                    ? 'bg-amber-600 text-white'
                     : 'text-amber-300 hover:bg-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <Lock className={`w-4 h-4 ${mode === 'staff_gateway' ? 'text-white' : 'text-amber-400'}`} />
                   <div className="text-left">
-                    <p className="leading-tight font-bold">Home Accessi Staff & Admin</p>
-                    <p className="text-[10px] text-slate-300 font-normal">Gatekeeper con PIN Dedicati</p>
+                    <p className="leading-tight font-bold">Accesso Riservato Staff (PIN)</p>
+                    <p className="text-[10px] text-slate-400 font-normal">Gatekeeper Titolare & Admin</p>
                   </div>
                 </div>
                 {mode === 'staff_gateway' && <CheckCircle2 className="w-4 h-4 text-white" />}
@@ -155,17 +177,17 @@ export default function MobileNavDrawer({
                   onSelectMode('owner');
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold transition ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold transition ${
                   mode === 'owner'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-[#1450FF] text-white'
                     : 'text-slate-300 hover:bg-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Store className={`w-4 h-4 ${mode === 'owner' ? 'text-white' : 'text-indigo-400'}`} />
+                  <Store className={`w-4 h-4 ${mode === 'owner' ? 'text-white' : 'text-blue-400'}`} />
                   <div className="text-left">
-                    <p className="leading-tight">Titolare Salone</p>
-                    <p className="text-[10px] text-slate-300 font-normal">Gestionale & WhatsApp</p>
+                    <p className="leading-tight">Area Titolare Salone</p>
+                    <p className="text-[10px] text-slate-400 font-normal">Gestionale & WhatsApp</p>
                   </div>
                 </div>
                 {mode === 'owner' && <CheckCircle2 className="w-4 h-4 text-white" />}
@@ -176,17 +198,17 @@ export default function MobileNavDrawer({
                   onSelectMode('client');
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold transition ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold transition ${
                   mode === 'client'
-                    ? 'bg-indigo-600 text-white shadow-sm'
+                    ? 'bg-[#1450FF] text-white'
                     : 'text-slate-300 hover:bg-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Globe className={`w-4 h-4 ${mode === 'client' ? 'text-white' : 'text-indigo-400'}`} />
+                  <Globe className={`w-4 h-4 ${mode === 'client' ? 'text-white' : 'text-blue-400'}`} />
                   <div className="text-left">
-                    <p className="leading-tight">Portale Cliente (PWA)</p>
-                    <p className="text-[10px] text-slate-300 font-normal">Booking & Notifiche</p>
+                    <p className="leading-tight">Portale Prenotazione Cliente</p>
+                    <p className="text-[10px] text-slate-400 font-normal">Booking online & Caparra</p>
                   </div>
                 </div>
                 {mode === 'client' && <CheckCircle2 className="w-4 h-4 text-white" />}
@@ -197,17 +219,17 @@ export default function MobileNavDrawer({
                   onSelectMode('super_admin');
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between p-2.5 rounded-lg text-xs font-semibold transition ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-[4px] text-xs font-semibold transition ${
                   mode === 'super_admin'
-                    ? 'bg-purple-600 text-white shadow-sm'
+                    ? 'bg-[#1450FF] text-white'
                     : 'text-slate-300 hover:bg-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Building2 className={`w-4 h-4 ${mode === 'super_admin' ? 'text-white' : 'text-purple-400'}`} />
+                  <Building2 className={`w-4 h-4 ${mode === 'super_admin' ? 'text-white' : 'text-blue-400'}`} />
                   <div className="text-left">
                     <p className="leading-tight">Super Admin SaaS</p>
-                    <p className="text-[10px] text-slate-300 font-normal">Multi-Salone & MRR</p>
+                    <p className="text-[10px] text-slate-400 font-normal">Multi-Salone & MRR</p>
                   </div>
                 </div>
                 {mode === 'super_admin' && <CheckCircle2 className="w-4 h-4 text-white" />}
@@ -216,17 +238,17 @@ export default function MobileNavDrawer({
           </div>
 
           {/* Active Tenant Selector (Multi-Tenant) */}
-          <div className="space-y-2 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
+          <div className="space-y-2 bg-slate-800/40 p-3 rounded-[6px] border border-slate-800">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Salone Attivo</span>
-              <span className="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold uppercase">
+              <span className="text-[9px] bg-blue-500/20 text-blue-300 border border-blue-500/30 px-1.5 py-0.5 rounded-[4px] font-bold uppercase font-mono">
                 {currentTenant?.plan || 'PRO'}
               </span>
             </div>
             <select
               value={currentTenantId}
               onChange={(e) => onSelectTenant(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-lg p-2.5 focus:outline-none focus:border-indigo-500 font-medium"
+              className="w-full bg-slate-800 border border-slate-700 text-white text-xs rounded-[4px] p-2.5 focus:outline-none focus:border-[#1450FF] font-medium"
             >
               {tenants.map(t => (
                 <option key={t.id} value={t.id}>
@@ -253,9 +275,9 @@ export default function MobileNavDrawer({
                         onSelectOwnerSection(item.id);
                         onClose();
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition ${
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[4px] text-xs font-semibold transition ${
                         isActive
-                          ? 'bg-indigo-600 text-white shadow-sm'
+                          ? 'bg-[#1450FF] text-white'
                           : 'text-slate-300 hover:text-white hover:bg-slate-800'
                       }`}
                     >
@@ -264,8 +286,8 @@ export default function MobileNavDrawer({
                         <span>{item.label}</span>
                       </div>
                       {item.badge ? (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          isActive ? 'bg-white text-indigo-700' : 'bg-slate-800 text-indigo-300 border border-indigo-500/30'
+                        <span className={`text-[10px] px-2 py-0.5 rounded-[4px] font-bold font-mono ${
+                          isActive ? 'bg-white text-[#1450FF]' : 'bg-slate-800 text-blue-300 border border-blue-500/30'
                         }`}>
                           {item.badge}
                         </span>
@@ -281,7 +303,7 @@ export default function MobileNavDrawer({
 
           {/* Client Portal Info when in client mode */}
           {mode === 'client' && (
-            <div className="space-y-3 bg-slate-800/40 p-3.5 rounded-xl border border-slate-800">
+            <div className="space-y-3 bg-slate-800/40 p-3.5 rounded-[6px] border border-slate-800">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Account Cliente</span>
                 {loggedClientUser ? (
@@ -305,7 +327,7 @@ export default function MobileNavDrawer({
                       onLogoutClient();
                       onClose();
                     }}
-                    className="w-full text-center py-2 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-lg text-xs font-semibold transition"
+                    className="w-full text-center py-2 bg-slate-800 hover:bg-slate-700 text-rose-400 rounded-[4px] text-xs font-semibold transition"
                   >
                     Disconnetti Account
                   </button>
@@ -316,7 +338,7 @@ export default function MobileNavDrawer({
                     onClose();
                     onOpenAuthModal();
                   }}
-                  className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-md flex items-center justify-center gap-2 transition"
+                  className="w-full py-2.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center justify-center gap-2 transition"
                 >
                   <Lock className="w-3.5 h-3.5" />
                   Accedi o Registrati
@@ -331,26 +353,26 @@ export default function MobileNavDrawer({
               Stato Connessioni Cloud
             </span>
             <div className="space-y-1.5 text-slate-400">
-              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-lg">
+              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-[4px]">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                   Supabase Auth & Database
                 </span>
-                <span className="text-emerald-400 font-bold">Online</span>
+                <span className="text-emerald-400 font-bold font-mono">Online</span>
               </div>
-              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-lg">
+              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-[4px]">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                   Meta WhatsApp Cloud API
                 </span>
-                <span className="text-emerald-400 font-bold">Pronto</span>
+                <span className="text-emerald-400 font-bold font-mono">Pronto</span>
               </div>
-              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-lg">
+              <div className="flex items-center justify-between px-2 py-1 bg-slate-800/30 rounded-[4px]">
                 <span className="flex items-center gap-1.5">
-                  <Smartphone className="w-3 h-3 text-indigo-400" />
+                  <Smartphone className="w-3 h-3 text-[#1450FF]" />
                   PWA Mobile Installabile
                 </span>
-                <span className="text-indigo-400 font-bold">Attiva</span>
+                <span className="text-[#1450FF] font-bold font-mono">Attiva</span>
               </div>
             </div>
           </div>

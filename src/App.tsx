@@ -66,7 +66,8 @@ import {
   Share2,
   LogOut,
   Eye,
-  ShieldCheck
+  ShieldCheck,
+  Home
 } from 'lucide-react';
 
 export default function App() {
@@ -394,7 +395,13 @@ export default function App() {
   };
 
   // Dedicated role switch request (Protected RBAC)
-  const handleRequestRoleSwitch = (targetRole: 'super_admin' | 'owner' | 'client' | 'staff_gateway') => {
+  const handleRequestRoleSwitch = (targetRole: 'super_admin' | 'owner' | 'client' | 'staff_gateway' | 'landing') => {
+    if (targetRole === 'landing') {
+      setMode('landing');
+      setIsSuperAdminAuditActive(false);
+      return;
+    }
+
     if (targetRole === 'staff_gateway') {
       setMode('staff_gateway');
       setIsSuperAdminAuditActive(false);
@@ -550,33 +557,68 @@ export default function App() {
           </div>
 
           {/* Desktop Controls depending on Role */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5">
             
-            {/* 1. Staff Gateway View Header */}
-            {mode === 'staff_gateway' && (
-              <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-[4px] border border-amber-200 text-xs font-bold">
-                  <Lock className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Gatekeeper Accessi Riservati</span>
+            {/* 0. Landing Mode View Header */}
+            {mode === 'landing' && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-200 text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-[#1450FF]" />
+                  <span>Presentazione SaaS</span>
                 </div>
 
                 <button
                   onClick={() => setMode('client')}
-                  className="px-3.5 py-1.5 rounded-[4px] font-bold text-xs text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] transition flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-[4px] font-bold text-xs text-slate-700 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] transition flex items-center gap-1.5"
                 >
                   <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
                   <span>Area Prenotazioni Clienti</span>
+                </button>
+
+                <button
+                  onClick={() => setMode('staff_gateway')}
+                  className="px-3.5 py-1.5 bg-[#14161A] hover:bg-slate-800 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition border border-[#2A2D32]"
+                >
+                  <Lock className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Accesso Riservato Staff (PIN)</span>
+                </button>
+              </div>
+            )}
+
+            {/* 1. Staff Gateway View Header */}
+            {mode === 'staff_gateway' && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-[4px] border border-amber-200 text-xs font-bold">
+                  <Lock className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Accesso Riservato Staff</span>
+                </div>
+
+                <button
+                  onClick={() => setMode('client')}
+                  className="px-3.5 py-1.5 rounded-[4px] font-bold text-xs text-slate-700 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] transition flex items-center gap-1.5"
+                  title="Passa all'area pubblica prenotazioni"
+                >
+                  <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
+                  <span>Area Prenotazioni Clienti</span>
+                </button>
+
+                <button
+                  onClick={() => setMode('landing')}
+                  className="px-2.5 py-1.5 rounded-[4px] text-xs font-semibold text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] flex items-center gap-1.5 transition"
+                  title="Torna alla Home / Presentazione"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Home</span>
                 </button>
               </div>
             )}
 
             {/* 2. Client View Header */}
             {mode === 'client' && (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-[4px] border border-emerald-200 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                  <span className="hidden lg:inline">Prenotazioni Online 24/7 Aperte</span>
-                  <span className="lg:hidden">Online 24/7</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-[4px] border border-emerald-200 text-xs font-bold">
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Prenotazione Cliente</span>
                 </div>
 
                 {loggedClientUser ? (
@@ -593,7 +635,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setShowAuthModal(true)}
-                    className="px-4 py-2 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                    className="px-3.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Lock className="w-3.5 h-3.5" />
                     <span>Accedi / Registrati</span>
@@ -613,10 +655,10 @@ export default function App() {
                 ) : isSuperAdminAuthenticated ? (
                   <button
                     onClick={() => setMode('super_admin')}
-                    className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                    className="px-3.5 py-1.5 bg-[#14161A] hover:bg-slate-800 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition border border-[#2A2D32]"
                     title="Rientra nella sessione Super Admin già attiva"
                   >
-                    <Building2 className="w-3.5 h-3.5" />
+                    <Building2 className="w-3.5 h-3.5 text-[#1450FF]" />
                     <span>Torna a Super Admin</span>
                   </button>
                 ) : (
@@ -629,15 +671,24 @@ export default function App() {
                     <span>Area Staff & Admin</span>
                   </button>
                 )}
+
+                <button
+                  onClick={() => setMode('landing')}
+                  className="px-2.5 py-1.5 rounded-[4px] text-xs font-semibold text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] flex items-center gap-1.5 transition"
+                  title="Torna alla Home / Presentazione"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Home</span>
+                </button>
               </div>
             )}
 
             {/* 3. Salon Owner View Header */}
             {mode === 'owner' && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-[4px] border border-[#E4E6EA] text-xs font-bold">
-                  <Store className="w-4 h-4 text-[#1450FF]" />
-                  <span>Titolare Salone</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-200 text-xs font-bold">
+                  <Store className="w-3.5 h-3.5 text-[#1450FF]" />
+                  <span>Area Titolare</span>
                 </div>
 
                 {/* Primary Button: Invia Invito Web App (WhatsApp, Email, SMS) */}
@@ -647,11 +698,11 @@ export default function App() {
                     setInvitePreselectedClient(null);
                     setIsInviteModalOpen(true);
                   }}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                   title="Invia link invito Web App via WhatsApp, Email o SMS"
                 >
                   <Share2 className="w-3.5 h-3.5 stroke-[2.2]" />
-                  <span>Invita alla App</span>
+                  <span>Invita Clienti</span>
                 </button>
 
                 {/* Quick Action Button: Nuovo Appuntamento */}
@@ -661,20 +712,30 @@ export default function App() {
                     setInitialAppointmentsTab('agenda');
                     setAutoOpenAddApp(true);
                   }}
-                  className="px-3.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                 >
                   <Plus className="w-3.5 h-3.5 stroke-[2.2]" />
                   <span>Nuovo Appuntamento</span>
                 </button>
 
-                {/* View as Client Preview */}
+                {/* Mode Action: Anteprima Booking Clienti */}
                 <button
                   onClick={() => setMode('client')}
                   className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-[#E4E6EA]"
                   title="Visualizza come appare il portale di prenotazione ai clienti"
                 >
-                  <Globe className="w-3.5 h-3.5 text-slate-500" />
-                  <span className="hidden xl:inline">Anteprima</span> Clienti
+                  <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
+                  <span>Anteprima Clienti</span>
+                </button>
+
+                {/* Home Button */}
+                <button
+                  onClick={() => setMode('landing')}
+                  className="px-2.5 py-1.5 rounded-[4px] text-xs font-semibold text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] flex items-center gap-1.5 transition"
+                  title="Torna alla Home / Presentazione"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Home</span>
                 </button>
 
                 {/* Logout Owner */}
@@ -692,16 +753,20 @@ export default function App() {
             {/* 4. Super Admin View Header */}
             {mode === 'super_admin' && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-800 rounded-[4px] border border-purple-200 text-xs font-bold">
-                  <Building2 className="w-4 h-4 text-purple-700" />
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-[4px] border border-[#E4E6EA] text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-[#1450FF]" />
                   <span>Super Admin SaaS</span>
-                  <span className="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.2 rounded-[4px] font-mono">LPD Privacy</span>
+                  {isSuperAdminAuditActive ? (
+                    <span className="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-[4px] font-mono">Audit Salone</span>
+                  ) : (
+                    <span className="text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-[4px] font-mono">LPD Privacy</span>
+                  )}
                 </div>
 
                 {isSuperAdminAuditActive ? (
                   <button
                     onClick={() => setIsSuperAdminAuditActive(false)}
-                    className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                    className="px-3.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Building2 className="w-3.5 h-3.5" />
                     <span>Torna a Console Admin</span>
@@ -712,10 +777,19 @@ export default function App() {
                     className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-[#E4E6EA]"
                     title="Visualizza l'app dal punto di vista cliente"
                   >
-                    <Globe className="w-3.5 h-3.5 text-slate-500" />
+                    <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
                     <span>Vista Clienti</span>
                   </button>
                 )}
+
+                <button
+                  onClick={() => setMode('landing')}
+                  className="px-2.5 py-1.5 rounded-[4px] text-xs font-semibold text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] flex items-center gap-1.5 transition"
+                  title="Torna alla Home / Presentazione"
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span>Home</span>
+                </button>
 
                 <button
                   onClick={handleLogoutAdmin}
@@ -732,6 +806,23 @@ export default function App() {
 
           {/* Mobile Right Controls: Context-aware with immediate access */}
           <div className="flex md:hidden items-center gap-1.5">
+            {/* Mobile Area Indicator */}
+            <span className="text-[10px] font-bold px-2 py-1 rounded-[4px] border border-[#E4E6EA] bg-slate-100 text-slate-700 truncate max-w-[80px]">
+              {mode === 'landing' ? 'Home' : mode === 'owner' ? 'Titolare' : mode === 'client' ? 'Clienti' : mode === 'super_admin' ? 'Admin' : 'Staff'}
+            </span>
+
+            {/* Mobile Home Quick Button */}
+            {mode !== 'landing' && (
+              <button
+                type="button"
+                onClick={() => setMode('landing')}
+                className="p-2 rounded-[4px] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] text-slate-700 transition"
+                title="Torna alla Home"
+              >
+                <Home className="w-4 h-4" />
+              </button>
+            )}
+
             {/* Mobile Context-Aware Role Switcher Button */}
             {mode === 'client' ? (
               isOwnerAuthenticated ? (
@@ -747,9 +838,9 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setMode('super_admin')}
-                  className="px-2.5 py-1.5 bg-purple-700 text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
+                  className="px-2.5 py-1.5 bg-[#14161A] text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition border border-[#2A2D32]"
                 >
-                  <Building2 className="w-3 h-3" />
+                  <Building2 className="w-3 h-3 text-[#1450FF]" />
                   <span>Admin</span>
                 </button>
               ) : (
@@ -777,7 +868,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsSuperAdminAuditActive(false)}
-                className="px-2.5 py-1.5 bg-purple-700 text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
+                className="px-2.5 py-1.5 bg-[#1450FF] text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
               >
                 <Building2 className="w-3 h-3" />
                 <span>Console</span>
@@ -926,13 +1017,13 @@ export default function App() {
             {isSuperAdminAuditing && (
               <div className="w-full bg-[#14161A] text-white p-3.5 rounded-[6px] mb-5 border border-[#2A2D32] flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
                 <div className="flex items-center gap-2.5 text-xs">
-                  <div className="p-2 bg-slate-900 rounded-[4px] text-purple-300 flex-shrink-0 border border-slate-800">
+                  <div className="p-2 bg-slate-900 rounded-[4px] text-[#1450FF] flex-shrink-0 border border-slate-800">
                     <ShieldCheck className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
                     <p className="font-bold text-white flex items-center gap-1.5 text-sm font-display">
                       <span>Audit Super Admin Attivo</span>
-                      <span className="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-[4px] font-mono uppercase font-bold border border-purple-700/50">LPD / GDPR</span>
+                      <span className="text-[10px] bg-blue-900/60 text-blue-200 px-2 py-0.5 rounded-[4px] font-mono uppercase font-bold border border-blue-700/50">LPD / GDPR</span>
                     </p>
                     <p className="text-slate-300 text-xs">
                       Visione globale dell'app per <strong>{currentTenantInfo?.name || config.name}</strong>. Numeri di telefono, email private e note personali sono mascherati a tutela della privacy.
@@ -942,7 +1033,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsSuperAdminAuditActive(false)}
-                  className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0"
+                  className="px-4 py-2 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0"
                 >
                   <Building2 className="w-3.5 h-3.5" />
                   <span>Torna a Console Admin</span>
@@ -1023,9 +1114,9 @@ export default function App() {
 
             <div>
               {loggedClientUser ? (
-                <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
+                <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-[4px] border border-[#E4E6EA]">
                   <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                    <UserCheck className="w-4 h-4 text-[#1450FF]" />
                     {loggedClientUser.name}
                   </span>
                   <button
@@ -1038,9 +1129,9 @@ export default function App() {
               ) : (
                 <button
                   onClick={() => setShowAuthModal(true)}
-                  className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-indigo-600 font-bold text-xs rounded-full border border-slate-200 shadow-xs flex items-center gap-1.5 transition active:scale-95"
+                  className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-[#1450FF] font-bold text-xs rounded-[4px] border border-[#E4E6EA] flex items-center gap-1.5 transition active:scale-95"
                 >
-                  <Lock className="w-3.5 h-3.5 text-indigo-500" />
+                  <Lock className="w-3.5 h-3.5 text-[#1450FF]" />
                   Area Personale Cliente
                 </button>
               )}
@@ -1076,68 +1167,47 @@ export default function App() {
       )}
 
       {/* ========================================================================= */}
-      {/* MOBILE-OPTIMIZED RESPONSIVE FOOTER                                        */}
+      {/* MOBILE-OPTIMIZED RESPONSIVE FOOTER (STATIC INFORMATION ONLY)              */}
       {/* ========================================================================= */}
-      <footer className="mt-auto bg-white border-t border-slate-200 py-8 px-4 sm:px-6 lg:px-8 pb-28 md:pb-8 text-xs text-slate-500" id="global-footer">
+      <footer className="mt-auto bg-white border-t border-[#E4E6EA] py-8 px-4 sm:px-6 lg:px-8 pb-28 md:pb-8 text-xs text-slate-500" id="global-footer">
         <div className="max-w-7xl mx-auto space-y-5">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-5 border-b border-slate-100 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-5 border-b border-[#E4E6EA] text-center md:text-left">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
+              <div className="w-8 h-8 rounded-[6px] bg-[#1450FF] text-white flex items-center justify-center font-bold">
                 <ShieldAlert className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
                 <p className="font-extrabold text-slate-900 text-sm">NoShow Reducer • SaaS Multi-Tenant</p>
-                <p className="text-[11px] text-slate-400">Protezione fatturato e integrazione Meta WhatsApp Cloud API per saloni di bellezza.</p>
+                <p className="text-[11px] text-slate-400">Protezione fatturato e integrazione Meta WhatsApp Cloud API per saloni di bellezza in Svizzera.</p>
               </div>
             </div>
 
             {/* Cloud & API Connectivity Status Pills */}
             <div className="flex flex-wrap items-center justify-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 text-[11px] font-semibold shadow-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-[4px] border border-emerald-200 text-[11px] font-semibold">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
                 Supabase DB Online
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200 text-[11px] font-semibold shadow-xs">
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-[4px] border border-emerald-200 text-[11px] font-semibold">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
                 Meta WhatsApp API Ready
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full border border-indigo-200 text-[11px] font-semibold shadow-xs">
-                <Smartphone className="w-3 h-3 text-indigo-600" />
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-200 text-[11px] font-semibold">
+                <Smartphone className="w-3 h-3 text-[#1450FF]" />
                 PWA Installabile
               </div>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 text-center sm:text-left">
-            <p>© 2026 NoShow Reducer SaaS • Protezione No-Show & Booking PWA.</p>
-            
-            {mode === 'client' ? (
-              <div className="flex items-center gap-3 font-medium text-slate-400">
-                <span>Accesso Pubblico Clienti</span>
-                <span>•</span>
-                <button 
-                  onClick={() => handleRequestRoleSwitch('owner')} 
-                  className="hover:text-indigo-600 transition flex items-center gap-1 font-semibold text-slate-500 hover:underline"
-                >
-                  <Lock className="w-3 h-3" />
-                  <span>Accesso Riservato Personale (PIN)</span>
-                </button>
-              </div>
-            ) : mode === 'owner' ? (
-              <div className="flex items-center gap-4 font-medium text-slate-500">
-                <button onClick={() => { setOwnerSection('instructions'); }} className="hover:text-indigo-600 transition">Guida Salone</button>
-                <span>•</span>
-                <button onClick={() => { setMode('client'); }} className="hover:text-indigo-600 transition">Anteprima Booking Clienti</button>
-                <span>•</span>
-                <button onClick={handleLogoutOwner} className="hover:text-rose-600 transition text-rose-600 font-semibold">Disconnetti Titolare</button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-4 font-medium text-slate-500">
-                <button onClick={() => setIsSuperAdminAuditActive(false)} className="hover:text-purple-600 transition">Console Super Admin</button>
-                <span>•</span>
-                <button onClick={handleLogoutAdmin} className="hover:text-rose-600 transition text-rose-600 font-semibold">Disconnetti Super Admin</button>
-              </div>
-            )}
+            <p>© 2026 NoShow Reducer SaaS • Tutti i diritti riservati. P.IVA / UID Svizzera.</p>
+            <div className="flex items-center gap-4 font-medium text-slate-400">
+              <span>Conforme LPD Svizzera & GDPR</span>
+              <span>•</span>
+              <span>Crittografia TLS 1.3 End-to-End</span>
+              <span>•</span>
+              <span>Infrastruttura Cloud EU/CH</span>
+            </div>
           </div>
         </div>
       </footer>

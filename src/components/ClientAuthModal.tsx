@@ -273,16 +273,16 @@ export default function ClientAuthModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 animate-fade-in space-y-5 text-slate-800 my-auto">
+      <div className="bg-white rounded-[6px] max-w-md w-full p-6 border border-[#E4E6EA] animate-fade-in space-y-5 text-slate-800 my-auto">
         
         {/* Header with Close */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center border border-indigo-100 shadow-xs">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="w-10 h-10 bg-blue-50 text-[#1450FF] rounded-[4px] flex items-center justify-center border border-blue-100">
+              <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-900">
+              <h3 className="text-base font-bold text-slate-900 font-display">
                 {isRegister ? 'Registrazione Cliente' : 'Accesso Area Riservata'}
               </h3>
               <p className="text-[11px] text-slate-500">
@@ -292,14 +292,14 @@ export default function ClientAuthModal({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-[4px] hover:bg-slate-100 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Mode Switcher Tabs */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200/80 text-xs font-bold">
+        <div className="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-[4px] border border-[#E4E6EA] text-xs font-bold">
           <button
             type="button"
             onClick={() => {
@@ -307,8 +307,8 @@ export default function ClientAuthModal({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`py-2 rounded-xl transition ${
-              !isRegister ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`py-2 rounded-[4px] transition ${
+              !isRegister ? 'bg-white text-[#1450FF] border border-[#E4E6EA]' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Accedi
@@ -320,8 +320,8 @@ export default function ClientAuthModal({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className={`py-2 rounded-xl transition ${
-              isRegister ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+            className={`py-2 rounded-[4px] transition ${
+              isRegister ? 'bg-white text-[#1450FF] border border-[#E4E6EA]' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Crea Nuovo Account
@@ -330,7 +330,7 @@ export default function ClientAuthModal({
 
         {/* Error Notification */}
         {errorMsg && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl flex items-start gap-2.5 animate-shake">
+          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-[4px] flex items-start gap-2.5 animate-shake">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div className="flex-1 font-medium">{errorMsg}</div>
           </div>
@@ -338,7 +338,7 @@ export default function ClientAuthModal({
 
         {/* Success Notification */}
         {successMsg && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-2xl flex items-center gap-2.5">
+          <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-[4px] flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span className="font-bold">{successMsg}</span>
           </div>
@@ -351,7 +351,7 @@ export default function ClientAuthModal({
             <div>
               <label className="block font-bold text-slate-700 mb-1">Nome e Cognome *</label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   required
@@ -361,7 +361,7 @@ export default function ClientAuthModal({
                     setName(e.target.value);
                     setErrorMsg(null);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  className="w-full bg-white border border-[#E4E6EA] rounded-[4px] py-2.5 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF] transition"
                 />
               </div>
             </div>
@@ -373,7 +373,7 @@ export default function ClientAuthModal({
               {isRegister ? 'Indirizzo Email *' : 'Email o Numero di Cellulare *'}
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type={isRegister ? 'email' : 'text'}
                 required
@@ -383,7 +383,7 @@ export default function ClientAuthModal({
                   setEmail(e.target.value);
                   setErrorMsg(null);
                 }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                className="w-full bg-white border border-[#E4E6EA] rounded-[4px] py-2.5 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF] transition"
               />
             </div>
           </div>
@@ -393,20 +393,20 @@ export default function ClientAuthModal({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block font-bold text-slate-700">Numero Cellulare *</label>
-                <span className="text-[10px] text-emerald-600 font-bold">Per conferme WhatsApp</span>
+                <span className="text-[10px] text-emerald-600 font-bold font-mono">Per conferme WhatsApp</span>
               </div>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="tel"
                   required
-                  placeholder="es. +39 347 1234567"
+                  placeholder="es. +41 79 123 45 67"
                   value={phone}
                   onChange={e => {
                     setPhone(e.target.value);
                     setErrorMsg(null);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  className="w-full bg-white border border-[#E4E6EA] rounded-[4px] py-2.5 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF] font-mono transition"
                 />
               </div>
             </div>
@@ -417,11 +417,11 @@ export default function ClientAuthModal({
             <div className="flex items-center justify-between mb-1">
               <label className="block font-bold text-slate-700">Password *</label>
               {!isRegister && (
-                <span className="text-[10px] text-slate-400 font-medium">Demo: password123</span>
+                <span className="text-[10px] text-slate-400 font-mono">Demo: password123</span>
               )}
             </div>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 required
@@ -431,12 +431,12 @@ export default function ClientAuthModal({
                   setPassword(e.target.value);
                   setErrorMsg(null);
                 }}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-10 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                className="w-full bg-white border border-[#E4E6EA] rounded-[4px] py-2.5 pl-10 pr-10 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF] font-mono transition"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -448,7 +448,7 @@ export default function ClientAuthModal({
             <div>
               <label className="block font-bold text-slate-700 mb-1">Conferma Password *</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -458,7 +458,7 @@ export default function ClientAuthModal({
                     setConfirmPassword(e.target.value);
                     setErrorMsg(null);
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  className="w-full bg-white border border-[#E4E6EA] rounded-[4px] py-2.5 pl-10 pr-3.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF] font-mono transition"
                 />
               </div>
             </div>
@@ -466,12 +466,12 @@ export default function ClientAuthModal({
 
           {/* Opt-in Notifiche Push PWA */}
           {isRegister && (
-            <label className="flex items-start gap-2.5 p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 cursor-pointer">
+            <label className="flex items-start gap-2.5 p-3 bg-blue-50/60 rounded-[4px] border border-blue-150 cursor-pointer">
               <input
                 type="checkbox"
                 checked={pushOptIn}
                 onChange={e => setPushOptIn(e.target.checked)}
-                className="mt-0.5 rounded text-indigo-600 focus:ring-indigo-500"
+                className="mt-0.5 rounded-[3px] text-[#1450FF] focus:ring-[#1450FF]"
               />
               <span className="text-[11px] text-slate-700 leading-tight">
                 <strong>Attiva Notifiche Push & Promemoria:</strong> ricevi avvisi automatici 24 ore prima dell'appuntamento ed esclusive offerte last-minute.
@@ -482,7 +482,7 @@ export default function ClientAuthModal({
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-black py-3.5 rounded-2xl shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-2"
+            className="w-full bg-[#1450FF] hover:bg-blue-600 active:scale-[0.98] text-white font-bold py-3 rounded-[4px] transition flex items-center justify-center gap-2"
           >
             <span>{isRegister ? 'Registrati e Crea Account' : 'Accedi al Profilo'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -490,8 +490,8 @@ export default function ClientAuthModal({
         </form>
 
         {/* Demo Fast Logins Section */}
-        <div className="pt-3 border-t border-slate-100 space-y-2">
-          <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
+        <div className="pt-3 border-t border-[#E4E6EA] space-y-2">
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider font-mono">
             <span className="flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-amber-500" /> Account Demo Rapidi
             </span>
@@ -503,10 +503,10 @@ export default function ClientAuthModal({
                 key={u.id}
                 type="button"
                 onClick={() => handleQuickDemoLogin(u)}
-                className="p-2 rounded-xl bg-slate-50 hover:bg-indigo-50/60 border border-slate-200 text-left transition"
+                className="p-2 rounded-[4px] bg-white hover:bg-blue-50/60 border border-[#E4E6EA] text-left transition"
               >
                 <p className="font-bold text-slate-800 text-[11px] truncate">{u.name}</p>
-                <p className="text-[10px] text-slate-400 truncate">{u.email}</p>
+                <p className="text-[10px] text-slate-400 truncate font-mono">{u.email}</p>
               </button>
             ))}
           </div>
@@ -521,7 +521,7 @@ export default function ClientAuthModal({
               setErrorMsg(null);
               setSuccessMsg(null);
             }}
-            className="text-indigo-600 font-bold hover:underline text-xs"
+            className="text-[#1450FF] font-bold hover:underline text-xs"
           >
             {isRegister 
               ? 'Hai già un account registrato? Accedi qui' 

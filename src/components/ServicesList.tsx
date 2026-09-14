@@ -60,15 +60,15 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2">
-            <NotebookTabs className="w-5 h-5 text-indigo-600 stroke-[1.5]" />
+          <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2 font-display">
+            <NotebookTabs className="w-5 h-5 text-[#1450FF] stroke-[1.5]" />
             Listino Servizi
           </h2>
           <p className="text-xs text-slate-500 mt-1">Configura i tuoi trattamenti, prezzi, durate e le policy di caparra per prenotazione online.</p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-5 py-3 rounded-[4px] flex items-center gap-2 transition self-start sm:self-auto"
+          className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 text-white" />
           Aggiungi Trattamento
@@ -81,8 +81,8 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
           return (
             <div 
               key={service.id} 
-              className={`rounded-2xl p-5 border shadow-sm flex flex-col justify-between space-y-4 transition-all ${
-                service.isActive ? 'glass-card glass-card-hover border-slate-200/80' : 'border-slate-200 bg-slate-50/50 opacity-60'
+              className={`rounded-[6px] p-5 border flex flex-col justify-between space-y-4 transition-all ${
+                service.isActive ? 'bg-white border-[#E4E6EA]' : 'border-[#E4E6EA] bg-slate-50/50 opacity-60'
               }`}
             >
               <div className="space-y-3">
@@ -93,7 +93,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     className="text-slate-400 hover:text-slate-600 transition"
                   >
                     {service.isActive ? (
-                      <ToggleRight className="w-9 h-9 text-indigo-600" />
+                      <ToggleRight className="w-9 h-9 text-[#1450FF]" />
                     ) : (
                       <ToggleLeft className="w-9 h-9 text-slate-300" />
                     )}
@@ -101,28 +101,28 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                 </div>
 
                 {/* Duration and Price Indicators */}
-                <div className="flex items-center gap-3 text-xs font-semibold text-slate-700">
-                  <span className="flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                <div className="flex items-center gap-3 text-xs font-semibold text-slate-700 font-mono">
+                  <span className="flex items-center gap-1 bg-slate-100 border border-[#E4E6EA] px-2.5 py-1 rounded-[4px]">
                     <Clock className="w-3.5 h-3.5 text-slate-400" /> {service.duration} Minuti
                   </span>
-                  <span className="flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                  <span className="flex items-center gap-1 bg-slate-100 border border-[#E4E6EA] px-2.5 py-1 rounded-[4px]">
                     <DollarSign className="w-3.5 h-3.5 text-slate-400" /> {service.price} €
                   </span>
                 </div>
 
                 {/* Deposit configuration card */}
                 {service.depositRequired ? (
-                  <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-start gap-2.5 text-xs text-slate-700">
+                  <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-[4px] flex items-start gap-2.5 text-xs text-slate-700">
                     <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold text-emerald-800">Acconto Opzionale Attivo</p>
                       <p className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                        Consigliati <span className="font-bold text-emerald-700">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : '€'}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)}€` : `${service.depositValue}€`}). Il cliente può versarli o pagare in sede.
+                        Consigliati <span className="font-bold text-emerald-700 font-mono">{service.depositValue}{service.depositType === 'PERCENTAGE' ? '%' : '€'}</span> ({service.depositType === 'PERCENTAGE' ? `${Math.round((service.price * service.depositValue) / 100)}€` : `${service.depositValue}€`}). Il cliente può versarli o pagare in sede.
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl flex items-start gap-2.5 text-xs text-slate-500">
+                  <div className="bg-slate-50 border border-[#E4E6EA] p-3 rounded-[4px] flex items-start gap-2.5 text-xs text-slate-500">
                     <ShieldAlert className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-bold text-slate-700">Nessun Acconto Proposto</p>
@@ -135,10 +135,10 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
               </div>
 
               {/* Action Area */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
+              <div className="pt-3 border-t border-[#E4E6EA] flex items-center justify-between text-xs text-slate-500 font-semibold">
                 <span>Stato: {service.isActive ? 'Attivo & Online' : 'Disattivato'}</span>
                 {service.depositRequired && (
-                  <span className="text-[10px] uppercase font-bold text-emerald-700 flex items-center gap-1">
+                  <span className="text-[10px] uppercase font-bold text-emerald-700 flex items-center gap-1 font-mono">
                     <CreditCard className="w-3.5 h-3.5 text-emerald-600" /> Acconto Opzionale
                   </span>
                 )}
@@ -150,12 +150,15 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
 
       {/* MODAL: ADD SERVICE */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
-          <div className="glass-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-lg font-bold text-slate-950">Aggiungi Nuovo Trattamento</h4>
-              <button onClick={() => setShowAddForm(false)} className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900">
-                <X className="w-5 h-5" />
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white border border-[#E4E6EA] rounded-[6px] max-w-md w-full p-6 text-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E4E6EA]">
+              <h4 className="text-base font-bold text-slate-950 font-display flex items-center gap-2">
+                <NotebookTabs className="w-4 h-4 text-[#1450FF]" />
+                Aggiungi Nuovo Trattamento
+              </h4>
+              <button onClick={() => setShowAddForm(false)} className="p-1 hover:bg-slate-100 rounded-[4px] text-slate-500 hover:text-slate-900">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -168,7 +171,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                   placeholder="es. Taglio Capelli & Barba"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
                 />
               </div>
 
@@ -183,7 +186,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     step={5}
                     value={newDuration}
                     onChange={(e) => setNewDuration(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition font-mono"
                   />
                 </div>
                 <div>
@@ -195,13 +198,13 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     max={1000}
                     value={newPrice}
                     onChange={(e) => setNewPrice(Number(e.target.value))}
-                    className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition font-mono"
                   />
                 </div>
               </div>
 
               {/* Protect layout */}
-              <div className="border border-slate-200 p-3 rounded-xl space-y-3 bg-slate-50/50">
+              <div className="border border-[#E4E6EA] p-3 rounded-[4px] space-y-3 bg-slate-50/50">
                 <div className="flex items-center justify-between">
                   <div>
                     <label className="text-xs font-bold text-slate-800">Abilita Opzione Acconto Online (Facoltativo)</label>
@@ -211,22 +214,22 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                     type="checkbox"
                     checked={newDepositRequired}
                     onChange={(e) => setNewDepositRequired(e.target.checked)}
-                    className="w-4.5 h-4.5 accent-indigo-600 cursor-pointer"
+                    className="w-4.5 h-4.5 accent-[#1450FF] cursor-pointer"
                   />
                 </div>
 
                 {newDepositRequired && (
-                  <div className="space-y-3 pt-2 border-t border-slate-200/80 animate-fade-in">
+                  <div className="space-y-3 pt-2 border-t border-[#E4E6EA] animate-fade-in">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo di Caparra</label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => setNewDepositType('FIXED')}
-                          className={`p-2 rounded-lg text-xs font-semibold border text-center transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                          className={`p-2 rounded-[4px] text-xs font-semibold border text-center transition ${
                             newDepositType === 'FIXED'
-                              ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm font-bold'
-                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                              ? 'border-blue-300 bg-blue-50 text-[#1450FF] font-bold'
+                              : 'border-[#E4E6EA] bg-white text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           Quota Fissa (es. 10€)
@@ -234,10 +237,10 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                         <button
                           type="button"
                           onClick={() => setNewDepositType('PERCENTAGE')}
-                          className={`p-2 rounded-lg text-xs font-semibold border text-center transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
+                          className={`p-2 rounded-[4px] text-xs font-semibold border text-center transition ${
                             newDepositType === 'PERCENTAGE'
-                              ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm font-bold'
-                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                              ? 'border-blue-300 bg-blue-50 text-[#1450FF] font-bold'
+                              : 'border-[#E4E6EA] bg-white text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           Percentuale (es. 50%)
@@ -256,7 +259,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                         max={newDepositType === 'FIXED' ? newPrice : 100}
                         value={newDepositValue}
                         onChange={(e) => setNewDepositValue(Number(e.target.value))}
-                        className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                        className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2 focus:border-[#1450FF] focus:outline-none transition font-mono"
                       />
                       <p className="text-[10px] text-slate-500 mt-1 font-medium">
                         I clienti pagheranno {newDepositType === 'FIXED' ? `${newDepositValue}€` : `${Math.round((newPrice * newDepositValue) / 100)}€`} all'atto della prenotazione.
@@ -270,13 +273,13 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-3 rounded-lg border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-sm"
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 rounded-[4px] border border-[#E4E6EA] transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md"
+                  className="w-full bg-[#1450FF] hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-[4px] transition active:scale-[0.98]"
                 >
                   Salva Servizio
                 </button>

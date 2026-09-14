@@ -44,14 +44,14 @@ export default function PwaInstallBanner() {
   if (!showBanner) return null;
 
   return (
-    <div className="bg-indigo-900 text-white px-4 py-3 shadow-lg border-b border-indigo-800 flex items-center justify-between text-xs animate-fade-in z-50">
+    <div className="bg-[#14161A] text-white px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs animate-fade-in z-50">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 bg-indigo-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-indigo-700">
-          <Smartphone className="w-5 h-5 text-indigo-300" />
+        <div className="w-8 h-8 bg-slate-800 rounded-[4px] flex items-center justify-center flex-shrink-0 border border-slate-700">
+          <Smartphone className="w-4 h-4 text-[#1450FF]" />
         </div>
         <div>
-          <p className="font-bold">Installa NoShow Reducer sul tuo Smartphone 📱</p>
-          <p className="text-[11px] text-indigo-200">
+          <p className="font-bold text-white font-display">Installa NoShow Reducer sul tuo smartphone</p>
+          <p className="text-[11px] text-slate-400">
             {isIOS 
               ? "Tocca il tasto Condividi (⎋) in Safari e seleziona 'Aggiungi alla schermata Home'."
               : "Accedi rapidamente come un'app nativa con notifiche push attive."}
@@ -63,7 +63,7 @@ export default function PwaInstallBanner() {
         {!isIOS && deferredPrompt && (
           <button
             onClick={handleInstallClick}
-            className="px-3.5 py-2 bg-white text-indigo-900 font-bold rounded-xl hover:bg-indigo-50 transition flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 bg-[#1450FF] text-white font-bold rounded-[4px] hover:bg-blue-600 transition flex items-center gap-1.5 text-xs active:scale-[0.98]"
           >
             <Download className="w-3.5 h-3.5" />
             Installa App
@@ -74,7 +74,7 @@ export default function PwaInstallBanner() {
             setShowBanner(false);
             localStorage.setItem('ns_pwa_dismissed', 'true');
           }}
-          className="p-1.5 hover:bg-indigo-800 rounded-lg text-indigo-300 hover:text-white transition"
+          className="p-1.5 hover:bg-slate-800 rounded-[4px] text-slate-400 hover:text-white transition"
           title="Chiudi"
         >
           <X className="w-4 h-4" />

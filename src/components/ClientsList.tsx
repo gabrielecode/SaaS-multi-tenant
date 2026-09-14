@@ -138,8 +138,8 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
       {/* Header and Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2">
-            <Users className="w-5 h-5 text-indigo-600 stroke-[1.5]" />
+          <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2 font-display">
+            <Users className="w-5 h-5 text-[#1450FF] stroke-[1.5]" />
             Anagrafica Clienti
           </h2>
           <p className="text-xs text-slate-500 mt-1">Gestisci i recapiti, invia inviti per la Web App e tieni traccia del punteggio di puntualità.</p>
@@ -148,7 +148,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
           {onOpenInviteClient && (
             <button
               onClick={() => onOpenInviteClient()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition"
               title="Invia link di iscrizione Web App via WhatsApp, Email o SMS"
             >
               <Share2 className="w-4 h-4 text-white" />
@@ -157,7 +157,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
           )}
           <button
             onClick={() => setShowAddForm(true)}
-            className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-5 py-3 rounded-[4px] flex items-center gap-2 transition"
+            className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition"
           >
             <UserPlus className="w-4 h-4 text-white" />
             Nuovo Cliente
@@ -166,15 +166,15 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 glass-card p-4 rounded-2xl shadow-sm border border-slate-200/80">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-[6px] border border-[#E4E6EA]">
         <div className="relative sm:col-span-2">
-          <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Cerca cliente per nome, telefono o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg pl-10 pr-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+            className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] pl-10 pr-4 py-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
           />
         </div>
 
@@ -182,7 +182,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
           <select
             value={filterRisk}
             onChange={(e) => setFilterRisk(e.target.value)}
-            className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+            className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition"
           >
             <option value="ALL">Filtra affidabilità: Tutti</option>
             <option value="LOW">Affidabilità Alta (Basso rischio)</option>
@@ -202,8 +202,8 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
             return (
               <div 
                 key={client.id} 
-                className={`rounded-2xl p-5 border shadow-sm flex flex-col justify-between space-y-4 transition ${
-                  isHighRisk ? 'border-rose-200 bg-rose-50/40' : 'glass-card glass-card-hover'
+                className={`rounded-[6px] p-5 border flex flex-col justify-between space-y-4 transition ${
+                  isHighRisk ? 'border-rose-200 bg-rose-50/40' : 'bg-white border-[#E4E6EA]'
                 }`}
               >
                 <div className="space-y-3">
@@ -222,20 +222,20 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
 
                     {/* Reliability Badge */}
                     <div className="text-right">
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-[4px] uppercase tracking-wider font-mono ${
                         isHighRisk ? 'bg-rose-50 text-rose-700 border border-rose-200' :
                         isMediumRisk ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                       }`}>
                         Affidabilità: {client.reliabilityScore}%
                       </span>
-                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+                      <p className="text-[10px] text-slate-500 mt-1 font-semibold font-mono">
                         {client.completedCount} eseguiti • {client.noShowCount} no-show
                       </p>
                     </div>
                   </div>
 
                   {/* Notes Card & Editor */}
-                  <div className="bg-slate-50 border border-slate-100 p-3.5 rounded-xl text-xs space-y-2">
+                  <div className="bg-slate-50 border border-[#E4E6EA] p-3.5 rounded-[4px] text-xs space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Note Titolare</span>
                       {editingClientId !== client.id ? (
@@ -254,18 +254,18 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                           rows={2}
                           value={editNotesText}
                           onChange={(e) => setEditNotesText(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                          className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-xs text-slate-900 focus:border-[#1450FF] focus:outline-none transition"
                         />
                         <div className="flex items-center gap-1.5 justify-end">
                           <button 
                             onClick={() => setEditingClientId(null)}
-                            className="bg-slate-100 text-slate-700 hover:bg-slate-200 text-[10px] font-semibold px-3 py-1.5 rounded-lg border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                            className="bg-slate-100 text-slate-700 hover:bg-slate-200 text-[10px] font-semibold px-3 py-1.5 rounded-[4px] border border-[#E4E6EA] transition"
                           >
                             Annulla
                           </button>
                           <button 
                             onClick={() => saveClientNotes(client.id)}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                            className="bg-[#1450FF] hover:bg-blue-600 text-white text-[10px] font-semibold px-3 py-1.5 rounded-[4px] flex items-center gap-1 transition"
                           >
                             <Save className="w-3 h-3" /> Salva
                           </button>
@@ -365,7 +365,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                   placeholder="es. Marco Bianchi"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
                 />
               </div>
 
@@ -378,7 +378,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                     placeholder="es. +39 333..."
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
-                    className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
                   />
                 </div>
                 <div>
@@ -388,7 +388,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                     placeholder="es. nome@esempio.it"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                    className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -405,10 +405,10 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                       key={risk.val}
                       type="button"
                       onClick={() => setNewRisk(risk.val as any)}
-                      className={`p-2.5 rounded-lg text-xs font-semibold border text-center transition-all duration-200 ${
+                      className={`p-2.5 rounded-[4px] text-xs font-semibold border text-center transition ${
                         newRisk === risk.val
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm'
-                          : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:-translate-y-0.5 active:scale-[0.98]'
+                          ? 'border-blue-300 bg-blue-50 text-[#1450FF]'
+                          : 'border-[#E4E6EA] bg-slate-50 text-slate-700 hover:bg-slate-100'
                       }`}
                     >
                       {risk.label}
@@ -424,7 +424,7 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                   placeholder="es. Richiede sempre caffè macchiato, consigliare caparra se disdice di sabato..."
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
-                  className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 placeholder-slate-400"
+                  className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition placeholder-slate-400"
                 />
               </div>
 
@@ -432,13 +432,13 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-3 rounded-lg border border-slate-200 transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-sm"
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold py-2.5 rounded-[4px] border border-[#E4E6EA] transition"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-3 rounded-lg transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] shadow-md"
+                  className="w-full bg-[#1450FF] hover:bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-[4px] transition active:scale-[0.98]"
                 >
                   Crea Profilo
                 </button>

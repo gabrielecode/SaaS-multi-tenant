@@ -51,40 +51,36 @@ export default function DedicatedRoleAuthModal({
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-md bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200/80 z-10 overflow-hidden">
+      <div className="relative w-full max-w-md bg-white rounded-[6px] border border-[#E4E6EA] z-10 overflow-hidden">
         
-        {/* Top Gradient Header */}
-        <div className={`p-6 text-white ${
-          isSuperAdmin 
-            ? 'bg-gradient-to-br from-purple-950 via-slate-900 to-purple-900' 
-            : 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900'
-        }`}>
+        {/* Top Header */}
+        <div className="p-5 text-white bg-[#14161A] border-b border-[#E4E6EA]">
           <div className="flex items-center justify-between">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-inner">
+            <div className="w-10 h-10 rounded-[4px] bg-slate-800 border border-slate-700 flex items-center justify-center">
               {isSuperAdmin ? (
-                <Building2 className="w-6 h-6 text-purple-300" />
+                <Building2 className="w-5 h-5 text-[#1450FF]" />
               ) : (
-                <Store className="w-6 h-6 text-indigo-300" />
+                <Store className="w-5 h-5 text-[#1450FF]" />
               )}
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center transition active:scale-95"
+              className="w-8 h-8 rounded-[4px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition active:scale-[0.98]"
               aria-label="Chiudi"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="mt-4">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/10 border border-white/10 text-white/90">
-              <Lock className="w-3 h-3 text-amber-300" />
+          <div className="mt-3">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] text-[10px] font-bold uppercase tracking-wider bg-slate-800 border border-slate-700 text-slate-200 font-mono">
+              <Lock className="w-3 h-3 text-amber-400" />
               Accesso Riservato e Protetto
             </div>
-            <h3 className="text-xl font-extrabold text-white mt-1">
+            <h3 className="text-lg font-bold text-white mt-1.5 font-display">
               Area {roleTitle}
             </h3>
-            <p className="text-xs text-white/70 mt-1 leading-relaxed">
+            <p className="text-xs text-slate-400 mt-1 leading-relaxed">
               {isSuperAdmin 
                 ? 'Inserisci il codice di sicurezza centrale per monitorare la piattaforma SaaS e visionare l\'app con dati sensibili protetti.' 
                 : 'Inserisci il PIN del titolare per accedere all\'agenda, alla gestione clienti e all\'invio inviti.'}
@@ -93,44 +89,44 @@ export default function DedicatedRoleAuthModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-mono">
               Codice PIN / Password di Accesso
             </label>
             <div className="relative">
-              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="password"
                 maxLength={8}
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="Inserisci PIN (es. 1234 o 9988)"
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl text-sm font-mono tracking-widest focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] text-sm font-mono tracking-widest focus:border-[#1450FF] focus:outline-none transition"
                 autoFocus
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 font-semibold animate-fade-in">
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-[4px] flex items-start gap-2 text-xs text-rose-700 font-semibold animate-fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Quick demo helper button for fast testing */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 flex items-center justify-between text-xs">
+          <div className="bg-slate-50 border border-[#E4E6EA] rounded-[4px] p-3 flex items-center justify-between text-xs">
             <div className="text-slate-600">
               <span className="font-bold text-slate-800">PIN Predefinito:</span>{' '}
-              <code className="bg-slate-200 text-slate-900 px-1.5 py-0.5 rounded font-mono font-bold">
+              <code className="bg-slate-200 text-slate-900 px-1.5 py-0.5 rounded-[4px] font-mono font-bold">
                 {expectedPin}
               </code>
             </div>
             <button
               type="button"
               onClick={handleQuickDemoPin}
-              className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition"
+              className="text-[11px] font-bold text-[#1450FF] hover:underline transition"
             >
               Compila rapido
             </button>
@@ -140,17 +136,13 @@ export default function DedicatedRoleAuthModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition active:scale-95"
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-[4px] transition active:scale-[0.98]"
             >
               Annulla
             </button>
             <button
               type="submit"
-              className={`flex-1 py-2.5 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition active:scale-95 ${
-                isSuperAdmin 
-                  ? 'bg-purple-600 hover:bg-purple-500' 
-                  : 'bg-indigo-600 hover:bg-indigo-500'
-              }`}
+              className="flex-1 py-2 bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs rounded-[4px] flex items-center justify-center gap-2 transition active:scale-[0.98]"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>Sblocca ed Entra</span>

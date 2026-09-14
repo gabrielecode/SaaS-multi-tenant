@@ -128,10 +128,10 @@ export default function SuperAdminDashboard({
       <div className="bg-[#14161A] text-white p-4 rounded-[6px] border border-[#E4E6EA] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-2.5 py-0.5 bg-purple-900/40 text-purple-300 text-[10px] font-bold uppercase rounded-[4px] border border-purple-700/50 flex items-center gap-1.5 font-mono">
-              <ShieldAlert className="w-3 h-3 text-purple-400" /> Super Admin Audit Mode
+            <span className="px-2.5 py-0.5 bg-blue-950/60 text-blue-300 text-[10px] font-bold uppercase rounded-[4px] border border-blue-800 flex items-center gap-1.5 font-mono">
+              <ShieldAlert className="w-3 h-3 text-[#1450FF]" /> Super Admin Audit Mode
             </span>
-            <span className="px-2.5 py-0.5 bg-emerald-900/40 text-emerald-300 text-[10px] font-bold uppercase rounded-[4px] border border-emerald-700/50 flex items-center gap-1 font-mono">
+            <span className="px-2.5 py-0.5 bg-emerald-950/60 text-emerald-300 text-[10px] font-bold uppercase rounded-[4px] border border-emerald-800 flex items-center gap-1 font-mono">
               <Lock className="w-2.5 h-2.5" /> GDPR & LPD
             </span>
           </div>
@@ -199,8 +199,8 @@ export default function SuperAdminDashboard({
         {/* KPI 1: MRR */}
         <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MRR Totale</p>
-            <h3 className="text-xl font-bold text-[#14161A] mt-0.5 font-mono">€{totalMRR} <span className="text-[11px] font-normal text-slate-500">/mo</span></h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">MRR Totale</p>
+            <h3 className="text-xl font-bold text-[#14161A] mt-0.5 font-mono">CHF {totalMRR} <span className="text-[11px] font-normal text-slate-500">/mo</span></h3>
           </div>
           <div className="p-2.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-100">
             <DollarSign className="w-5 h-5" />
@@ -210,7 +210,7 @@ export default function SuperAdminDashboard({
         {/* KPI 2: Saloni Attivi */}
         <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Saloni Iscritti</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">Saloni Iscritti</p>
             <h3 className="text-xl font-bold text-[#14161A] mt-0.5 font-mono">{activeSalonsCount} <span className="text-[11px] font-normal text-slate-500">/ {tenantList.length}</span></h3>
           </div>
           <div className="p-2.5 bg-slate-50 text-slate-700 rounded-[4px] border border-[#E4E6EA]">
@@ -221,7 +221,7 @@ export default function SuperAdminDashboard({
         {/* KPI 3: Supabase Postgres */}
         <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Database Postgres</p>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">Database Postgres</p>
             <h3 className="text-xs font-bold text-emerald-700 mt-1 flex items-center gap-1.5 font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               RLS Attivo (Zero Leak)
@@ -235,13 +235,13 @@ export default function SuperAdminDashboard({
         {/* KPI 4: WhatsApp Webhook API */}
         <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">WhatsApp API</p>
-            <h3 className="text-xs font-bold text-purple-700 mt-1 flex items-center gap-1.5 font-mono">
-              <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono">WhatsApp API</p>
+            <h3 className="text-xs font-bold text-blue-700 mt-1 flex items-center gap-1.5 font-mono">
+              <span className="w-2 h-2 rounded-full bg-[#1450FF]"></span>
               Webhook v21.0
             </h3>
           </div>
-          <div className="p-2.5 bg-purple-50 text-purple-700 rounded-[4px] border border-purple-100">
+          <div className="p-2.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-100">
             <Activity className="w-5 h-5" />
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function SuperAdminDashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-[#E4E6EA] text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+              <tr className="bg-slate-50 border-b border-[#E4E6EA] text-slate-600 font-bold uppercase tracking-wider text-[10px] font-mono">
                 <th className="p-3">Salone / Categoria</th>
                 <th className="p-3">Titolare</th>
                 <th className="p-3">Contatti</th>
@@ -322,10 +322,10 @@ export default function SuperAdminDashboard({
                       <span className="font-bold font-mono text-[#1450FF]">
                         {tenant.plan}
                       </span>
-                      <span className="text-[11px] text-slate-500 ml-1"> (€{tenant.monthlyFee}/mo)</span>
+                      <span className="text-[11px] text-slate-500 ml-1 font-mono"> (CHF {tenant.monthlyFee}/mo)</span>
                     </td>
                     <td className="p-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-bold border ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-bold border font-mono ${
                         tenant.subscriptionStatus === 'ACTIVE' 
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
                           : 'bg-rose-50 text-rose-800 border-rose-200'
@@ -349,7 +349,7 @@ export default function SuperAdminDashboard({
                         {onInspectApp && (
                           <button
                             onClick={() => onInspectApp(tenant.id)}
-                            className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-[4px] font-bold text-[11px] transition"
+                            className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1450FF] border border-blue-200 rounded-[4px] font-bold text-[11px] transition"
                             title="Ispeziona app tenant"
                           >
                             Ispeziona
@@ -368,16 +368,16 @@ export default function SuperAdminDashboard({
       {/* ------------------------------------------------------------- */}
       {/* TABELLA DEI LOG DI AUDIT E ANONIMIZZAZIONE GDPR                */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+      <div className="bg-white p-5 rounded-[6px] border border-[#E4E6EA] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-display">
+              <ShieldCheck className="w-4.5 h-4.5 text-emerald-600" />
               <span>Log di Audit e Anonimizzazione GDPR / LPD</span>
             </h3>
             <p className="text-xs text-slate-500">Tracciamento in tempo reale delle attività di accesso e mascheramento automatico dei dati personali.</p>
           </div>
-          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl">
+          <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold rounded-[4px] font-mono">
             Conforme Art. 32 GDPR
           </span>
         </div>
@@ -385,7 +385,7 @@ export default function SuperAdminDashboard({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              <tr className="border-b border-[#E4E6EA] text-slate-400 font-bold uppercase tracking-wider text-[10px] font-mono">
                 <th className="pb-3 px-3">Timestamp</th>
                 <th className="pb-3 px-3">Livello</th>
                 <th className="pb-3 px-3">Servizio / Modulo</th>
@@ -393,14 +393,14 @@ export default function SuperAdminDashboard({
                 <th className="pb-3 px-3 text-right">Stato Privacy</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E4E6EA]">
               {logs.map((log: SystemLog) => (
                 <tr key={log.id} className="hover:bg-slate-50 transition">
-                  <td className="py-3 px-3 font-mono text-slate-500 whitespace-nowrap">
+                  <td className="py-2.5 px-3 font-mono text-slate-500 whitespace-nowrap">
                     {new Date(log.timestamp).toLocaleTimeString()}
                   </td>
-                  <td className="py-3 px-3">
-                    <span className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                  <td className="py-2.5 px-3 font-mono">
+                    <span className={`px-2 py-0.5 rounded-[4px] font-bold text-[10px] ${
                       log.level === 'INFO' ? 'bg-blue-50 text-blue-700' :
                       log.level === 'WARNING' ? 'bg-amber-50 text-amber-700' :
                       'bg-rose-50 text-rose-700'
@@ -408,14 +408,14 @@ export default function SuperAdminDashboard({
                       {log.level}
                     </span>
                   </td>
-                  <td className="py-3 px-3 font-mono font-bold text-slate-800">
+                  <td className="py-2.5 px-3 font-mono font-bold text-slate-800">
                     {log.service}
                   </td>
-                  <td className="py-3 px-3 text-slate-700">
+                  <td className="py-2.5 px-3 text-slate-700">
                     {log.message}
                   </td>
-                  <td className="py-3 px-3 text-right">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  <td className="py-2.5 px-3 text-right">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-[4px] font-mono">
                       <Lock className="w-2.5 h-2.5" /> Mascherato
                     </span>
                   </td>
@@ -430,15 +430,15 @@ export default function SuperAdminDashboard({
       {/* MODALE: REGISTRA NUOVO SALONE TENANT                          */}
       {/* ------------------------------------------------------------- */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 my-auto animate-fade-in">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-[6px] max-w-lg w-full p-6 border border-[#E4E6EA] space-y-5 my-auto animate-fade-in">
+            <div className="flex items-center justify-between border-b border-[#E4E6EA] pb-3">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
+                <div className="p-2.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-100">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900">Registra Nuovo Salone (Tenant)</h3>
+                  <h3 className="text-base font-bold text-slate-900 font-display">Registra Nuovo Salone (Tenant)</h3>
                   <p className="text-xs text-slate-500">Crea un nuovo ambiente aziendale isolato sulla piattaforma SaaS.</p>
                 </div>
               </div>
@@ -447,14 +447,14 @@ export default function SuperAdminDashboard({
                   setShowAddModal(false);
                   setModalError(null);
                 }}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100 transition"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-[4px] hover:bg-slate-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {modalError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-[4px] flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span className="font-semibold">{modalError}</span>
               </div>
@@ -466,10 +466,10 @@ export default function SuperAdminDashboard({
                 <input
                   type="text"
                   required
-                  placeholder="es. Barberia & Spa Napoli Centro"
+                  placeholder="es. Barberia & Spa Lugano Centro"
                   value={newSalonName}
                   onChange={e => setNewSalonName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                  className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF]"
                 />
               </div>
 
@@ -479,10 +479,10 @@ export default function SuperAdminDashboard({
                   <input
                     type="text"
                     required
-                    placeholder="es. Antonio Esposito"
+                    placeholder="es. Marco Rossi"
                     value={newOwnerName}
                     onChange={e => setNewOwnerName(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF]"
                   />
                 </div>
                 <div>
@@ -490,7 +490,7 @@ export default function SuperAdminDashboard({
                   <select
                     value={newCategory}
                     onChange={e => setNewCategory(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF]"
                   >
                     <option value="Barbiere & Parrucchiere">Barbiere & Parrucchiere</option>
                     <option value="Centro Estetico & Benessere">Centro Estetico & Benessere</option>
@@ -506,10 +506,10 @@ export default function SuperAdminDashboard({
                   <input
                     type="email"
                     required
-                    placeholder="es. info@barberia.it"
+                    placeholder="es. info@salone.ch"
                     value={newEmail}
                     onChange={e => setNewEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF]"
                   />
                 </div>
                 <div>
@@ -517,10 +517,10 @@ export default function SuperAdminDashboard({
                   <input
                     type="tel"
                     required
-                    placeholder="es. +39 340 1234567"
+                    placeholder="es. +41 79 123 45 67"
                     value={newPhone}
                     onChange={e => setNewPhone(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-3 text-slate-900 font-medium focus:outline-none focus:border-indigo-500 focus:bg-white"
+                    className="w-full bg-white border border-[#E4E6EA] rounded-[4px] p-2.5 text-slate-900 font-medium focus:outline-none focus:border-[#1450FF]"
                   />
                 </div>
               </div>
@@ -529,38 +529,38 @@ export default function SuperAdminDashboard({
                 <label className="block font-bold text-slate-700 mb-1">Piano SaaS Selezionato</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { id: 'BASIC', label: 'Basic (29€/m)', fee: 29 },
-                    { id: 'PRO', label: 'Pro (49€/m)', fee: 49 },
-                    { id: 'ENTERPRISE', label: 'Enterprise (99€/m)', fee: 99 }
+                    { id: 'BASIC', label: 'Basic (CHF 29/m)', fee: 29 },
+                    { id: 'PRO', label: 'Pro (CHF 49/m)', fee: 49 },
+                    { id: 'ENTERPRISE', label: 'Enterprise (CHF 99/m)', fee: 99 }
                   ].map(p => (
                     <button
                       key={p.id}
                       type="button"
                       onClick={() => setNewPlan(p.id as any)}
-                      className={`p-2.5 rounded-2xl border text-center font-bold transition ${
+                      className={`p-2.5 rounded-[4px] border text-center font-bold transition font-mono ${
                         newPlan === p.id 
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
-                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100'
+                          ? 'border-[#1450FF] bg-blue-50 text-[#1450FF]' 
+                          : 'border-[#E4E6EA] bg-white text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       <div className="text-[11px]">{p.id}</div>
-                      <div className="text-[10px] text-slate-400 font-normal">€{p.fee}/mese</div>
+                      <div className="text-[10px] text-slate-400 font-normal font-mono">CHF {p.fee}/m</div>
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2 border-t border-slate-100">
+              <div className="flex gap-2 pt-2 border-t border-[#E4E6EA]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold py-3 rounded-2xl transition"
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-[4px] transition text-xs"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold py-3 rounded-2xl shadow-md shadow-indigo-600/20 transition flex items-center justify-center gap-1.5"
+                  className="w-full bg-[#1450FF] hover:bg-blue-600 text-white font-bold py-2.5 rounded-[4px] transition flex items-center justify-center gap-1.5 text-xs"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Crea Salone Tenant</span>

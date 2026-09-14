@@ -266,8 +266,8 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-950 flex items-center gap-2">
-            <Settings2 className="w-5 h-5 text-indigo-600 stroke-[1.5]" />
+          <h2 className="text-xl font-extrabold text-slate-950 flex items-center gap-2 font-display">
+            <Settings2 className="w-5 h-5 text-[#1450FF] stroke-[1.5]" />
             Impostazioni & Chiavi API
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -280,7 +280,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
           <button
             type="button"
             onClick={handleSave}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 transition"
+            className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition active:scale-[0.98]"
           >
             <Save className="w-4 h-4 text-white" />
             Salva Modifiche
@@ -294,20 +294,20 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
       </div>
 
       {/* Main Tab Selector */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex items-center gap-2 border-b border-[#E4E6EA] pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('api')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-[4px] text-xs font-bold transition ${
             activeTab === 'api'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              ? 'bg-[#1450FF] text-white'
+              : 'bg-white border border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
           }`}
         >
           <Key className="w-4 h-4" />
           <span>Chiavi API & Integrazioni Cloud</span>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
-            activeTab === 'api' ? 'bg-white text-indigo-700' : 'bg-indigo-50 text-indigo-700'
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-[4px] font-mono font-bold ${
+            activeTab === 'api' ? 'bg-white text-[#1450FF]' : 'bg-blue-50 text-[#1450FF]'
           }`}>
             3 API
           </span>
@@ -316,10 +316,10 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
         <button
           type="button"
           onClick={() => setActiveTab('general')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-[4px] text-xs font-bold transition ${
             activeTab === 'general'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+              ? 'bg-[#1450FF] text-white'
+              : 'bg-white border border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
           }`}
         >
           <Settings2 className="w-4 h-4" />
@@ -333,8 +333,8 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
           <div className="space-y-6">
             
             {/* Banner Guide */}
-            <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-white p-4.5 rounded-2xl border border-indigo-100 flex items-start gap-3.5">
-              <div className="p-2 bg-indigo-600 text-white rounded-xl shadow-sm flex-shrink-0 mt-0.5">
+            <div className="bg-blue-50/60 p-4 rounded-[6px] border border-blue-100 flex items-start gap-3.5">
+              <div className="p-2 bg-[#1450FF] text-white rounded-[4px] flex-shrink-0 mt-0.5">
                 <Zap className="w-4 h-4" />
               </div>
               <div className="text-xs text-slate-600 leading-relaxed">
@@ -346,7 +346,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
             </div>
 
             {/* 1. META WHATSAPP CLOUD API CARD */}
-            <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+            <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100">
@@ -374,7 +374,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     href="https://developers.facebook.com/apps/"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-semibold underline"
+                    className="text-[11px] text-[#1450FF] hover:underline flex items-center gap-1 font-semibold"
                   >
                     Meta Developers <ExternalLink className="w-3 h-3" />
                   </a>
@@ -382,7 +382,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
               </div>
 
               {testResults.meta && (
-                <div className={`p-3 rounded-xl border text-xs flex items-start gap-2 ${
+                <div className={`p-3 rounded-[4px] border text-xs flex items-start gap-2 ${
                   testResults.meta.success ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
                 }`}>
                   {testResults.meta.success ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
@@ -402,7 +402,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={metaWhatsappToken}
                       onChange={(e) => setMetaWhatsappToken(e.target.value)}
                       placeholder="EAAG... (Incolla il token generato nel pannello WhatsApp > API Setup)"
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 pr-10 font-mono text-[11px] focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                      className="w-full bg-slate-50 border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 pr-10 font-mono text-[11px] focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                     />
                     <button
                       type="button"
@@ -427,7 +427,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     value={metaPhoneNumberId}
                     onChange={(e) => setMetaPhoneNumberId(e.target.value)}
                     placeholder="es. 105482390124892"
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 font-mono text-[11px] focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                    className="w-full bg-slate-50 border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-mono text-[11px] focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
                     Trovabile in Meta Business Suite &gt; WhatsApp &gt; Configurazione API &gt; "ID numero di telefono".
@@ -444,7 +444,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     value={metaWabaId}
                     onChange={(e) => setMetaWabaId(e.target.value)}
                     placeholder="es. 109823487123901"
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 font-mono text-[11px] focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                    className="w-full bg-slate-50 border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-mono text-[11px] focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
                     Identificativo dell'account business Meta registrato.
@@ -609,16 +609,16 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
             </div>
 
             {/* 3. STRIPE PAYMENTS API CARD */}
-            <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
+            <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#E4E6EA] gap-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-purple-50 text-purple-600 rounded-xl border border-purple-100">
+                  <div className="p-2 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-100">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2 font-display">
                       Stripe Pagamenti & Connect
-                      <span className="text-[10px] bg-purple-50 text-purple-700 px-2 py-0.5 rounded font-bold border border-purple-200">
+                      <span className="text-[10px] bg-blue-50 text-[#1450FF] px-2 py-0.5 rounded-[4px] font-bold border border-blue-200">
                         Acconti & No-Show
                       </span>
                     </h4>
@@ -630,8 +630,8 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                   <button
                     type="button"
                     onClick={() => setStripeConnected(!stripeConnected)}
-                    className={`text-xs px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
-                      stripeConnected ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                    className={`text-xs px-3 py-1.5 rounded-[4px] font-bold transition flex items-center gap-1.5 ${
+                      stripeConnected ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-[#E4E6EA]'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${stripeConnected ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
@@ -641,7 +641,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     href="https://dashboard.stripe.com/apikeys"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-purple-600 hover:text-purple-800 flex items-center gap-1 font-semibold underline"
+                    className="text-[11px] text-[#1450FF] hover:underline flex items-center gap-1 font-semibold"
                   >
                     Stripe Dashboard <ExternalLink className="w-3 h-3" />
                   </a>
@@ -649,7 +649,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
               </div>
 
               {testResults.stripe && (
-                <div className={`p-3 rounded-xl border text-xs flex items-start gap-2 ${
+                <div className={`p-3 rounded-[4px] border text-xs flex items-start gap-2 ${
                   testResults.stripe.success ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-rose-50 border-rose-200 text-rose-800'
                 }`}>
                   {testResults.stripe.success ? <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" /> : <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />}
@@ -668,7 +668,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     value={stripePublishableKey}
                     onChange={(e) => setStripePublishableKey(e.target.value)}
                     placeholder="pk_live_... o pk_test_..."
-                    className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 font-mono text-[11px] focus:bg-white focus:border-purple-500 focus:outline-none transition"
+                    className="w-full bg-slate-50 border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-mono text-[11px] focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                   <p className="text-[10px] text-slate-400 mt-1">
                     Chiave pubblica visibile nel client Stripe Elements.
@@ -686,7 +686,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={stripeSecretKey}
                       onChange={(e) => setStripeSecretKey(e.target.value)}
                       placeholder="sk_live_... o sk_test_..."
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl p-3 pr-10 font-mono text-[11px] focus:bg-white focus:border-purple-500 focus:outline-none transition"
+                      className="w-full bg-slate-50 border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 pr-10 font-mono text-[11px] focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                     />
                     <button
                       type="button"
@@ -702,17 +702,17 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-between border-t border-slate-100">
+              <div className="pt-2 flex items-center justify-between border-t border-[#E4E6EA]">
                 <button
                   type="button"
                   onClick={testStripe}
                   disabled={testingService === 'stripe'}
-                  className="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+                  className="bg-blue-50 hover:bg-blue-100 text-[#1450FF] border border-blue-200 font-bold px-3.5 py-2 rounded-[4px] text-xs flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
                 >
-                  {testingService === 'stripe' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-purple-600" />}
+                  {testingService === 'stripe' ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-[#1450FF]" />}
                   Verifica Chiave Stripe
                 </button>
-                <span className="text-[10px] text-slate-400">Certificato PCI-DSS Livello 1</span>
+                <span className="text-[10px] text-slate-400 font-mono">Certificato PCI-DSS Livello 1</span>
               </div>
             </div>
 
@@ -725,17 +725,17 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
             
             <div className="lg:col-span-2 space-y-6">
               {/* General Business & Owner Profile Card */}
-              <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                  <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2">
-                    <Settings2 className="w-4.5 h-4.5 text-indigo-600" />
+              <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E4E6EA] pb-3">
+                  <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 font-display">
+                    <Settings2 className="w-4.5 h-4.5 text-[#1450FF]" />
                     Profilo Salone Titolare & Recapito Svizzera
                   </h4>
-                  <div className="flex items-center gap-1.5">
-                    <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[11px] font-bold rounded-full border border-rose-200 flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <span className="px-2 py-0.5 bg-rose-50 text-rose-700 text-[11px] font-bold rounded-[4px] border border-rose-200 flex items-center gap-1">
                       <span>🇨🇭</span> Svizzera (+41)
                     </span>
-                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-full border border-emerald-200">
+                    <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-[4px] border border-emerald-200">
                       Valuta {currency}
                     </span>
                   </div>
@@ -754,7 +754,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="es. Gentleman's Grooming Club Lugano"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 font-medium"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition font-medium"
                     />
                   </div>
 
@@ -769,7 +769,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={ownerName}
                       onChange={(e) => setOwnerName(e.target.value)}
                       placeholder="es. Gabriele Rossi"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200 font-medium"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition font-medium"
                     />
                   </div>
 
@@ -784,7 +784,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="es. info@salone.ch"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition"
                     />
                   </div>
 
@@ -796,7 +796,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       placeholder="es. Barbiere & Parrucchiere / Centro Estetico"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 focus:outline-none transition-all duration-200"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none transition"
                     />
                   </div>
 
@@ -817,7 +817,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                           else setCurrency('EUR');
                         }
                       }}
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none"
                     >
                       {SUPPORTED_COUNTRIES.map(c => (
                         <option key={c.code} value={c.code}>
@@ -835,7 +835,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     <select
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none font-mono"
                     >
                       <option value="CHF">CHF - Franco Svizzero (Svizzera)</option>
                       <option value="EUR">EUR - Euro (€)</option>
@@ -852,7 +852,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="es. Lugano, Bellinzona, Chiasso, Zurigo"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none"
                     />
                   </div>
 
@@ -863,7 +863,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="es. Via Nassa 22"
-                      className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 focus:border-[#1450FF] focus:outline-none"
                     />
                   </div>
                 </div>
@@ -916,7 +916,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                           const digitsOnly = phone.replace(/^\+\d+\s?/, '');
                           setPhone(`${newP} ${digitsOnly}`.trim());
                         }}
-                        className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 font-bold focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 font-bold focus:border-[#1450FF] focus:outline-none"
                       >
                         {SUPPORTED_COUNTRIES.map(c => (
                           <option key={c.code} value={c.prefix}>
@@ -940,7 +940,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                           setTestRecipient(val);
                         }}
                         placeholder="es. +41 79 345 67 89 o 079 345 67 89"
-                        className="w-full bg-white border border-slate-200 text-slate-900 text-xs rounded-lg p-2.5 font-medium focus:border-indigo-500 focus:outline-none"
+                        className="w-full bg-white border border-[#E4E6EA] text-slate-900 text-xs rounded-[4px] p-2.5 font-medium focus:border-[#1450FF] focus:outline-none"
                       />
                       <p className="text-[10px] text-slate-400 mt-1">
                         Formati validi svizzeri: <strong>+41 79 345 67 89</strong> oppure <strong>079 345 67 89</strong> (lo zero locale viene gestito in automatico).
@@ -949,13 +949,13 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                   </div>
 
                   {/* Diagnostica in tempo reale del numero WhatsApp & Separazione Chiaro Link Salone vs Test Promemoria */}
-                  <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4 text-xs">
+                  <div className="bg-white p-4 rounded-[4px] border border-[#E4E6EA] space-y-4 text-xs">
                     
                     {/* Header Stato Numero Salone */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#E4E6EA]">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-700">Numero Ufficiale Salone:</span>
-                        <span className="font-mono bg-slate-100 text-slate-800 px-2.5 py-1 rounded font-bold">
+                        <span className="font-mono bg-slate-100 text-slate-800 px-2.5 py-1 rounded-[4px] font-bold">
                           +{normalizePhoneForWhatsApp(phone, country)}
                         </span>
                       </div>
@@ -968,38 +968,38 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     </div>
 
                     {/* BOX 1: Link Ufficiale per i Clienti (Inbound) */}
-                    <div className="p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-xl space-y-2">
+                    <div className="p-3.5 bg-blue-50/60 border border-blue-100 rounded-[4px] space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-indigo-950 flex items-center gap-1.5">
-                          <Globe className="w-3.5 h-3.5 text-indigo-600" />
+                        <span className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
                           Link Diretto per i Tuoi Clienti ("Scrivici su WhatsApp")
                         </span>
-                        <span className="text-[10px] bg-indigo-200/70 text-indigo-900 font-bold px-2 py-0.5 rounded">
+                        <span className="text-[10px] bg-blue-100 text-[#1450FF] font-bold px-2 py-0.5 rounded-[4px]">
                           Per Bio Instagram / Sito Web
                         </span>
                       </div>
-                      <p className="text-[11px] text-indigo-800/90 leading-relaxed">
+                      <p className="text-[11px] text-slate-600 leading-relaxed">
                         I tuoi clienti useranno questo link per avviare una conversazione WhatsApp con la reception del salone:
                       </p>
                       <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="flex-1 font-mono text-[11px] bg-white border border-indigo-200 px-3 py-2 rounded-lg text-slate-800 break-all select-all font-semibold">
+                        <div className="flex-1 font-mono text-[11px] bg-white border border-[#E4E6EA] px-3 py-2 rounded-[4px] text-slate-800 break-all select-all font-semibold">
                           {buildWhatsAppUrl(phone, '', country)}
                         </div>
                         <button
                           type="button"
                           onClick={handleCopySalonLink}
-                          className={`px-3.5 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shrink-0 ${
+                          className={`px-3.5 py-2 rounded-[4px] font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-[0.98] shrink-0 ${
                             copiedSalonLink
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm'
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-[#1450FF] hover:bg-blue-600 text-white'
                           }`}
                         >
                           {copiedSalonLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedSalonLink ? 'Copiato negli Appunti!' : 'Copia Link per i Clienti'}</span>
                         </button>
                       </div>
-                      <p className="text-[10px] text-indigo-700/80 flex items-start gap-1 pt-0.5">
-                        <Info className="w-3 h-3 text-indigo-500 shrink-0 mt-0.5" />
+                      <p className="text-[10px] text-slate-500 flex items-start gap-1 pt-0.5">
+                        <Info className="w-3 h-3 text-[#1450FF] shrink-0 mt-0.5" />
                         <span>
                           <strong>Nota:</strong> Se apri questo link dal telefono del salone stesso, WhatsApp aprirà la chat con te stesso perché il destinatario è il tuo stesso numero aziendale.
                         </span>
@@ -1007,7 +1007,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     </div>
 
                     {/* BOX 2: Collaudo Invio Promemoria ai Clienti (Outbound Test) */}
-                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                    <div className="p-3.5 bg-slate-50 border border-[#E4E6EA] rounded-[4px] space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-slate-800 flex items-center gap-1.5">
                           <Send className="w-3.5 h-3.5 text-emerald-600" />
@@ -1025,13 +1025,13 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                             value={testPhoneCustom}
                             onChange={(e) => setTestPhoneCustom(e.target.value)}
                             placeholder="Numero destinatario di test (es. +41 79 123 45 67 o 079...)"
-                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono text-slate-900 focus:border-indigo-500 focus:outline-none"
+                            className="w-full bg-white border border-[#E4E6EA] rounded-[4px] px-3 py-2 text-xs font-mono text-slate-900 focus:border-[#1450FF] focus:outline-none"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={() => handleOpenWhatsAppTest(testPhoneCustom || undefined)}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center justify-center gap-1.5 transition active:scale-95 shadow-sm"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2 rounded-[4px] flex items-center justify-center gap-1.5 transition active:scale-[0.98]"
                         >
                           <Send className="w-3.5 h-3.5" />
                           <span>Invia Promemoria Prova</span>
@@ -1052,7 +1052,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                             type="button"
                             onClick={handleSendMetaApiTest}
                             disabled={isSendingWhatsAppApi}
-                            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition active:scale-95 disabled:opacity-50"
+                            className="bg-blue-50 hover:bg-blue-100 text-[#1450FF] border border-blue-200 font-bold text-xs px-3 py-1.5 rounded-[4px] flex items-center gap-1.5 transition active:scale-[0.98] disabled:opacity-50"
                           >
                             {isSendingWhatsAppApi ? <RefreshCw className="w-3 h-3 animate-spin" /> : <MessageSquare className="w-3 h-3" />}
                             Invia via Meta Cloud API
@@ -1064,7 +1064,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                   </div>
 
                   {whatsAppTestSuccess && (
-                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-xl text-xs flex items-center gap-2 animate-fade-in font-medium">
+                    <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-[4px] text-xs flex items-center gap-2 animate-fade-in font-medium">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>{whatsAppTestSuccess}</span>
                     </div>
@@ -1073,8 +1073,8 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
               </div>
 
               {/* Cancellation & No-Show Policies */}
-              <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
+              <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-4">
+                <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 border-b border-[#E4E6EA] pb-3 font-display">
                   <ShieldCheck className="w-4.5 h-4.5 text-emerald-600" />
                   Politiche di Cancellazione & Protezione No-Show
                 </h4>
@@ -1083,14 +1083,14 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block font-bold text-slate-700">Politica di Incasso Caparra / Acconto</label>
-                      <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-bold">
+                      <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-[4px] font-bold">
                         {depositPolicy === 'OPTIONAL' ? 'Opzionale (Consigliata)' : depositPolicy === 'DISABLED' ? 'Disattivata' : 'Obbligatoria'}
                       </span>
                     </div>
                     <select
                       value={depositPolicy}
                       onChange={(e) => setDepositPolicy(e.target.value as any)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg p-3 focus:border-indigo-500 focus:outline-none font-semibold"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none font-semibold"
                     >
                       <option value="OPTIONAL">Caparra Opzionale (Consigliata: il cliente può scegliere liberamente se versare un acconto o saldare in salone)</option>
                       <option value="DISABLED">Disattivata (Nessun acconto online, prenotazione 100% gratuita con saldo all'arrivo)</option>
@@ -1106,7 +1106,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     <select
                       value={cancellationPolicyHours}
                       onChange={(e) => setCancellationPolicyHours(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg p-3 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none"
                     >
                       <option value={12}>12 ore prima dell'appuntamento</option>
                       <option value={24}>24 ore prima dell'appuntamento (Standard consigliato)</option>
@@ -1118,7 +1118,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between p-3.5 bg-emerald-50 border border-emerald-150 rounded-xl">
+                  <div className="flex items-center justify-between p-3.5 bg-emerald-50/70 border border-emerald-200 rounded-[4px]">
                     <div>
                       <p className="font-bold text-slate-800">Cerca riempimento in Lista d'Attesa</p>
                       <p className="text-[10px] text-slate-500 mt-0.5 font-medium">Notifica automaticamente se uno slot si libera.</p>
@@ -1127,16 +1127,16 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       type="checkbox"
                       checked={autoWaitlistNotify}
                       onChange={(e) => setAutoWaitlistNotify(e.target.checked)}
-                      className="w-4.5 h-4.5 accent-indigo-600 cursor-pointer"
+                      className="w-4.5 h-4.5 accent-[#1450FF] cursor-pointer"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Automatic Reminders */}
-              <div className="glass-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 border-b border-slate-100 pb-3">
-                  <Smartphone className="w-4.5 h-4.5 text-indigo-600" />
+              <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-4">
+                <h4 className="text-sm font-bold text-slate-950 flex items-center gap-2 border-b border-[#E4E6EA] pb-3 font-display">
+                  <Smartphone className="w-4.5 h-4.5 text-[#1450FF]" />
                   Messaggi e Schedulazione Promemoria
                 </h4>
 
@@ -1146,7 +1146,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     <select
                       value={reminderChannel}
                       onChange={(e) => setReminderChannel(e.target.value as any)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg p-3 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none"
                     >
                       <option value="WHATSAPP">WhatsApp Business (Meta Cloud API)</option>
                       <option value="SMS">SMS automatico ad alta priorità</option>
@@ -1159,7 +1159,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                     <select
                       value={reminderTimingHours}
                       onChange={(e) => setReminderTimingHours(Number(e.target.value))}
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg p-3 focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 focus:border-[#1450FF] focus:outline-none"
                     >
                       <option value={12}>12 ore prima</option>
                       <option value={24}>24 ore prima (Ottimale)</option>
@@ -1171,7 +1171,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                   <div className="sm:col-span-2">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block font-bold text-slate-700">Template Promemoria</label>
-                      <span className="text-[10px] bg-slate-100 border border-slate-200 text-slate-500 px-2 py-0.5 rounded font-mono">
+                      <span className="text-[10px] bg-slate-100 border border-[#E4E6EA] text-slate-500 px-2 py-0.5 rounded-[4px] font-mono">
                         Tag: {'{NOME}'} {'{SERVIZIO}'} {'{DATA}'} {'{ORA}'} {'{LINK_CONFERMA}'}
                       </span>
                     </div>
@@ -1179,7 +1179,7 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                       rows={4}
                       value={reminderTemplate}
                       onChange={(e) => setReminderTemplate(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-lg p-3.5 focus:border-indigo-500 focus:outline-none leading-relaxed font-mono text-[11px]"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3.5 focus:border-[#1450FF] focus:outline-none leading-relaxed font-mono text-[11px]"
                     />
                   </div>
                 </div>
@@ -1188,9 +1188,9 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
 
             {/* Sidebar info */}
             <div className="space-y-6">
-              <div className="glass-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 text-xs text-slate-600 leading-relaxed">
-                <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-slate-100 pb-2">
-                  <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <div className="bg-white p-5 rounded-[6px] border border-[#E4E6EA] space-y-3.5 text-xs text-slate-600 leading-relaxed">
+                <div className="flex items-center gap-2 text-slate-900 font-bold border-b border-[#E4E6EA] pb-2 font-display">
+                  <ShieldCheck className="w-4 h-4 text-[#1450FF]" />
                   Conformità GDPR e Sicurezza
                 </div>
                 <p>
@@ -1206,24 +1206,24 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
         )}
 
         {/* Global Save Button Bottom */}
-        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+        <div className="flex items-center justify-between pt-4 border-t border-[#E4E6EA]">
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-6 py-3 rounded-xl shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2 transition"
+              className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-5 py-2.5 rounded-[4px] flex items-center gap-2 transition active:scale-[0.98]"
             >
               <Save className="w-4 h-4 text-white" />
               Salva Tutte le Configurazioni & API
             </button>
 
             {saveSuccess && (
-              <div className="text-emerald-600 font-bold text-xs flex items-center gap-1.5 animate-bounce">
+              <div className="text-emerald-600 font-bold text-xs flex items-center gap-1.5 animate-pulse">
                 <CheckCircle className="w-4 h-4 text-emerald-600" /> Impostazioni e chiavi API aggiornate!
               </div>
             )}
           </div>
 
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-slate-400 font-mono">
             Salvataggio sicuro su LocalStorage & Sincronizzazione Tenant Cloud
           </span>
         </div>
