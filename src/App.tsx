@@ -139,7 +139,44 @@ export default function App() {
   });
 
   // SaaS Navigation Modes: 'super_admin' | 'owner' | 'client' | 'staff_gateway'
-  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client' | 'staff_gateway'>('staff_gateway');
+  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client' | 'staff_gateway'>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view');
+      const pathname = window.location.pathname.toLowerCase();
+
+      if (view === 'client' || pathname.includes('/prenota') || pathname === '/prenota') {
+        return 'client';
+      }
+      if (view === 'owner' || pathname.includes('/gestione') || pathname === '/gestione') {
+        const isOwnerAuth = sessionStorage.getItem('ns_auth_owner') === 'true';
+        if (isOwnerAuth) return 'owner';
+        return 'staff_gateway';
+      }
+      if (view === 'admin' || pathname.includes('/admin') || pathname === '/admin') {
+        const isAdminAuth = sessionStorage.getItem('ns_auth_super_admin') === 'true';
+        if (isAdminAuth) return 'super_admin';
+        return 'staff_gateway';
+      }
+    } catch {}
+    return 'staff_gateway';
+  });
+
+  const gatewayConfig = useMemo(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view');
+      const pathname = window.location.pathname.toLowerCase();
+
+      if (view === 'owner' || pathname.includes('/gestione') || pathname === '/gestione') {
+        return { initialRoleTab: 'owner' as const, lockRoleTab: true };
+      }
+      if (view === 'admin' || pathname.includes('/admin') || pathname === '/admin') {
+        return { initialRoleTab: 'super_admin' as const, lockRoleTab: true };
+      }
+    } catch {}
+    return { initialRoleTab: 'owner' as const, lockRoleTab: false };
+  }, []);
   const [ownerSection, setOwnerSection] = useState<string>('dashboard');
   
   // Dedicated Role Authentication states
@@ -788,6 +825,8 @@ export default function App() {
           currentSalonName={currentTenantInfo?.name || config.name}
           isOwnerLoggedIn={isOwnerAuthenticated}
           isSuperAdminLoggedIn={isSuperAdminAuthenticated}
+          initialRoleTab={gatewayConfig.initialRoleTab}
+          lockRoleTab={gatewayConfig.lockRoleTab}
         />
       ) : mode === 'super_admin' && !isSuperAdminAuditActive ? (
         <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">

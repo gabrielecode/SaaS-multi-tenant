@@ -26,6 +26,8 @@ interface StaffAccessGatewayProps {
   currentSalonName: string;
   isOwnerLoggedIn?: boolean;
   isSuperAdminLoggedIn?: boolean;
+  initialRoleTab?: 'owner' | 'super_admin';
+  lockRoleTab?: boolean;
 }
 
 export default function StaffAccessGateway({
@@ -33,10 +35,12 @@ export default function StaffAccessGateway({
   onNavigateToClient,
   currentSalonName,
   isOwnerLoggedIn = false,
-  isSuperAdminLoggedIn = false
+  isSuperAdminLoggedIn = false,
+  initialRoleTab = 'owner',
+  lockRoleTab = false
 }: StaffAccessGatewayProps) {
   // Active Tab: 'owner' | 'super_admin'
-  const [activeTab, setActiveTab] = useState<'owner' | 'super_admin'>('owner');
+  const [activeTab, setActiveTab] = useState<'owner' | 'super_admin'>(initialRoleTab);
   
   // PIN states for Owner
   const [ownerPin, setOwnerPin] = useState('');
@@ -83,144 +87,149 @@ export default function StaffAccessGateway({
           <span>Portale Accessi Riservati con Gatekeeper</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Home Page Accessi Dedicati
+          {lockRoleTab ? (initialRoleTab === 'owner' ? 'Accesso Titolare Salone' : 'Accesso Super Admin') : 'Home Page Accessi Dedicati'}
         </h2>
         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-          Area riservata a <strong>Titolare Salone</strong> e <strong>Super Admin SaaS</strong>. 
-          Sblocca la tua console inserendo il PIN autorizzato con crittografia di sessione.
+          {lockRoleTab 
+            ? (initialRoleTab === 'owner' 
+                ? `Inserisci il PIN autorizzato per gestire il salone "${currentSalonName}".` 
+                : 'Inserisci il PIN Super Admin per accedere alla console globale della piattaforma.')
+            : 'Area riservata a Titolare Salone e Super Admin SaaS. Sblocca la tua console inserendo il PIN autorizzato con crittografia di sessione.'}
         </p>
       </div>
 
-      {/* Role Switcher Cards (Dual Lane) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        
-        {/* ======================================================== */}
-        {/* CARD 1: TITOLARE SALONE                                  */}
-        {/* ======================================================== */}
-        <div 
-          onClick={() => setActiveTab('owner')}
-          className={`cursor-pointer rounded-3xl p-6 transition-all duration-200 relative border-2 ${
-            activeTab === 'owner'
-              ? 'bg-white border-indigo-600 shadow-xl shadow-indigo-600/10 ring-4 ring-indigo-50'
-              : 'bg-white/80 hover:bg-white border-slate-200 shadow-sm hover:border-slate-300'
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
-              <Store className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-              PIN: 1234
-            </span>
-          </div>
-
-          <h3 className="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
-            <span>Titolare Salone</span>
-            {isOwnerLoggedIn && (
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                Sessione Attiva
+      {/* Role Switcher Cards (Dual Lane - hidden if lockRoleTab is true) */}
+      {!lockRoleTab && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          
+          {/* ======================================================== */}
+          {/* CARD 1: TITOLARE SALONE                                  */}
+          {/* ======================================================== */}
+          <div 
+            onClick={() => setActiveTab('owner')}
+            className={`cursor-pointer rounded-3xl p-6 transition-all duration-200 relative border-2 ${
+              activeTab === 'owner'
+                ? 'bg-white border-indigo-600 shadow-xl shadow-indigo-600/10 ring-4 ring-indigo-50'
+                : 'bg-white/80 hover:bg-white border-slate-200 shadow-sm hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md shadow-indigo-600/20">
+                <Store className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                PIN: 1234
               </span>
+            </div>
+
+            <h3 className="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
+              <span>Titolare Salone</span>
+              {isOwnerLoggedIn && (
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                  Sessione Attiva
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+              Gestione completa per il salone <strong>"{currentSalonName}"</strong>. Agenda appuntamenti, lista clienti, campagne WhatsApp, listino e report No-Show.
+            </p>
+
+            <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Agenda con calendario interattivo</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Anagrafica clienti e storico affidabilità</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Integrazione WhatsApp e invio inviti</span>
+              </div>
+            </div>
+
+            {activeTab === 'owner' ? (
+              <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600">
+                <span>Selezionato: inserisci il PIN sotto</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            ) : (
+              <button 
+                type="button"
+                className="text-xs font-bold text-slate-700 group-hover:text-indigo-600 flex items-center gap-1"
+              >
+                <span>Seleziona Accesso Titolare</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             )}
-          </h3>
-          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-            Gestione completa per il salone <strong>"{currentSalonName}"</strong>. Agenda appuntamenti, lista clienti, campagne WhatsApp, listino e report No-Show.
-          </p>
-
-          <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Agenda con calendario interattivo</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Anagrafica clienti e storico affidabilità</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Smartphone className="w-3.5 h-3.5 text-indigo-500" />
-              <span>Integrazione WhatsApp e invio inviti</span>
-            </div>
           </div>
 
-          {activeTab === 'owner' ? (
-            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600">
-              <span>Selezionato: inserisci il PIN sotto</span>
-              <ChevronRight className="w-4 h-4" />
-            </div>
-          ) : (
-            <button 
-              type="button"
-              className="text-xs font-bold text-slate-700 group-hover:text-indigo-600 flex items-center gap-1"
-            >
-              <span>Seleziona Accesso Titolare</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* ======================================================== */}
-        {/* CARD 2: SUPER ADMIN SAAS                                 */}
-        {/* ======================================================== */}
-        <div 
-          onClick={() => setActiveTab('super_admin')}
-          className={`cursor-pointer rounded-3xl p-6 transition-all duration-200 relative border-2 ${
-            activeTab === 'super_admin'
-              ? 'bg-white border-purple-600 shadow-xl shadow-purple-600/10 ring-4 ring-purple-50'
-              : 'bg-white/80 hover:bg-white border-slate-200 shadow-sm hover:border-slate-300'
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-600/20">
-              <Building2 className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
-              PIN: 9988
-            </span>
-          </div>
-
-          <h3 className="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
-            <span>Super Admin SaaS</span>
-            {isSuperAdminLoggedIn && (
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
-                Sessione Attiva
+          {/* ======================================================== */}
+          {/* CARD 2: SUPER ADMIN SAAS                                 */}
+          {/* ======================================================== */}
+          <div 
+            onClick={() => setActiveTab('super_admin')}
+            className={`cursor-pointer rounded-3xl p-6 transition-all duration-200 relative border-2 ${
+              activeTab === 'super_admin'
+                ? 'bg-white border-purple-600 shadow-xl shadow-purple-600/10 ring-4 ring-purple-50'
+                : 'bg-white/80 hover:bg-white border-slate-200 shadow-sm hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold shadow-md shadow-purple-600/20">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                PIN: 9988
               </span>
-            )}
-          </h3>
-          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-            Console di amministrazione multi-tenant globale. Gestione saloni affiliati, metriche di fatturato, canoni e audit LPD/GDPR con mascheramento privacy.
-          </p>
+            </div>
 
-          <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-4">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-3.5 h-3.5 text-purple-500" />
-              <span>Gestione multi-salone & onboarding</span>
+            <h3 className="text-lg font-extrabold text-slate-900 mb-1 flex items-center gap-2">
+              <span>Super Admin SaaS</span>
+              {isSuperAdminLoggedIn && (
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                  Sessione Attiva
+                </span>
+              )}
+            </h3>
+            <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+              Console di amministrazione multi-tenant globale. Gestione saloni affiliati, metriche di fatturato, canoni e audit LPD/GDPR con mascheramento privacy.
+            </p>
+
+            <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-4">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5 text-purple-500" />
+                <span>Gestione multi-salone & onboarding</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Eye className="w-3.5 h-3.5 text-purple-500" />
+                <span>Modalità Ispezione Audit LPD / GDPR</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-purple-500" />
+                <span>Metriche globali MRR e log di sistema</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Eye className="w-3.5 h-3.5 text-purple-500" />
-              <span>Modalità Ispezione Audit LPD / GDPR</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-3.5 h-3.5 text-purple-500" />
-              <span>Metriche globali MRR e log di sistema</span>
-            </div>
+
+            {activeTab === 'super_admin' ? (
+              <div className="flex items-center gap-1.5 text-xs font-bold text-purple-600">
+                <span>Selezionato: inserisci il PIN sotto</span>
+                <ChevronRight className="w-4 h-4" />
+              </div>
+            ) : (
+              <button 
+                type="button"
+                className="text-xs font-bold text-slate-700 group-hover:text-purple-600 flex items-center gap-1"
+              >
+                <span>Seleziona Accesso Super Admin</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
-          {activeTab === 'super_admin' ? (
-            <div className="flex items-center gap-1.5 text-xs font-bold text-purple-600">
-              <span>Selezionato: inserisci il PIN sotto</span>
-              <ChevronRight className="w-4 h-4" />
-            </div>
-          ) : (
-            <button 
-              type="button"
-              className="text-xs font-bold text-slate-700 group-hover:text-purple-600 flex items-center gap-1"
-            >
-              <span>Seleziona Accesso Super Admin</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
         </div>
-
-      </div>
+      )}
 
       {/* ======================================================== */}
       {/* ACTIVE PIN INPUT (SOLO CAMPO COMPILABILE)                */}
