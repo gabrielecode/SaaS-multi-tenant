@@ -223,6 +223,8 @@ export default function Appointments({
               client.riskLevel = 'HIGH';
             } else if (newStatus === AppointmentStatus.COMPLETED) {
               client.completedCount += 1;
+              const earnedPoints = Math.floor((app.price || 0) / 10);
+              client.loyaltyPoints = (client.loyaltyPoints || 0) + earnedPoints;
             }
 
             // Ricalcolo affidabilità

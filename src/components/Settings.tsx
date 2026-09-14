@@ -88,6 +88,10 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
   const [reviewTestSuccess, setReviewTestSuccess] = useState<string | null>(null);
   const [isSendingReviewTest, setIsSendingReviewTest] = useState(false);
 
+  // Tessera Fedeltà Punti
+  const [loyaltyRewardThreshold, setLoyaltyRewardThreshold] = useState<number>(config.loyaltyRewardThreshold ?? 100);
+  const [loyaltyRewardDescription, setLoyaltyRewardDescription] = useState<string>(config.loyaltyRewardDescription || '10% di sconto sul prossimo servizio');
+
   // API Credentials state
   const [metaWhatsappToken, setMetaWhatsappToken] = useState(config.metaWhatsappToken || '');
   const [metaPhoneNumberId, setMetaPhoneNumberId] = useState(config.metaPhoneNumberId || '');
@@ -145,7 +149,9 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
       supabaseUrl: supabaseUrl.trim(),
       supabaseAnonKey: supabaseAnonKey.trim(),
       stripePublishableKey: stripePublishableKey.trim(),
-      stripeSecretKey: stripeSecretKey.trim()
+      stripeSecretKey: stripeSecretKey.trim(),
+      loyaltyRewardThreshold: Number(loyaltyRewardThreshold) || 100,
+      loyaltyRewardDescription: loyaltyRewardDescription.trim() || '10% di sconto sul prossimo servizio'
     };
 
     onUpdateConfig(updated);
@@ -1474,6 +1480,58 @@ export default function Settings({ config, onUpdateConfig }: SettingsProps) {
                         </div>
                       )}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tessera Fedeltà Punti Configurazione */}
+              <div className="bg-white p-6 rounded-[6px] border border-[#E4E6EA] space-y-4">
+                <div className="flex items-center gap-2.5 border-b border-[#E4E6EA] pb-3">
+                  <div className="w-8 h-8 rounded-[4px] bg-amber-50 border border-amber-200 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-950 font-display">
+                      Tessera Fedeltà & Programma Punti
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Configura la soglia punti e il premio assegnato automaticamente quando il cliente completa i servizi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Punti Necessari per il Premio
+                    </label>
+                    <input
+                      type="number"
+                      min={10}
+                      max={1000}
+                      value={loyaltyRewardThreshold}
+                      onChange={(e) => setLoyaltyRewardThreshold(Number(e.target.value))}
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 font-mono text-xs focus:border-[#1450FF] focus:outline-none"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Il cliente riceve 1 punto ogni 10 CHF di spesa sul servizio completato.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">
+                      Descrizione del Premio
+                    </label>
+                    <input
+                      type="text"
+                      value={loyaltyRewardDescription}
+                      onChange={(e) => setLoyaltyRewardDescription(e.target.value)}
+                      placeholder="es. 10% di sconto sul prossimo servizio"
+                      className="w-full bg-white border border-[#E4E6EA] text-slate-900 rounded-[4px] p-3 text-xs focus:border-[#1450FF] focus:outline-none"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Mostrato al cliente nella sua area personale e al titolare nella lista clienti.
+                    </p>
                   </div>
                 </div>
               </div>

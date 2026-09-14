@@ -1051,6 +1051,7 @@ export default function App() {
             {ownerSection === 'clients' && (
               <ClientsList 
                 clients={activeClients} 
+                config={config}
                 onUpdateClients={isSuperAdminAuditing ? () => {} : setClients} 
                 onOpenInviteClient={(client) => {
                   setInvitePreselectedClient(client || null);

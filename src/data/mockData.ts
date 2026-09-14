@@ -72,7 +72,9 @@ export const INITIAL_BUSINESS_CONFIG: BusinessConfig = {
   supabaseUrl: 'https://xyz-noshowreducer.supabase.co',
   supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   metaWhatsappToken: 'EAAG...mock_meta_token',
-  metaPhoneNumberId: '105482390124892'
+  metaPhoneNumberId: '105482390124892',
+  loyaltyRewardThreshold: 100,
+  loyaltyRewardDescription: "10% di sconto sul prossimo servizio"
 };
 
 export const INITIAL_SERVICES: Service[] = [

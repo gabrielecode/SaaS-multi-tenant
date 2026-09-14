@@ -1,14 +1,15 @@
 import { useState, useMemo, FormEvent } from 'react';
-import { Client } from '../types';
-import { Search, UserPlus, AlertOctagon, CheckCircle2, AlertTriangle, Phone, Mail, Edit3, X, Save, ShieldAlert, Users, Share2, Send } from 'lucide-react';
+import { Client, BusinessConfig } from '../types';
+import { Search, UserPlus, AlertOctagon, CheckCircle2, AlertTriangle, Phone, Mail, Edit3, X, Save, ShieldAlert, Users, Share2, Send, Star } from 'lucide-react';
 
 interface ClientsListProps {
   clients: Client[];
   onUpdateClients: (cls: Client[]) => void;
   onOpenInviteClient?: (client?: Client) => void;
+  config?: BusinessConfig;
 }
 
-export default function ClientsList({ clients, onUpdateClients, onOpenInviteClient }: ClientsListProps) {
+export default function ClientsList({ clients, onUpdateClients, onOpenInviteClient, config }: ClientsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRisk, setFilterRisk] = useState<string>('ALL');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -24,6 +25,23 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
   // Editing notes state
   const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [editNotesText, setEditNotesText] = useState('');
+
+  // Handle redeem reward
+  const handleRedeemReward = (client: Client) => {
+    const threshold = config?.loyaltyRewardThreshold ?? 100;
+    if ((client.loyaltyPoints || 0) < threshold) return;
+    const updated = clients.map(c => {
+      if (c.id === client.id) {
+        const newPoints = (c.loyaltyPoints || 0) - threshold;
+        const rewardDesc = config?.loyaltyRewardDescription || '10% di sconto sul prossimo servizio';
+        const rewardLog = `[Premio Riscattato] ${rewardDesc} (-${threshold} punti) in data ${new Date().toLocaleDateString()}`;
+        const newNotes = c.notes ? `${c.notes}\n${rewardLog}` : rewardLog;
+        return { ...c, loyaltyPoints: newPoints, notes: newNotes };
+      }
+      return c;
+    });
+    onUpdateClients(updated);
+  };
 
   // Filtered clients list
   const filteredClients = useMemo(() => {
@@ -233,6 +251,58 @@ export default function ClientsList({ clients, onUpdateClients, onOpenInviteClie
                       </p>
                     </div>
                   </div>
+
+                  {/* Tessera Fedeltà Punti (Titolare) */}
+                  {(() => {
+                    const threshold = config?.loyaltyRewardThreshold ?? 100;
+                    const points = client.loyaltyPoints || 0;
+                    const progressPct = Math.min(100, Math.round((points / threshold) * 100));
+                    const canRedeem = points >= threshold;
+                    const rewardDesc = config?.loyaltyRewardDescription || '10% di sconto sul prossimo servizio';
+
+                    return (
+                      <div className="bg-amber-50/50 border border-amber-200/80 p-3 rounded-[4px] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-amber-900 flex items-center gap-1.5 font-mono">
+                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                            Punti Fedeltà: {points} / {threshold}
+                          </span>
+                          <span className="text-[10px] font-bold font-mono text-amber-800 bg-amber-100 px-2 py-0.5 rounded-[4px]">
+                            {progressPct}%
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-[10px] text-slate-600 truncate max-w-[200px]" title={rewardDesc}>
+                            Premio: <strong className="text-slate-900">{rewardDesc}</strong>
+                          </span>
+
+                          {canRedeem ? (
+                            <button
+                              type="button"
+                              onClick={() => handleRedeemReward(client)}
+                              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-[4px] text-[10px] flex items-center gap-1 transition shadow-xs whitespace-nowrap"
+                            >
+                              <Star className="w-3 h-3 fill-slate-950 text-slate-950" />
+                              <span>Riscatta Premio</span>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              Mancano {threshold - points} pt
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Notes Card & Editor */}
                   <div className="bg-slate-50 border border-[#E4E6EA] p-3.5 rounded-[4px] text-xs space-y-2">

@@ -121,6 +121,8 @@ export interface BusinessConfig {
   metaWabaId?: string;
   stripePublishableKey?: string;
   stripeSecretKey?: string;
+  loyaltyRewardThreshold?: number; // e.g. 100
+  loyaltyRewardDescription?: string; // e.g. "10% di sconto sul prossimo servizio"
 }
 
 export interface Promotion {

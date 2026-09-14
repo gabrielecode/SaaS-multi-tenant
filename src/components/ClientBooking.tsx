@@ -166,6 +166,12 @@ export default function ClientBooking({
   const [lookupPhone, setLookupPhone] = useState(() => loggedClientUser?.phone || '');
   const [lookedUpAppointments, setLookedUpAppointments] = useState<Appointment[] | null>(null);
 
+  // Current client record with live loyalty points from clients prop
+  const currentClientRecord = useMemo(() => {
+    if (!loggedClientUser) return null;
+    return clients.find(c => c.id === loggedClientUser.id || c.phone.replace(/\D/g, '') === loggedClientUser.phone.replace(/\D/g, '')) || loggedClientUser;
+  }, [loggedClientUser, clients]);
+
   // Auto look up appointments when tab changes to my_appointments if user is logged in
   React.useEffect(() => {
     if (activeTab === 'my_appointments') {
@@ -389,6 +395,45 @@ export default function ClientBooking({
               />
             </div>
           </div>
+
+          {/* Tessera Fedeltà Cliente Autenticato */}
+          {currentClientRecord && (
+            <div className="bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-[#1a1a1e] border border-amber-500/30 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center shrink-0 shadow-lg">
+                  <Star className="w-6 h-6 fill-black text-black" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-black text-white tracking-tight">Tessera Fedeltà Punti</h4>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-400 text-black">
+                      {currentClientRecord.loyaltyPoints || 0} Punti
+                    </span>
+                  </div>
+                  <p className="text-xs text-neutral-300 mt-1">
+                    {(currentClientRecord.loyaltyPoints || 0) >= (config.loyaltyRewardThreshold ?? 100) ? (
+                      <span className="font-bold text-emerald-400">🎉 Hai raggiunto il premio: {config.loyaltyRewardDescription || '10% di sconto'}! Mostralo in salone.</span>
+                    ) : (
+                      <span>Mancano <strong className="text-white">{(config.loyaltyRewardThreshold ?? 100) - (currentClientRecord.loyaltyPoints || 0)} punti</strong> al premio: <em className="text-amber-300">{config.loyaltyRewardDescription || '10% di sconto sul prossimo servizio'}</em></span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-40 space-y-1.5">
+                <div className="flex justify-between text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
+                  <span>Progresso</span>
+                  <span>{Math.min(100, Math.round(((currentClientRecord.loyaltyPoints || 0) / (config.loyaltyRewardThreshold ?? 100)) * 100))}%</span>
+                </div>
+                <div className="w-full bg-neutral-800 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                  <div 
+                    className="bg-gradient-to-r from-amber-500 to-orange-400 h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${Math.min(100, Math.round(((currentClientRecord.loyaltyPoints || 0) / (config.loyaltyRewardThreshold ?? 100)) * 100))}%` }} 
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Today's Special Banner (Casca Style 30% Off) */}
           <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-6 text-black shadow-xl relative overflow-hidden">
