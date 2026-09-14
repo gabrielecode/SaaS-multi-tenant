@@ -57,8 +57,59 @@ export default function Appointments({
   });
 
   const [activeTab, setActiveTab] = useState<'agenda' | 'waitlist'>(initialTab || 'agenda');
+  const [calendarViewMode, setCalendarViewMode] = useState<'day' | 'week' | 'month'>('day');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showAddWaitlistForm, setShowAddWaitlistForm] = useState(false);
+
+  // Helper for week days (Monday to Sunday)
+  const weekDays = useMemo(() => {
+    const curr = new Date(selectedDate);
+    const day = curr.getDay();
+    const diff = curr.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(curr.setDate(diff));
+    
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const nextDay = new Date(monday);
+      nextDay.setDate(monday.getDate() + i);
+      days.push(nextDay.toISOString().split('T')[0]);
+    }
+    return days;
+  }, [selectedDate]);
+
+  // Helper for month calendar grid
+  const monthDays = useMemo(() => {
+    const d = new Date(selectedDate);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    
+    const days = [];
+    let startingDayOfWeek = firstDay.getDay();
+    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
+    
+    for (let i = startingDayOfWeek; i > 0; i--) {
+      const prevDate = new Date(year, month, 1 - i);
+      days.push({ date: prevDate.toISOString().split('T')[0], isCurrentMonth: false });
+    }
+    
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      const currDate = new Date(year, month, i);
+      days.push({ date: currDate.toISOString().split('T')[0], isCurrentMonth: true });
+    }
+    
+    const remaining = 7 - (days.length % 7);
+    if (remaining < 7) {
+      for (let i = 1; i <= remaining; i++) {
+        const nextDate = new Date(year, month + 1, i);
+        days.push({ date: nextDate.toISOString().split('T')[0], isCurrentMonth: false });
+      }
+    }
+    
+    return days;
+  }, [selectedDate]);
 
   // Apertura automatica da pulsanti esterni
   useEffect(() => {
@@ -523,214 +574,353 @@ export default function Appointments({
             </div>
           </div>
 
-          {/* Griglia Appuntamenti del Giorno */}
+          {/* Griglia Appuntamenti con Tab DAY / WEEK / MONTH */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-600" />
+                <Clock className="w-4 h-4 text-[#1450FF]" />
                 <span className="font-semibold text-slate-700">
-                  Agenda del{' '}
+                  Agenda:{' '}
                   <strong className="text-slate-900 capitalize">
                     {new Date(selectedDate).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                   </strong>
                 </span>
               </div>
-              <span className="text-slate-500 font-medium">
-                {filteredAppointments.length} {filteredAppointments.length === 1 ? 'prenotazione registrata' : 'prenotazioni registrate'}
-              </span>
+
+              {/* Tab DAY / WEEK / MONTH in alto a destra */}
+              <div className="flex items-center gap-1 bg-[#FAFAFA] p-1 border border-[#E4E6EA] rounded-[6px]">
+                {(['day', 'week', 'month'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setCalendarViewMode(mode)}
+                    className={`px-3 py-1 text-[11px] font-bold uppercase rounded-[4px] transition ${
+                      calendarViewMode === mode
+                        ? 'bg-[#1450FF] text-white shadow-none'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {mode === 'day' ? 'Day' : mode === 'week' ? 'Week' : 'Month'}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {filteredAppointments.length > 0 ? (
-              <div className="space-y-3">
-                {filteredAppointments.map(app => {
-                  const isNoShow = app.status === AppointmentStatus.NO_SHOW;
-                  const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
-                  const isCompleted = app.status === AppointmentStatus.COMPLETED;
-                  const isCancelled = app.status === AppointmentStatus.CANCELLED;
+            {/* VISTA: DAY */}
+            {calendarViewMode === 'day' && (
+              <>
+                {filteredAppointments.length > 0 ? (
+                  <div className="space-y-3">
+                    {filteredAppointments.map(app => {
+                      const isNoShow = app.status === AppointmentStatus.NO_SHOW;
+                      const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
+                      const isCompleted = app.status === AppointmentStatus.COMPLETED;
+                      const isCancelled = app.status === AppointmentStatus.CANCELLED;
+
+                      return (
+                        <div
+                          key={app.id}
+                          className={`p-4 rounded-[6px] border border-[#E4E6EA] transition-all ${
+                            isNoShow
+                              ? 'border-rose-300 bg-rose-50/50'
+                              : isCompleted
+                              ? 'border-[#E4E6EA] bg-slate-50/60 opacity-80'
+                              : isCancelled
+                              ? 'border-[#E4E6EA] bg-slate-100/50 opacity-60'
+                              : 'bg-white hover:border-[#1450FF]'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                            
+                            {/* Info Principali */}
+                            <div className="space-y-1.5 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                {/* Orario */}
+                                <span className="font-mono text-xs font-extrabold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-[4px] border border-[#E4E6EA]">
+                                  {app.time}
+                                </span>
+
+                                {/* Badge Stato (con angoli rounded-[4px]) */}
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-[4px] uppercase tracking-wider border ${
+                                  isConfirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                  app.status === AppointmentStatus.PENDING ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                  isCompleted ? 'bg-slate-100 text-slate-700 border-slate-300' :
+                                  isNoShow ? 'bg-rose-100 text-rose-800 border-rose-200' :
+                                  'bg-slate-100 text-slate-500 border-slate-200'
+                                }`}>
+                                  {isConfirmed ? 'Confermato' :
+                                   app.status === AppointmentStatus.PENDING ? 'In attesa' :
+                                   isCompleted ? 'Completato' :
+                                   isNoShow ? 'No-Show' : 'Annullato'}
+                                </span>
+
+                                {/* Conferma Cliente */}
+                                {app.isConfirmedByClient && !isNoShow && !isCancelled && (
+                                  <span className="bg-[#1450FF] text-white text-[9px] px-2 py-0.5 rounded-[4px] font-bold flex items-center gap-1 uppercase">
+                                    <Check className="w-2.5 h-2.5" /> Confermato da cliente
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Nome Cliente & Servizio */}
+                              <div className="pt-1">
+                                <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                                  <span>{app.clientName}</span>
+                                  <span className="text-xs font-normal text-slate-500 font-mono">
+                                    ({formatPhoneDisplay(app.clientPhone)})
+                                  </span>
+                                </h4>
+                                <p className="text-xs font-bold text-[#1450FF] mt-0.5 font-mono">
+                                  {app.serviceName} • {app.price} €
+                                </p>
+                              </div>
+
+                              {/* Note */}
+                              {app.notes && (
+                                <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-[4px] border border-[#E4E6EA] mt-2 max-w-xl">
+                                  "{app.notes}"
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Lato Destro: Pagamenti & Azioni */}
+                            <div className="flex flex-col items-start sm:items-end gap-2.5">
+                              {/* Stato Caparra / Pagamento */}
+                              <div className="text-xs text-slate-600">
+                                {app.depositPaid > 0 ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold font-mono">
+                                    <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                                    Caparra: {app.depositPaid} €
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-[4px]">
+                                    Saldo in salone
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Pulsantiera Azioni */}
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                {/* WhatsApp Direct Link */}
+                                <a
+                                  href={buildWhatsAppUrl(
+                                    app.clientPhone,
+                                    `Ciao ${app.clientName}! Ti contattiamo dal salone per il tuo appuntamento per ${app.serviceName} in data ${app.date} alle ore ${app.time}. A presto!`,
+                                    'CH'
+                                  )}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                  title="Scrivi su WhatsApp al cliente"
+                                >
+                                  <Send className="w-3 h-3 text-emerald-600" />
+                                  <span>WhatsApp</span>
+                                </a>
+
+                                {/* Se in attesa: Conferma o Annulla */}
+                                {app.status === AppointmentStatus.PENDING && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStatusChange(app.id, AppointmentStatus.CONFIRMED)}
+                                      className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Conferma</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStatusChange(app.id, AppointmentStatus.CANCELLED)}
+                                      className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                      <span>Annulla</span>
+                                    </button>
+                                  </>
+                                )}
+
+                                {/* Se confermato: Eseguito o No-Show */}
+                                {app.status === AppointmentStatus.CONFIRMED && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStatusChange(app.id, AppointmentStatus.COMPLETED)}
+                                      className="px-2.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Eseguito</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStatusChange(app.id, AppointmentStatus.NO_SHOW)}
+                                      className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                      title="Segna mancata presentazione"
+                                    >
+                                      <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                                      <span>No-Show</span>
+                                    </button>
+                                  </>
+                                )}
+
+                                {/* Se No-Show o Cancellato: Chiama Lista Attesa */}
+                                {(isNoShow || isCancelled) && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleNotifyWaitlist(app.serviceId, app.time)}
+                                    className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-[4px] text-xs font-bold flex items-center gap-1 transition"
+                                  >
+                                    <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Chiama Waitlist</span>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="bg-white p-12 rounded-[6px] border border-[#E4E6EA] text-center space-y-3">
+                    <Calendar className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
+                    <h4 className="text-base font-extrabold text-slate-900">Nessun appuntamento per questa data</h4>
+                    <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                      Non ci sono appuntamenti registrati per il giorno selezionato. Clicca su "Nuovo Appuntamento" per inserire una prenotazione.
+                    </p>
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddForm(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-[4px] bg-[#1450FF] hover:bg-blue-600 text-white text-xs font-bold transition"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Aggiungi Appuntamento</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* VISTA: WEEK */}
+            {calendarViewMode === 'week' && (
+              <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+                {weekDays.map(dateStr => {
+                  const dayApps = appointments.filter(a => a.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+                  const isSelected = selectedDate === dateStr;
+                  const dateObj = new Date(dateStr);
+                  const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'short' });
+                  const dayNum = dateObj.getDate();
 
                   return (
                     <div
-                      key={app.id}
-                      className={`p-5 rounded-2xl border transition-all ${
-                        isNoShow
-                          ? 'border-rose-300 bg-rose-50/50'
-                          : isCompleted
-                          ? 'border-slate-200 bg-slate-50/60 opacity-80'
-                          : isCancelled
-                          ? 'border-slate-200 bg-slate-100/50 opacity-60'
-                          : 'border-slate-200/90 bg-white hover:border-slate-300 shadow-sm'
+                      key={dateStr}
+                      onClick={() => {
+                        setSelectedDate(dateStr);
+                        setCalendarViewMode('day');
+                      }}
+                      className={`bg-white p-2.5 rounded-[6px] border border-[#E4E6EA] flex flex-col min-h-[260px] cursor-pointer hover:border-[#1450FF] transition ${
+                        isSelected ? 'ring-2 ring-[#1450FF]/20 border-[#1450FF]' : ''
                       }`}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        
-                        {/* Info Principali */}
-                        <div className="space-y-1.5 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {/* Orario */}
-                            <span className="font-mono text-xs font-extrabold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                              {app.time}
-                            </span>
-
-                            {/* Badge Stato */}
-                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
-                              isConfirmed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                              app.status === AppointmentStatus.PENDING ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                              isCompleted ? 'bg-slate-100 text-slate-700 border-slate-300' :
-                              isNoShow ? 'bg-rose-100 text-rose-800 border-rose-200' :
-                              'bg-slate-100 text-slate-500 border-slate-200'
-                            }`}>
-                              {isConfirmed ? 'Confermato' :
-                               app.status === AppointmentStatus.PENDING ? 'In attesa' :
-                               isCompleted ? 'Completato' :
-                               isNoShow ? 'No-Show' : 'Annullato'}
-                            </span>
-
-                            {/* Conferma Cliente */}
-                            {app.isConfirmedByClient && !isNoShow && !isCancelled && (
-                              <span className="bg-emerald-600 text-white text-[9px] px-2 py-0.5 rounded-md font-bold flex items-center gap-1 uppercase">
-                                <Check className="w-2.5 h-2.5" /> Confermato da cliente
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Nome Cliente & Servizio */}
-                          <div className="pt-1">
-                            <h4 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                              <span>{app.clientName}</span>
-                              <span className="text-xs font-normal text-slate-500 font-mono">
-                                ({formatPhoneDisplay(app.clientPhone)})
-                              </span>
-                            </h4>
-                            <p className="text-xs font-bold text-indigo-700 mt-0.5">
-                              {app.serviceName} • {app.price} €
-                            </p>
-                          </div>
-
-                          {/* Note */}
-                          {app.notes && (
-                            <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100 mt-2 max-w-xl">
-                              "{app.notes}"
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Lato Destro: Pagamenti & Azioni */}
-                        <div className="flex flex-col items-start sm:items-end gap-2.5">
-                          {/* Stato Caparra / Pagamento */}
-                          <div className="text-xs text-slate-600">
-                            {app.depositPaid > 0 ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold">
-                                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                                Caparra: {app.depositPaid} €
-                              </span>
-                            ) : (
-                              <span className="text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                                Saldo completo in salone
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Pulsantiera Azioni */}
-                          <div className="flex flex-wrap items-center gap-1.5">
-                            {/* WhatsApp Direct Link */}
-                            <a
-                              href={buildWhatsAppUrl(
-                                app.clientPhone,
-                                `Ciao ${app.clientName}! Ti contattiamo dal salone per il tuo appuntamento per ${app.serviceName} in data ${app.date} alle ore ${app.time}. A presto!`,
-                                'CH'
-                              )}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
-                              title="Scrivi su WhatsApp al cliente"
-                            >
-                              <Send className="w-3 h-3 text-emerald-600" />
-                              <span>WhatsApp</span>
-                            </a>
-
-                            {/* Se in attesa: Conferma o Annulla */}
-                            {app.status === AppointmentStatus.PENDING && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleStatusChange(app.id, AppointmentStatus.CONFIRMED)}
-                                  className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Conferma</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleStatusChange(app.id, AppointmentStatus.CANCELLED)}
-                                  className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                  <span>Annulla</span>
-                                </button>
-                              </>
-                            )}
-
-                            {/* Se confermato: Eseguito o No-Show */}
-                            {app.status === AppointmentStatus.CONFIRMED && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={() => handleStatusChange(app.id, AppointmentStatus.COMPLETED)}
-                                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-xs transition active:scale-95"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  <span>Eseguito</span>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handleStatusChange(app.id, AppointmentStatus.NO_SHOW)}
-                                  className="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
-                                  title="Segna mancata presentazione"
-                                >
-                                  <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                                  <span>No-Show</span>
-                                </button>
-                              </>
-                            )}
-
-                            {/* Se No-Show o Cancellato: Chiama Lista Attesa */}
-                            {(isNoShow || isCancelled) && (
-                              <button
-                                type="button"
-                                onClick={() => handleNotifyWaitlist(app.serviceId, app.time)}
-                                className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-xl text-xs font-bold flex items-center gap-1 transition active:scale-95"
+                      <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#E4E6EA]">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase">{dayName}</span>
+                        <span className="text-xs font-extrabold font-mono px-2 py-0.5 rounded-[4px] bg-slate-100 text-slate-800">{dayNum}</span>
+                      </div>
+                      <div className="space-y-1.5 flex-1">
+                        {dayApps.length > 0 ? (
+                          dayApps.map(app => {
+                            const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
+                            const isPending = app.status === AppointmentStatus.PENDING;
+                            return (
+                              <div
+                                key={app.id}
+                                className={`p-2 rounded-[4px] border text-[11px] font-medium ${
+                                  isConfirmed ? 'bg-emerald-50 border-emerald-200 text-emerald-900' :
+                                  isPending ? 'bg-amber-50 border-amber-200 text-amber-900' :
+                                  'bg-rose-50 border-rose-200 text-rose-900'
+                                }`}
                               >
-                                <RefreshCw className="w-3.5 h-3.5 text-amber-600" />
-                                <span>Chiama Waitlist</span>
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
+                                <div className="flex items-center justify-between font-mono font-bold text-[10px]">
+                                  <span>{app.time}</span>
+                                  <span>{app.price}€</span>
+                                </div>
+                                <div className="truncate font-bold mt-0.5">{app.clientName}</div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="text-[10px] text-slate-400 italic text-center py-8">Nessun slot</div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
               </div>
-            ) : (
-              <div className="bg-white p-12 rounded-3xl border border-slate-200 text-center shadow-sm space-y-3">
-                <Calendar className="w-12 h-12 mx-auto text-slate-300 stroke-1" />
-                <h4 className="text-base font-extrabold text-slate-900">Nessun appuntamento per questa data</h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                  Non ci sono appuntamenti registrati per il giorno selezionato. Clicca su "Nuovo Appuntamento" per inserire una prenotazione.
-                </p>
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddForm(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition active:scale-95"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Aggiungi Appuntamento</span>
-                  </button>
+            )}
+
+            {/* VISTA: MONTH */}
+            {calendarViewMode === 'month' && (
+              <div className="bg-white rounded-[6px] border border-[#E4E6EA] overflow-hidden">
+                <div className="grid grid-cols-7 bg-slate-50 border-b border-[#E4E6EA] text-center py-2 text-xs font-bold text-slate-600 uppercase">
+                  <span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
+                </div>
+                <div className="grid grid-cols-7 auto-rows-fr">
+                  {monthDays.map(({ date, isCurrentMonth }, idx) => {
+                    const dayApps = appointments.filter(a => a.date === date);
+                    const isSelected = selectedDate === date;
+                    const dateObj = new Date(date);
+                    const dayNum = dateObj.getDate();
+
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          setSelectedDate(date);
+                          setCalendarViewMode('day');
+                        }}
+                        className={`min-h-[110px] p-2 border-b border-r border-[#E4E6EA] cursor-pointer hover:bg-slate-50 transition flex flex-col justify-between ${
+                          !isCurrentMonth ? 'bg-slate-50/40 text-slate-400' : 'bg-white text-slate-900'
+                        } ${isSelected ? 'bg-blue-50/50 ring-1 ring-[#1450FF]' : ''}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold font-mono ${isSelected ? 'bg-[#1450FF] text-white px-1.5 py-0.5 rounded-[4px]' : ''}`}>
+                            {dayNum}
+                          </span>
+                          {dayApps.length > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-[4px] bg-indigo-50 text-[#1450FF] font-mono">
+                              {dayApps.length}
+                            </span>
+                          )}
+                        </div>
+                        <div className="space-y-1 mt-1 overflow-hidden max-h-[70px]">
+                          {dayApps.slice(0, 2).map(app => {
+                            const isConfirmed = app.status === AppointmentStatus.CONFIRMED;
+                            return (
+                              <div
+                                key={app.id}
+                                className={`text-[10px] px-1.5 py-0.5 rounded-[4px] truncate font-medium ${
+                                  isConfirmed ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-amber-50 border border-amber-200 text-amber-900'
+                                }`}
+                              >
+                                {app.time} {app.clientName}
+                              </div>
+                            );
+                          })}
+                          {dayApps.length > 2 && (
+                            <div className="text-[9px] text-slate-500 font-bold pl-1 font-mono">
+                              +{dayApps.length - 2} altri
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
           </div>
 
         </div>

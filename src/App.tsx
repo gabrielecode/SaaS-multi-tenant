@@ -841,18 +841,20 @@ export default function App() {
       ) : mode === 'owner' || (mode === 'super_admin' && isSuperAdminAuditActive) ? (
         <div className="flex-1 max-w-7xl w-full mx-auto flex flex-col md:flex-row gap-6 p-3 sm:p-6 lg:p-8" id="owner-workspace">
           
-          {/* Desktop Sidebar Navigation (#1e293b dark gray with smooth shadow) */}
-          <aside className="hidden md:block w-64 flex-shrink-0">
-            <nav className="space-y-1.5 bg-[#1e293b] p-4 rounded-2xl border border-slate-800 shadow-md sticky top-24">
-              <h3 className="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-bold mb-4 px-2">Gestione Salone</h3>
+          {/* Desktop Narrow Vertical Rail Navigation (#14161A graphite background) */}
+          <aside className="hidden md:block w-20 flex-shrink-0">
+            <nav className="flex flex-col items-center space-y-3 bg-[#14161A] p-3 rounded-[6px] border border-[#2A2D32] sticky top-24">
+              <div className="w-10 h-10 rounded-[6px] bg-[#1450FF] text-white flex items-center justify-center font-bold mb-2 text-xs font-display">
+                NS
+              </div>
               {[
-                { id: 'dashboard', label: 'Dashboard Finanziaria', icon: LayoutDashboard },
-                { id: 'appointments', label: 'Calendario Agenda', icon: Calendar, badge: todayAppointmentsCount > 0 ? `${todayAppointmentsCount}` : null },
-                { id: 'clients', label: 'Anagrafica Clienti', icon: Users, badge: `${activeClients.length}` },
-                { id: 'services', label: 'Listino Servizi', icon: NotebookTabs },
-                { id: 'marketing', label: 'Marketing & WhatsApp', icon: MessageSquare, badge: 'API' },
-                { id: 'settings', label: 'Impostazioni & API', icon: Settings2 },
-                { id: 'instructions', label: 'Guida & Istruzioni', icon: HelpCircle }
+                { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                { id: 'appointments', label: 'Calendario', icon: Calendar, badge: todayAppointmentsCount > 0 ? `${todayAppointmentsCount}` : null },
+                { id: 'clients', label: 'Clienti', icon: Users, badge: `${activeClients.length}` },
+                { id: 'services', label: 'Servizi', icon: NotebookTabs },
+                { id: 'marketing', label: 'Marketing', icon: MessageSquare },
+                { id: 'settings', label: 'Impostazioni', icon: Settings2 },
+                { id: 'instructions', label: 'Guida', icon: HelpCircle }
               ].map(item => {
                 const Icon = item.icon;
                 const isActive = ownerSection === item.id;
@@ -860,25 +862,23 @@ export default function App() {
                   <button
                     key={item.id}
                     onClick={() => setOwnerSection(item.id)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-xs transition-all duration-200 relative ${
+                    title={item.label}
+                    className={`w-12 h-12 rounded-[6px] flex flex-col items-center justify-center transition-all duration-200 relative group ${
                       isActive 
-                        ? 'bg-indigo-600 text-white shadow-[0_4px_12px_rgba(99,102,241,0.25)]' 
-                        : 'text-slate-300 hover:text-white hover:bg-slate-800/80'
+                        ? 'bg-[#1450FF] text-white shadow-none' 
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge ? (
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        isActive ? 'bg-white text-indigo-700' : 'bg-slate-800 text-indigo-300 border border-indigo-500/30'
-                      }`}>
+                    <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-white'}`} />
+                    {item.badge && (
+                      <span className="absolute -top-1 -right-1 text-[9px] w-4 h-4 rounded-[4px] bg-[#1450FF] text-white flex items-center justify-center font-mono font-bold border border-[#14161A]">
                         {item.badge}
                       </span>
-                    ) : (
-                      <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'rotate-90 text-white' : 'opacity-30 text-slate-500'}`} />
                     )}
+                    {/* Tooltip on hover */}
+                    <span className="absolute left-16 bg-[#14161A] text-white text-[11px] font-medium px-2 py-1 rounded-[4px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 border border-[#2A2D32] shadow-md">
+                      {item.label}
+                    </span>
                   </button>
                 );
               })}

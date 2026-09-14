@@ -301,36 +301,36 @@ export default function ClientBooking({
   };
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-[#121214] text-neutral-100 font-sans pb-32 selection:bg-amber-500 selection:text-black">
+    <div className="max-w-3xl mx-auto min-h-screen bg-[#FAFAFA] text-[#14161A] font-sans pb-32">
 
       {/* ------------------------------------------------------------- */}
-      {/* 1. CASCA HEADER DARK LUXURY                                   */}
+      {/* HEADER CLIENTE (Design System)                                */}
       {/* ------------------------------------------------------------- */}
-      <header className="sticky top-0 z-30 bg-[#121214]/90 backdrop-blur-md border-b border-white/10 px-5 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#E4E6EA] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500 text-black font-black flex items-center justify-center text-base shadow-md shadow-amber-500/20">
+          <div className="w-10 h-10 rounded-[6px] bg-[#1450FF] text-white font-bold flex items-center justify-center text-sm font-display">
             {config.name ? config.name.charAt(0).toUpperCase() : 'C'}
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-tight text-white leading-tight line-clamp-1">
-              {config.name || 'Casca Salon'}
+            <h1 className="text-sm font-bold tracking-tight text-[#14161A] leading-tight line-clamp-1 font-display">
+              {config.name || 'Salone'}
             </h1>
-            <p className="text-[11px] text-neutral-400 font-medium flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-amber-500" /> {config.category || 'Barbershop & Beauty'}
+            <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-[#1450FF]" /> {config.category || 'Salone & Beauty'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {loggedClientUser ? (
-            <div className="flex items-center gap-2 bg-[#1a1a1e] border border-white/10 px-3 py-1.5 rounded-full text-xs font-bold text-amber-400">
-              <User className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-2 bg-slate-50 border border-[#E4E6EA] px-3 py-1.5 rounded-[4px] text-xs font-bold text-[#14161A]">
+              <User className="w-3.5 h-3.5 text-[#1450FF]" />
               <span>{loggedClientUser.name.split(' ')[0]}</span>
             </div>
           ) : onOpenAuth ? (
             <button
               onClick={onOpenAuth}
-              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full shadow-sm transition active:scale-95"
+              className="px-4 py-2 bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs rounded-[4px] transition"
             >
               Accedi
             </button>

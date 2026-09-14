@@ -120,22 +120,22 @@ export default function SuperAdminDashboard({
   const activeTenant = tenantList.find(t => t.id === currentTenantId) || tenantList[0];
 
   return (
-    <div className="space-y-6 animate-fade-in pb-12">
+    <div className="space-y-4 animate-fade-in pb-12 bg-[#FAFAFA] text-[#14161A] font-sans">
       
       {/* ------------------------------------------------------------- */}
       {/* EXECUTIVE TOPBAR WITH TENANT SELECTOR & SUPER ADMIN AUDIT MODE */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-slate-900 text-white p-5 rounded-3xl shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-slate-800">
+      <div className="bg-[#14161A] text-white p-4 rounded-[6px] border border-[#E4E6EA] flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 bg-purple-600/30 text-purple-300 text-[10px] font-black uppercase rounded-full border border-purple-500/30 flex items-center gap-1.5">
+            <span className="px-2.5 py-0.5 bg-purple-900/40 text-purple-300 text-[10px] font-bold uppercase rounded-[4px] border border-purple-700/50 flex items-center gap-1.5 font-mono">
               <ShieldAlert className="w-3 h-3 text-purple-400" /> Super Admin Audit Mode
             </span>
-            <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30 flex items-center gap-1">
-              <Lock className="w-2.5 h-2.5" /> GDPR & LPD Compliant
+            <span className="px-2.5 py-0.5 bg-emerald-900/40 text-emerald-300 text-[10px] font-bold uppercase rounded-[4px] border border-emerald-700/50 flex items-center gap-1 font-mono">
+              <Lock className="w-2.5 h-2.5" /> GDPR & LPD
             </span>
           </div>
-          <h2 className="text-xl font-black tracking-tight text-white">
+          <h2 className="text-lg font-bold tracking-tight text-white font-display">
             Piattaforma Multi-Tenant Enterprise
           </h2>
           <p className="text-xs text-slate-400">
@@ -147,14 +147,14 @@ export default function SuperAdminDashboard({
         <div className="flex flex-wrap items-center gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-800">
           
           {/* Selettore Salone Attivo */}
-          <div className="bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-2xl flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-indigo-400 shrink-0" />
+          <div className="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-[4px] flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#1450FF] shrink-0" />
             <div className="text-left">
-              <span className="block text-[9px] text-slate-400 uppercase font-bold">Tenant in Controllo:</span>
+              <span className="block text-[9px] text-slate-400 uppercase font-bold">Tenant Attivo:</span>
               <select
                 value={currentTenantId}
                 onChange={(e) => onSelectTenant(e.target.value)}
-                className="bg-transparent text-xs font-black text-white focus:outline-none cursor-pointer pr-2"
+                className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer pr-2"
               >
                 {tenantList.map(t => (
                   <option key={t.id} value={t.id} className="bg-slate-900 text-white">
@@ -168,21 +168,21 @@ export default function SuperAdminDashboard({
           {/* Privacy Masking Toggle */}
           <button
             onClick={() => setPrivacyMaskingActive(!privacyMaskingActive)}
-            className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 border ${
+            className={`px-3 py-1.5 rounded-[4px] text-xs font-bold transition flex items-center gap-1.5 border ${
               privacyMaskingActive 
-                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-800/80' 
-                : 'bg-amber-950/60 text-amber-300 border-amber-800/80'
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-800' 
+                : 'bg-amber-950 text-amber-300 border-amber-800'
             }`}
             title="Attiva o disattiva l'anonimizzazione dei dati personali (GDPR)"
           >
             <Lock className="w-3.5 h-3.5" />
-            <span>{privacyMaskingActive ? 'Privacy ON (Anonimizzato)' : 'Privacy OFF (In chiaro)'}</span>
+            <span>{privacyMaskingActive ? 'Privacy ON' : 'Privacy OFF'}</span>
           </button>
 
           {onLogoutAdmin && (
             <button
               onClick={onLogoutAdmin}
-              className="p-2.5 bg-slate-800 hover:bg-rose-900/50 hover:text-rose-300 text-slate-300 rounded-2xl transition border border-slate-700"
+              className="p-2 bg-slate-800 hover:bg-rose-900/50 hover:text-rose-300 text-slate-300 rounded-[4px] transition border border-slate-700"
               title="Esci da Super Admin"
             >
               <LogOut className="w-4 h-4" />
@@ -194,201 +194,174 @@ export default function SuperAdminDashboard({
       {/* ------------------------------------------------------------- */}
       {/* KPI METRIC CARDS EXECUTIVE                                    */}
       {/* ------------------------------------------------------------- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         
         {/* KPI 1: MRR */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Fatturato Ricorrente (MRR)</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">€{totalMRR} <span className="text-xs font-normal text-slate-500">/mo</span></h3>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-bold mt-1">
-              <CheckCircle className="w-3 h-3" /> 100% pagamenti attivi
-            </span>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MRR Totale</p>
+            <h3 className="text-xl font-bold text-[#14161A] mt-0.5 font-mono">€{totalMRR} <span className="text-[11px] font-normal text-slate-500">/mo</span></h3>
           </div>
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-            <DollarSign className="w-6 h-6" />
+          <div className="p-2.5 bg-blue-50 text-[#1450FF] rounded-[4px] border border-blue-100">
+            <DollarSign className="w-5 h-5" />
           </div>
         </div>
 
         {/* KPI 2: Saloni Attivi */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Saloni Registrati</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">{activeSalonsCount} <span className="text-xs font-normal text-slate-500">/ {tenantList.length}</span></h3>
-            <span className="inline-flex items-center gap-1 text-[10px] text-indigo-600 font-bold mt-1">
-              <Building2 className="w-3 h-3" /> Multi-tenant isolati
-            </span>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Saloni Iscritti</p>
+            <h3 className="text-xl font-bold text-[#14161A] mt-0.5 font-mono">{activeSalonsCount} <span className="text-[11px] font-normal text-slate-500">/ {tenantList.length}</span></h3>
           </div>
-          <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-            <Users className="w-6 h-6" />
+          <div className="p-2.5 bg-slate-50 text-slate-700 rounded-[4px] border border-[#E4E6EA]">
+            <Users className="w-5 h-5" />
           </div>
         </div>
 
         {/* KPI 3: Supabase Postgres */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Database Postgres</p>
-            <h3 className="text-xs font-black text-emerald-600 mt-2 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Row Level Security (RLS)
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Database Postgres</p>
+            <h3 className="text-xs font-bold text-emerald-700 mt-1 flex items-center gap-1.5 font-mono">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              RLS Attivo (Zero Leak)
             </h3>
-            <span className="block text-[10px] text-slate-400 mt-1">Zero leak tra tenant</span>
           </div>
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
-            <Database className="w-6 h-6" />
+          <div className="p-2.5 bg-emerald-50 text-emerald-700 rounded-[4px] border border-emerald-100">
+            <Database className="w-5 h-5" />
           </div>
         </div>
 
         {/* KPI 4: WhatsApp Webhook API */}
-        <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+        <div className="bg-white p-4 rounded-[6px] border border-[#E4E6EA] flex items-center justify-between">
           <div>
-            <p className="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">WhatsApp Cloud API</p>
-            <h3 className="text-xs font-black text-purple-600 mt-2 flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-              Webhook Attivo v21.0
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">WhatsApp API</p>
+            <h3 className="text-xs font-bold text-purple-700 mt-1 flex items-center gap-1.5 font-mono">
+              <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+              Webhook v21.0
             </h3>
-            <span className="block text-[10px] text-slate-400 mt-1">Promemoria automatici</span>
           </div>
-          <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl">
-            <Activity className="w-6 h-6" />
+          <div className="p-2.5 bg-purple-50 text-purple-700 rounded-[4px] border border-purple-100">
+            <Activity className="w-5 h-5" />
           </div>
         </div>
 
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* GRIGLIA DEI SALONI REGISTRATI (CARD MODERNE)                  */}
+      {/* TABELLA DEI TENANT (Design System ad alta densità)            */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-[6px] border border-[#E4E6EA] overflow-hidden">
+        <div className="p-4 border-b border-[#E4E6EA] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
           <div>
-            <h3 className="text-lg font-black text-slate-900">Griglia Saloni & Tenant Iscritti</h3>
-            <p className="text-xs text-slate-500">Visualizza i dettagli operativi, il piano di abbonamento e gestisci l'accesso.</p>
+            <h3 className="text-sm font-bold text-[#14161A] font-display">Gestione Tenant Saloni</h3>
+            <p className="text-xs text-slate-500">Elenco completo dei saloni registrati, piani attivi e controlli di accesso isolati.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Search Input */}
+          <div className="flex items-center gap-2">
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Cerca salone o titolare..."
+                placeholder="Cerca salone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-900 focus:outline-none focus:border-indigo-500 w-full sm:w-64"
+                className="pl-8 pr-3 py-1.5 bg-white border border-[#E4E6EA] rounded-[4px] text-xs font-medium text-slate-900 focus:outline-none focus:border-[#1450FF] w-full sm:w-56"
               />
             </div>
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-2xl shadow-md transition active:scale-95 flex items-center gap-1.5 shrink-0"
+              className="px-3 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs rounded-[4px] flex items-center gap-1 shrink-0 transition"
             >
-              <Plus className="w-4 h-4" />
-              <span>Registra Salone</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nuovo Salone</span>
             </button>
           </div>
         </div>
 
-        {/* GRIGLIA CARD */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredTenants.map(tenant => {
-            const isCurrent = tenant.id === currentTenantId;
-            // Calcola numero appuntamenti stimati del mese per questo tenant
-            const tenantAppsCount = appointments.filter(a => a.tenant_id === tenant.id).length || Math.floor(Math.random() * 40) + 12;
+        {/* Tabella pulita con bordi netti #E4E6EA */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-[#E4E6EA] text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <th className="p-3">Salone / Categoria</th>
+                <th className="p-3">Titolare</th>
+                <th className="p-3">Contatti</th>
+                <th className="p-3">Piano / Tariffa</th>
+                <th className="p-3">Stato</th>
+                <th className="p-3 text-right">Azioni</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E4E6EA]">
+              {filteredTenants.map(tenant => {
+                const isCurrent = tenant.id === currentTenantId;
+                const tenantAppsCount = appointments.filter(a => a.tenant_id === tenant.id).length || Math.floor(Math.random() * 30) + 10;
 
-            return (
-              <div 
-                key={tenant.id}
-                className={`p-5 rounded-3xl border transition flex flex-col justify-between gap-4 relative overflow-hidden bg-white ${
-                  isCurrent 
-                    ? 'border-indigo-600 ring-2 ring-indigo-600/20 shadow-md' 
-                    : 'border-slate-200 hover:border-slate-300 shadow-xs'
-                }`}
-              >
-                {isCurrent && (
-                  <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[9px] font-black uppercase px-3 py-1 rounded-bl-xl tracking-wider">
-                    Attivo Ora
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                        {tenant.category}
+                return (
+                  <tr key={tenant.id} className={`hover:bg-slate-50/80 transition ${isCurrent ? 'bg-blue-50/40' : ''}`}>
+                    <td className="p-3">
+                      <div className="font-bold text-[#14161A] flex items-center gap-1.5">
+                        <span>{tenant.name}</span>
+                        {isCurrent && (
+                          <span className="bg-[#1450FF] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-[4px]">
+                            Attivo
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-slate-500 font-medium">{tenant.category}</span>
+                    </td>
+                    <td className="p-3 font-medium text-slate-800">
+                      {tenant.ownerName}
+                    </td>
+                    <td className="p-3 font-mono text-[11px] text-slate-600">
+                      <div>{privacyMaskingActive ? maskEmail(tenant.email) : tenant.email}</div>
+                      <div>{privacyMaskingActive ? maskPhoneNumber(tenant.phone) : tenant.phone}</div>
+                    </td>
+                    <td className="p-3">
+                      <span className="font-bold font-mono text-[#1450FF]">
+                        {tenant.plan}
                       </span>
-                      <h4 className="text-base font-black text-slate-900 mt-1">{tenant.name}</h4>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 text-xs text-slate-600">
-                    <p className="flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Titolare: <strong className="text-slate-900">{tenant.ownerName}</strong></span>
-                    </p>
-                    <p className="flex items-center gap-2 font-mono">
-                      <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{privacyMaskingActive ? maskEmail(tenant.email) : tenant.email}</span>
-                    </p>
-                    <p className="flex items-center gap-2 font-mono">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{privacyMaskingActive ? maskPhoneNumber(tenant.phone) : tenant.phone}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Piano Abbonamento:</span>
-                    <strong className="text-slate-900 uppercase font-black">{tenant.plan} (€{tenant.monthlyFee}/mo)</strong>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Appuntamenti Mese:</span>
-                    <span className="font-mono font-bold bg-slate-100 px-2 py-0.5 rounded text-slate-800">
-                      {tenantAppsCount} prenotazioni
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Stato Account:</span>
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                      tenant.subscriptionStatus === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${tenant.subscriptionStatus === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                      {tenant.subscriptionStatus}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 pt-2">
-                    <button
-                      onClick={() => onSelectTenant(tenant.id)}
-                      className={`w-full py-2.5 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-1 ${
-                        isCurrent 
-                          ? 'bg-indigo-600 text-white shadow-sm' 
-                          : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
-                      }`}
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{isCurrent ? 'In Uso' : 'Seleziona'}</span>
-                    </button>
-
-                    {onInspectApp && (
-                      <button
-                        onClick={() => onInspectApp(tenant.id)}
-                        className="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-xl font-extrabold text-xs transition flex items-center justify-center gap-1"
-                        title="Ispeziona App con dati anonimizzati"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Ispeziona</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-            );
-          })}
+                      <span className="text-[11px] text-slate-500 ml-1"> (€{tenant.monthlyFee}/mo)</span>
+                    </td>
+                    <td className="p-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] text-[10px] font-bold border ${
+                        tenant.subscriptionStatus === 'ACTIVE' 
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200' 
+                          : 'bg-rose-50 text-rose-800 border-rose-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${tenant.subscriptionStatus === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                        {tenant.subscriptionStatus}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => onSelectTenant(tenant.id)}
+                          className={`px-2.5 py-1 rounded-[4px] font-bold text-[11px] transition ${
+                            isCurrent
+                              ? 'bg-[#1450FF] text-white'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-[#E4E6EA]'
+                          }`}
+                        >
+                          {isCurrent ? 'Selezionato' : 'Seleziona'}
+                        </button>
+                        {onInspectApp && (
+                          <button
+                            onClick={() => onInspectApp(tenant.id)}
+                            className="px-2.5 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 rounded-[4px] font-bold text-[11px] transition"
+                            title="Ispeziona app tenant"
+                          >
+                            Ispeziona
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
