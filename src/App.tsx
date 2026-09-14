@@ -507,7 +507,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-800 overflow-x-hidden" id="app-root">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col font-sans text-[#14161A] overflow-x-hidden" id="app-root">
       
       {/* PWA Install Banner */}
       <PwaInstallBanner />
@@ -515,21 +515,21 @@ export default function App() {
       {/* ========================================================================= */}
       {/* HYPER-OPTIMIZED RESPONSIVE HEADER                                         */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/95 border-b border-slate-200/80 shadow-sm" id="global-header">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/95 border-b border-[#E4E6EA]" id="global-header">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
           
           {/* Left: Brand Icon & App Title & Mobile Tenant Switcher */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#1450FF] rounded-[6px] flex items-center justify-center flex-shrink-0">
               <ShieldAlert className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white stroke-[2.5]" />
             </div>
             
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-xs sm:text-base font-extrabold tracking-tight text-slate-900 leading-none truncate">
+                <h1 className="text-xs sm:text-base font-bold tracking-tight text-[#14161A] leading-none truncate font-display">
                   NoShow Reducer
                 </h1>
-                <span className="hidden sm:inline-block text-[10px] bg-indigo-50 text-indigo-700 font-bold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">
+                <span className="hidden sm:inline-block text-[10px] bg-slate-100 text-slate-700 font-bold px-1.5 py-0.5 rounded-[4px] border border-[#E4E6EA] uppercase font-mono">
                   SaaS v2.4
                 </span>
               </div>
@@ -537,13 +537,13 @@ export default function App() {
               {/* Salon Switcher Trigger (Compact on mobile) */}
               <button
                 onClick={() => setIsMobileDrawerOpen(true)}
-                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-indigo-600 font-medium mt-0.5 truncate text-left transition group"
+                className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-[#1450FF] font-medium mt-0.5 truncate text-left transition group"
                 title="Cambia Salone o Apri Menu"
               >
                 <span className="truncate max-w-[130px] sm:max-w-[200px]">
-                  Salone: <strong className="text-slate-800 group-hover:text-indigo-600">{currentTenantInfo?.name || config.name}</strong>
+                  Salone: <strong className="text-slate-800 group-hover:text-[#1450FF]">{currentTenantInfo?.name || config.name}</strong>
                 </span>
-                <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-indigo-600 flex-shrink-0" />
+                <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-[#1450FF] flex-shrink-0" />
               </button>
             </div>
           </div>
@@ -554,16 +554,16 @@ export default function App() {
             {/* 1. Staff Gateway View Header */}
             {mode === 'staff_gateway' && (
               <div className="flex items-center gap-2.5">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-xl border border-amber-200 text-xs font-bold">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-900 rounded-[4px] border border-amber-200 text-xs font-bold">
                   <Lock className="w-3.5 h-3.5 text-amber-600" />
                   <span>Gatekeeper Accessi Riservati</span>
                 </div>
 
                 <button
                   onClick={() => setMode('client')}
-                  className="px-3.5 py-1.5 rounded-xl font-bold text-xs text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-[4px] font-bold text-xs text-slate-600 hover:text-[#1450FF] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] transition flex items-center gap-1.5"
                 >
-                  <Globe className="w-3.5 h-3.5 text-emerald-600" />
+                  <Globe className="w-3.5 h-3.5 text-[#1450FF]" />
                   <span>Area Prenotazioni Clienti</span>
                 </button>
               </div>
@@ -572,15 +572,15 @@ export default function App() {
             {/* 2. Client View Header */}
             {mode === 'client' && (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 rounded-[4px] border border-emerald-200 text-xs font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                   <span className="hidden lg:inline">Prenotazioni Online 24/7 Aperte</span>
                   <span className="lg:hidden">Online 24/7</span>
                 </div>
 
                 {loggedClientUser ? (
-                  <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-800">
-                    <UserCheck className="w-4 h-4 text-emerald-600" />
+                  <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-[4px] border border-[#E4E6EA] text-xs font-bold text-slate-800">
+                    <UserCheck className="w-4 h-4 text-[#1450FF]" />
                     <span>{loggedClientUser.name}</span>
                     <button
                       onClick={() => setLoggedClientUser(null)}
@@ -592,7 +592,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setShowAuthModal(true)}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                    className="px-4 py-2 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Lock className="w-3.5 h-3.5" />
                     <span>Accedi / Registrati</span>
@@ -603,7 +603,7 @@ export default function App() {
                 {isOwnerAuthenticated ? (
                   <button
                     onClick={() => setMode('owner')}
-                    className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                    className="px-3.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                     title="Rientra nella sessione Titolare già attiva"
                   >
                     <Store className="w-3.5 h-3.5" />
@@ -612,7 +612,7 @@ export default function App() {
                 ) : isSuperAdminAuthenticated ? (
                   <button
                     onClick={() => setMode('super_admin')}
-                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                    className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                     title="Rientra nella sessione Super Admin già attiva"
                   >
                     <Building2 className="w-3.5 h-3.5" />
@@ -621,7 +621,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setMode('staff_gateway')}
-                    className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95 border border-slate-700"
+                    className="px-3 py-1.5 bg-[#14161A] hover:bg-slate-800 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition border border-[#2A2D32]"
                     title="Accesso riservato per Titolare del salone e Super Admin con PIN"
                   >
                     <Lock className="w-3.5 h-3.5 text-amber-300" />
@@ -634,8 +634,8 @@ export default function App() {
             {/* 3. Salon Owner View Header */}
             {mode === 'owner' && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-800 rounded-xl border border-indigo-200 text-xs font-bold">
-                  <Store className="w-4 h-4 text-indigo-600" />
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-800 rounded-[4px] border border-[#E4E6EA] text-xs font-bold">
+                  <Store className="w-4 h-4 text-[#1450FF]" />
                   <span>Titolare Salone</span>
                 </div>
 
@@ -646,10 +646,10 @@ export default function App() {
                     setInvitePreselectedClient(null);
                     setIsInviteModalOpen(true);
                   }}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-sm flex items-center gap-1.5 transition active:scale-95"
-                  title="Invia link invito Web App via WhatsApp (🇨🇭 +41), Email o SMS"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
+                  title="Invia link invito Web App via WhatsApp, Email o SMS"
                 >
-                  <Share2 className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <Share2 className="w-3.5 h-3.5 stroke-[2.2]" />
                   <span>Invita alla App</span>
                 </button>
 
@@ -660,16 +660,16 @@ export default function App() {
                     setInitialAppointmentsTab('agenda');
                     setAutoOpenAddApp(true);
                   }}
-                  className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 transition active:scale-95"
+                  className="px-3.5 py-1.5 bg-[#1450FF] hover:bg-blue-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                 >
-                  <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <Plus className="w-3.5 h-3.5 stroke-[2.2]" />
                   <span>Nuovo Appuntamento</span>
                 </button>
 
                 {/* View as Client Preview */}
                 <button
                   onClick={() => setMode('client')}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-[#E4E6EA]"
                   title="Visualizza come appare il portale di prenotazione ai clienti"
                 >
                   <Globe className="w-3.5 h-3.5 text-slate-500" />
@@ -679,7 +679,7 @@ export default function App() {
                 {/* Logout Owner */}
                 <button
                   onClick={handleLogoutOwner}
-                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
                   title="Disconnetti dalla sessione Titolare"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-600" />
@@ -691,16 +691,16 @@ export default function App() {
             {/* 4. Super Admin View Header */}
             {mode === 'super_admin' && (
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-800 rounded-xl border border-purple-200 text-xs font-bold">
-                  <Building2 className="w-4 h-4 text-purple-600" />
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-800 rounded-[4px] border border-purple-200 text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-purple-700" />
                   <span>Super Admin SaaS</span>
-                  <span className="text-[10px] bg-purple-200/70 text-purple-900 px-1.5 py-0.2 rounded font-mono">LPD Privacy</span>
+                  <span className="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.2 rounded-[4px] font-mono">LPD Privacy</span>
                 </div>
 
                 {isSuperAdminAuditActive ? (
                   <button
                     onClick={() => setIsSuperAdminAuditActive(false)}
-                    className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm"
+                    className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold flex items-center gap-1.5 transition"
                   >
                     <Building2 className="w-3.5 h-3.5" />
                     <span>Torna a Console Admin</span>
@@ -708,7 +708,7 @@ export default function App() {
                 ) : (
                   <button
                     onClick={() => setMode('client')}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition"
+                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-[#E4E6EA]"
                     title="Visualizza l'app dal punto di vista cliente"
                   >
                     <Globe className="w-3.5 h-3.5 text-slate-500" />
@@ -718,7 +718,7 @@ export default function App() {
 
                 <button
                   onClick={handleLogoutAdmin}
-                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-[4px] text-xs font-semibold flex items-center gap-1.5 transition border border-rose-200"
                   title="Disconnetti Super Admin"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-600" />
@@ -737,7 +737,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setMode('owner')}
-                  className="px-2.5 py-1.5 bg-indigo-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                  className="px-2.5 py-1.5 bg-[#1450FF] text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
                 >
                   <Store className="w-3 h-3" />
                   <span>Titolare</span>
@@ -746,7 +746,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setMode('super_admin')}
-                  className="px-2.5 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                  className="px-2.5 py-1.5 bg-purple-700 text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
                 >
                   <Building2 className="w-3 h-3" />
                   <span>Admin</span>
@@ -755,7 +755,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setMode('staff_gateway')}
-                  className="px-2.5 py-1.5 bg-slate-900 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                  className="px-2.5 py-1.5 bg-[#14161A] text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
                   title="Accesso Staff & Super Admin"
                 >
                   <Lock className="w-3 h-3 text-amber-300" />
@@ -766,7 +766,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setMode('client')}
-                className="px-2.5 py-1.5 bg-emerald-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                className="px-2.5 py-1.5 bg-emerald-600 text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
                 title="Vai all'area clienti"
               >
                 <Globe className="w-3 h-3" />
@@ -776,7 +776,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsSuperAdminAuditActive(false)}
-                className="px-2.5 py-1.5 bg-purple-600 text-white text-[11px] font-bold rounded-xl shadow-xs flex items-center gap-1 active:scale-95 transition"
+                className="px-2.5 py-1.5 bg-purple-700 text-white text-[11px] font-bold rounded-[4px] flex items-center gap-1 transition"
               >
                 <Building2 className="w-3 h-3" />
                 <span>Console</span>
@@ -790,7 +790,7 @@ export default function App() {
                   setInvitePreselectedClient(null);
                   setIsInviteModalOpen(true);
                 }}
-                className="p-2 rounded-xl bg-emerald-600 text-white shadow-sm flex items-center justify-center transition active:scale-95"
+                className="p-2 rounded-[4px] bg-emerald-600 text-white flex items-center justify-center transition"
                 title="Invia link invito Web App"
               >
                 <Share2 className="w-4 h-4" />
@@ -800,12 +800,12 @@ export default function App() {
             {/* Mobile Hamburger Menu Button (Touch Target >= 44px) */}
             <button
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 flex items-center justify-center text-slate-800 transition active:scale-95 relative"
+              className="w-10 h-10 rounded-[4px] bg-slate-100 hover:bg-slate-200 border border-[#E4E6EA] flex items-center justify-center text-slate-800 transition relative"
               aria-label="Apri Menu di Navigazione"
             >
               <Menu className="w-5 h-5 stroke-[2.2]" />
               {todayAppointmentsCount > 0 && mode === 'owner' && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-indigo-600 rounded-full border-2 border-white animate-pulse" />
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#1450FF] rounded-full border-2 border-white" />
               )}
             </button>
           </div>
@@ -894,17 +894,17 @@ export default function App() {
                 <button
                   key={item.id}
                   onClick={() => setOwnerSection(item.id)}
-                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition shadow-sm active:scale-95 ${
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-[4px] text-xs font-bold transition ${
                     isActive
-                      ? 'bg-indigo-600 text-white shadow-indigo-600/20'
-                      : 'bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50'
+                      ? 'bg-[#1450FF] text-white'
+                      : 'bg-white border border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-indigo-600'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-[#1450FF]'}`} />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-bold ${
-                      isActive ? 'bg-white text-indigo-700' : 'bg-indigo-50 text-indigo-700'
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded-[4px] font-bold font-mono ${
+                      isActive ? 'bg-white text-[#1450FF]' : 'bg-blue-50 text-[#1450FF]'
                     }`}>
                       {item.badge}
                     </span>
@@ -918,17 +918,17 @@ export default function App() {
           <main className="flex-1 min-w-0">
             {/* Super Admin Audit Banner */}
             {isSuperAdminAuditing && (
-              <div className="w-full bg-purple-900 text-white p-3.5 rounded-2xl mb-5 border border-purple-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
+              <div className="w-full bg-[#14161A] text-white p-3.5 rounded-[6px] mb-5 border border-[#2A2D32] flex flex-col sm:flex-row items-center justify-between gap-3 animate-fade-in">
                 <div className="flex items-center gap-2.5 text-xs">
-                  <div className="p-2 bg-purple-800 rounded-xl text-purple-200 flex-shrink-0">
+                  <div className="p-2 bg-slate-900 rounded-[4px] text-purple-300 flex-shrink-0 border border-slate-800">
                     <ShieldCheck className="w-5 h-5 text-emerald-400" />
                   </div>
                   <div>
-                    <p className="font-bold text-white flex items-center gap-1.5 text-sm">
+                    <p className="font-bold text-white flex items-center gap-1.5 text-sm font-display">
                       <span>Audit Super Admin Attivo</span>
-                      <span className="text-[10px] bg-purple-700 text-purple-200 px-2 py-0.5 rounded font-mono uppercase font-bold">LPD / GDPR Compliance</span>
+                      <span className="text-[10px] bg-purple-900/60 text-purple-300 px-2 py-0.5 rounded-[4px] font-mono uppercase font-bold border border-purple-700/50">LPD / GDPR</span>
                     </p>
-                    <p className="text-purple-200 text-xs">
+                    <p className="text-slate-300 text-xs">
                       Visione globale dell'app per <strong>{currentTenantInfo?.name || config.name}</strong>. Numeri di telefono, email private e note personali sono mascherati a tutela della privacy.
                     </p>
                   </div>
@@ -936,10 +936,10 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsSuperAdminAuditActive(false)}
-                  className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs flex-shrink-0 active:scale-95"
+                  className="px-4 py-2 bg-purple-700 hover:bg-purple-600 text-white rounded-[4px] text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0"
                 >
                   <Building2 className="w-3.5 h-3.5" />
-                  <span>Torna a Dashboard Super Admin</span>
+                  <span>Torna a Console Admin</span>
                 </button>
               </div>
             )}

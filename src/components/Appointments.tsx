@@ -370,20 +370,20 @@ export default function Appointments({
   };
 
   return (
-    <div className="space-y-6 relative" id="appointments-component">
+    <div className="space-y-6 relative bg-[#FAFAFA] text-[#14161A] font-sans" id="appointments-component">
       {/* Toast Feedback */}
       {toastMessage && (
-        <div className="fixed bottom-5 right-5 z-50 bg-indigo-600 border border-indigo-500 text-white font-bold text-xs py-3.5 px-5 rounded-2xl shadow-2xl animate-bounce flex items-center gap-2">
+        <div className="fixed bottom-5 right-5 z-50 bg-[#1450FF] text-white font-bold text-xs py-3.5 px-5 rounded-[6px] flex items-center gap-2">
           <Check className="w-4 h-4 text-white" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header & Titolo */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E4E6EA]">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5 tracking-tight">
-            <Calendar className="w-6 h-6 text-indigo-600 stroke-[2]" />
+          <h2 className="text-xl sm:text-2xl font-bold text-[#14161A] flex items-center gap-2.5 tracking-tight font-display">
+            <Calendar className="w-6 h-6 text-[#1450FF] stroke-[2]" />
             <span>Gestione Agenda & Lista d'Attesa</span>
           </h2>
           <p className="text-xs text-slate-500 mt-1">
@@ -396,7 +396,7 @@ export default function Appointments({
           {activeTab === 'agenda' ? (
             <button
               onClick={() => setShowAddForm(true)}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20 active:scale-95"
+              className="bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Nuovo Appuntamento</span>
@@ -404,7 +404,7 @@ export default function Appointments({
           ) : (
             <button
               onClick={() => setShowAddWaitlistForm(true)}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md shadow-indigo-600/20 active:scale-95"
+              className="bg-[#1450FF] hover:bg-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-[4px] flex items-center gap-2 transition-all"
             >
               <UserPlus className="w-4 h-4" />
               <span>Inserisci in Lista d'Attesa</span>
@@ -415,19 +415,19 @@ export default function Appointments({
 
       {/* Tab Switcher (Agenda vs Waitlist) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="inline-flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl">
+        <div className="inline-flex items-center p-1 bg-white border border-[#E4E6EA] rounded-[6px]">
           <button
             onClick={() => setActiveTab('agenda')}
-            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-[4px] font-bold text-xs transition-all flex items-center gap-2 ${
               activeTab === 'agenda'
-                ? 'bg-white text-indigo-700 shadow-sm'
+                ? 'bg-[#1450FF] text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Calendar className="w-4 h-4 text-indigo-600" />
+            <Calendar className={`w-4 h-4 ${activeTab === 'agenda' ? 'text-white' : 'text-[#1450FF]'}`} />
             <span>Agenda Giornaliera</span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-              activeTab === 'agenda' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-600'
+            <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold ${
+              activeTab === 'agenda' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
             }`}>
               {filteredAppointments.length}
             </span>
@@ -435,16 +435,18 @@ export default function Appointments({
 
           <button
             onClick={() => setActiveTab('waitlist')}
-            className={`px-4 py-2 rounded-lg font-bold text-xs transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 rounded-[4px] font-bold text-xs transition-all flex items-center gap-2 ${
               activeTab === 'waitlist'
-                ? 'bg-white text-indigo-700 shadow-sm'
+                ? 'bg-[#1450FF] text-white'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Bell className="w-4 h-4 text-amber-500" />
+            <Bell className={`w-4 h-4 ${activeTab === 'waitlist' ? 'text-white' : 'text-amber-500'}`} />
             <span>Lista d'Attesa</span>
             {waitlist.length > 0 && (
-              <span className="bg-amber-500 text-white px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-xs">
+              <span className={`px-2 py-0.5 rounded-[4px] text-[10px] font-mono font-bold ${
+                activeTab === 'waitlist' ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+              }`}>
                 {waitlist.length}
               </span>
             )}
@@ -453,36 +455,36 @@ export default function Appointments({
 
         {/* Statistiche Pills compatti */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
+          <div className="px-3 py-1.5 rounded-[4px] bg-white border border-[#E4E6EA] text-slate-700 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
             <span className="text-slate-500">Confermati:</span>
-            <strong className="text-slate-900">{dayStats.confirmed}</strong>
+            <strong className="text-slate-900 font-mono">{dayStats.confirmed}</strong>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center gap-1.5 shadow-xs">
+          <div className="px-3 py-1.5 rounded-[4px] bg-white border border-[#E4E6EA] text-slate-700 flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-500"></span>
             <span className="text-slate-500">In attesa:</span>
-            <strong className="text-slate-900">{dayStats.pending}</strong>
+            <strong className="text-slate-900 font-mono">{dayStats.pending}</strong>
           </div>
           {dayStats.noShows > 0 && (
-            <div className="px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-1.5 shadow-xs">
+            <div className="px-3 py-1.5 rounded-[4px] bg-rose-50 border border-rose-200 text-rose-700 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
               <span>No-Show:</span>
-              <strong>{dayStats.noShows}</strong>
+              <strong className="font-mono">{dayStats.noShows}</strong>
             </div>
           )}
-          <div className="px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center gap-1.5 shadow-xs font-semibold">
-            <span>Fatturato stimato:</span>
-            <strong className="text-indigo-900">{dayStats.totalRevenue} €</strong>
+          <div className="px-3 py-1.5 rounded-[4px] bg-blue-50 border border-blue-200 text-[#1450FF] flex items-center gap-1.5 font-bold">
+            <span>Fatturato:</span>
+            <strong className="font-mono">{dayStats.totalRevenue} CHF</strong>
           </div>
         </div>
       </div>
 
       {/* Avviso Match Intelligente Lista d'Attesa */}
       {matchedNotification && (
-        <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 text-emerald-900 flex items-start gap-3 shadow-sm animate-fade-in">
+        <div className="bg-emerald-50 border border-emerald-300 rounded-[6px] p-4 text-emerald-900 flex items-start gap-3">
           <Sparkles className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
           <div className="text-xs">
-            <p className="font-extrabold text-emerald-800">Recupero Slot Automatico</p>
+            <p className="font-bold text-emerald-800">Recupero Slot Automatico</p>
             <p className="mt-0.5 text-emerald-700 leading-relaxed">{matchedNotification}</p>
           </div>
         </div>
