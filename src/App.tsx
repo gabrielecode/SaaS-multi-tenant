@@ -38,6 +38,7 @@ import MobileQuickActionModal from './components/MobileQuickActionModal';
 import InviteClientModal from './components/InviteClientModal';
 import DedicatedRoleAuthModal from './components/DedicatedRoleAuthModal';
 import StaffAccessGateway from './components/StaffAccessGateway';
+import { LandingPage } from './components/LandingPage';
 import { anonymizeClientForSuperAdmin, anonymizeAppointmentForSuperAdmin } from './lib/privacyUtils';
 
 // Icons
@@ -138,8 +139,8 @@ export default function App() {
     };
   });
 
-  // SaaS Navigation Modes: 'super_admin' | 'owner' | 'client' | 'staff_gateway'
-  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client' | 'staff_gateway'>(() => {
+  // SaaS Navigation Modes: 'super_admin' | 'owner' | 'client' | 'staff_gateway' | 'landing'
+  const [mode, setMode] = useState<'super_admin' | 'owner' | 'client' | 'staff_gateway' | 'landing'>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const view = params.get('view');
@@ -159,7 +160,7 @@ export default function App() {
         return 'staff_gateway';
       }
     } catch {}
-    return 'staff_gateway';
+    return 'landing';
   });
 
   const gatewayConfig = useMemo(() => {
@@ -816,7 +817,12 @@ export default function App() {
       {/* ========================================================================= */}
       {/* MAIN CONTENT ROUTER                                                       */}
       {/* ========================================================================= */}
-      {mode === 'staff_gateway' || 
+      {mode === 'landing' ? (
+        <LandingPage
+          onOpenApp={() => setMode('client')}
+          onOpenStaffAuth={() => setMode('staff_gateway')}
+        />
+      ) : mode === 'staff_gateway' || 
        (mode === 'owner' && !isOwnerAuthenticated) || 
        (mode === 'super_admin' && !isSuperAdminAuthenticated && !isSuperAdminAuditActive) ? (
         <StaffAccessGateway

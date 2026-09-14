@@ -68,7 +68,7 @@ export default function ServicesList({ services, onUpdateServices }: ServicesLis
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs px-5 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] self-start sm:self-auto shadow-md"
+          className="bg-[#1450FF] hover:bg-blue-600 text-white font-semibold text-xs px-5 py-3 rounded-[4px] flex items-center gap-2 transition self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 text-white" />
           Aggiungi Trattamento

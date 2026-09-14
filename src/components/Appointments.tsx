@@ -498,16 +498,16 @@ export default function Appointments({
           
           {/* Barra Laterale Filtro Data */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="bg-white p-5 rounded-[6px] border border-[#E4E6EA] space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-indigo-600" />
+                <h4 className="text-xs font-bold text-[#14161A] uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                  <Calendar className="w-4 h-4 text-[#1450FF]" />
                   <span>Seleziona Data</span>
                 </h4>
                 <button
                   type="button"
                   onClick={handleSetToday}
-                  className="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline"
+                  className="text-[11px] font-bold text-[#1450FF] hover:underline"
                 >
                   Oggi
                 </button>
@@ -519,7 +519,7 @@ export default function Appointments({
                   <button
                     type="button"
                     onClick={() => handleShiftDate(-1)}
-                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition"
+                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-[#E4E6EA] rounded-[4px] text-slate-600 transition"
                     title="Giorno precedente"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -528,12 +528,12 @@ export default function Appointments({
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                    className="flex-1 px-3 py-2 bg-slate-50 border border-[#E4E6EA] rounded-[4px] text-xs font-bold text-slate-800 focus:bg-white focus:border-[#1450FF] focus:outline-none transition"
                   />
                   <button
                     type="button"
                     onClick={() => handleShiftDate(1)}
-                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-slate-600 transition"
+                    className="p-2 bg-slate-50 hover:bg-slate-100 border border-[#E4E6EA] rounded-[4px] text-slate-600 transition"
                     title="Giorno successivo"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -542,8 +542,8 @@ export default function Appointments({
               </div>
 
               {/* Pulsanti Rapidi Date con appuntamenti */}
-              <div className="pt-2 border-t border-slate-100 space-y-1.5">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date rapide con slot</p>
+              <div className="pt-2 border-t border-[#E4E6EA] space-y-1.5">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">Date rapide</p>
                 {Array.from(new Set(appointments.map(a => a.date))).slice(0, 5).map(dateStr => {
                   const count = appointments.filter(a => a.date === dateStr).length;
                   const isSelected = selectedDate === dateStr;
@@ -557,15 +557,15 @@ export default function Appointments({
                       key={dateStr}
                       type="button"
                       onClick={() => setSelectedDate(dateStr)}
-                      className={`w-full p-2.5 rounded-xl border text-left text-xs font-medium flex items-center justify-between transition ${
+                      className={`w-full p-2.5 rounded-[4px] border text-left text-xs font-medium flex items-center justify-between transition ${
                         isSelected
-                          ? 'bg-indigo-50 border-indigo-300 text-indigo-700 font-bold shadow-xs'
-                          : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                          ? 'bg-blue-50 border-[#1450FF] text-[#1450FF] font-bold'
+                          : 'bg-white border-[#E4E6EA] text-slate-700 hover:bg-slate-50'
                       }`}
                     >
                       <span className="capitalize">{formatted}</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                        isSelected ? 'bg-indigo-200 text-indigo-900' : 'bg-slate-100 text-slate-500'
+                      <span className={`text-[10px] px-2 py-0.5 rounded-[4px] font-mono font-bold ${
+                        isSelected ? 'bg-white text-[#1450FF]' : 'bg-slate-100 text-slate-500'
                       }`}>
                         {count} slot
                       </span>
